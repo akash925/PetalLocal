@@ -1,0 +1,217 @@
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useParams } from "wouter";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { useCart } from "@/hooks/useCart";
+import { useToast } from "@/hooks/use-toast";
+import { MapPin, Calendar, Truck, Store, Heart, ArrowLeft } from "lucide-react";
+import { Link } from "wouter";
+import { useState } from "react";
+
+export default function ProduceDetail() {
+  const { id } = useParams();
+  const { addItem } = useCart();
+  const { toast } = useToast();
+  const [quantity, setQuantity] = useState(1);
+
+  const { data: produceItem, isLoading, error } = useQuery({
+    queryKey: [`/api/produce/${id}`],
+    enabled: !!id,
+  });
+
+  const handleAddToCart = () => {
+    if (!produceItem) return;
+    
+    for (let i = 0; i < quantity; i++) {
+      addItem({
+        id: produceItem.id,
+        name: produceItem.name,
+        price: parseFloat(produceItem.pricePerUnit),
+        unit: produceItem.unit,
+        farmName: "Local Farm", // This would come from farm data
+        imageUrl: produceItem.imageUrl,
+      });
+    }
+    
+    toast({
+      title: "Added to cart",
+      description: `${quantity} ${produceItem.unit}${quantity > 1 ? 's' : ''} of ${produceItem.name} added to your cart.`,
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
+      </div>
+    );
+  }
+
+  if (error || !produceItem) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Produce item not found</h1>
+          <Link href="/produce">
+            <Button>Browse Produce</Button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Back Button */}
+        <Link href="/produce">
+          <Button variant="ghost" className="mb-6">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Browse
+          </Button>
+        </Link>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Image Section */}
+          <div className="space-y-4">
+            <div className="aspect-square rounded-xl overflow-hidden bg-gray-100">
+              {produceItem.imageUrl ? (
+                <img
+                  src={produceItem.imageUrl}
+                  alt={produceItem.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                  <span className="text-gray-400 text-lg">No image available</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Details Section */}
+          <div className="space-y-6">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                {produceItem.isOrganic && (
+                  <Badge className="bg-green-100 text-green-800">Organic</Badge>
+                )}
+                {produceItem.isSeasonal && (
+                  <Badge variant="secondary">Seasonal</Badge>
+                )}
+                {produceItem.isHeirloom && (
+                  <Badge variant="outline">Heirloom</Badge>
+                )}
+              </div>
+              
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                {produceItem.name}
+              </h1>
+              
+              <p className="text-lg text-gray-600 mb-4">
+                From Local Farm {/* This would come from farm data */}
+              </p>
+
+              {produceItem.description && (
+                <p className="text-gray-700 mb-4">
+                  {produceItem.description}
+                </p>
+              )}
+            </div>
+
+            <Separator />
+
+            {/* Pricing */}
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-3xl font-bold text-gray-900">
+                  ${parseFloat(produceItem.pricePerUnit).toFixed(2)}
+                </span>
+                <span className="text-lg text-gray-500 ml-2">
+                  per {produceItem.unit}
+                </span>
+              </div>
+              
+              <Button variant="ghost" size="sm" className="text-gray-400 hover:text-red-500">
+                <Heart className="w-5 h-5" />
+              </Button>
+            </div>
+
+            {/* Quantity and Add to Cart */}
+            <div className="flex items-center gap-4">
+              <div className="flex items-center border rounded-lg">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  className="rounded-r-none"
+                >
+                  -
+                </Button>
+                <span className="px-4 py-2 min-w-[60px] text-center">
+                  {quantity}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setQuantity(quantity + 1)}
+                  className="rounded-l-none"
+                >
+                  +
+                </Button>
+              </div>
+              
+              <Button
+                size="lg"
+                className="flex-1 bg-green-500 hover:bg-green-600"
+                onClick={handleAddToCart}
+              >
+                Add to Cart - ${(parseFloat(produceItem.pricePerUnit) * quantity).toFixed(2)}
+              </Button>
+            </div>
+
+            <Separator />
+
+            {/* Farm Info */}
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="font-semibold text-gray-900 mb-4">Farm Information</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center text-sm text-gray-600">
+                    <MapPin className="w-4 h-4 mr-2" />
+                    <span>2.5 miles away</span>
+                  </div>
+                  
+                  {produceItem.harvestDate && (
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Calendar className="w-4 h-4 mr-2" />
+                      <span>Harvested: {new Date(produceItem.harvestDate).toLocaleDateString()}</span>
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Store className="w-4 h-4 mr-2" />
+                    <span>Available for pickup</span>
+                  </div>
+                  
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Truck className="w-4 h-4 mr-2" />
+                    <span>Local delivery available</span>
+                  </div>
+                </div>
+                
+                <Link href={`/farms/${produceItem.farmId}`}>
+                  <Button variant="outline" className="w-full mt-4">
+                    Visit Farm Page
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
