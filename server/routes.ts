@@ -1,7 +1,7 @@
 import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, insertFarmSchema, insertProduceItemSchema, insertOrderSchema } from "@shared/schema";
+import { insertUserSchema, insertFarmSchema, insertProduceItemSchema, insertOrderSchema, type Farm } from "@shared/schema";
 import bcrypt from "bcryptjs";
 import session from "express-session";
 import connectPg from "connect-pg-simple";

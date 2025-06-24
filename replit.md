@@ -107,8 +107,14 @@ RESTful API endpoints organized by domain:
 - **Build process**: Automated build step runs `npm run build` before deployment
 - **Start command**: Production starts with `npm run start`
 
-## Changelog
-- June 24, 2025. Initial setup
+## Recent Changes
+- June 24, 2025: Complete FarmDirect marketplace built and deployed
+  - Fixed SelectItem component errors preventing produce/farms pages from loading
+  - Added missing farms browse page with search/filter functionality
+  - Implemented complete API endpoints for farms and produce
+  - Seeded database with 6 produce items from 2 farms
+  - All core marketplace features working: browse, search, cart, authentication
+  - Payment processing and email notifications integrated
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
