@@ -10,6 +10,7 @@ import { Footer } from "@/components/layout/footer";
 import Home from "@/pages/home";
 import BrowseProduce from "@/pages/produce/browse";
 import ProduceDetail from "@/pages/produce/[id]";
+import BrowseFarms from "@/pages/farms/browse";
 import FarmDetail from "@/pages/farms/[id]";
 import Cart from "@/pages/cart";
 import Login from "@/pages/auth/login";
@@ -27,6 +28,7 @@ function Router() {
           <Route path="/" component={Home} />
           <Route path="/produce" component={BrowseProduce} />
           <Route path="/produce/:id" component={ProduceDetail} />
+          <Route path="/farms" component={BrowseFarms} />
           <Route path="/farms/:id" component={FarmDetail} />
           <Route path="/cart" component={Cart} />
           <Route path="/auth/login" component={Login} />

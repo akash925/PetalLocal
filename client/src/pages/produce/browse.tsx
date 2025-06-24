@@ -8,14 +8,14 @@ import { Search, Filter } from "lucide-react";
 
 export default function BrowseProduce() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
 
   const { data: produce = [], isLoading } = useQuery({
     queryKey: ["/api/produce", searchQuery, selectedCategory],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (searchQuery) params.append("query", searchQuery);
-      if (selectedCategory) params.append("category", selectedCategory);
+      if (selectedCategory && selectedCategory !== "all") params.append("category", selectedCategory);
       
       const response = await fetch(`/api/produce?${params}`);
       if (!response.ok) throw new Error("Failed to fetch produce");
@@ -56,7 +56,7 @@ export default function BrowseProduce() {
                 <SelectValue placeholder="All Categories" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Categories</SelectItem>
+                <SelectItem value="all">All Categories</SelectItem>
                 {categories.map((category) => (
                   <SelectItem key={category} value={category}>
                     {category.charAt(0).toUpperCase() + category.slice(1)}
@@ -105,7 +105,7 @@ export default function BrowseProduce() {
               className="mt-4"
               onClick={() => {
                 setSearchQuery("");
-                setSelectedCategory("");
+                setSelectedCategory("all");
               }}
             >
               Clear Filters
