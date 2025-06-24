@@ -1,0 +1,151 @@
+You are Replit AI CodeGen.  
+Generate a complete, runnable **FarmDirect** app in one pass—no follow-up questions.
+
+────────────────────────────────────────
+🟢 1. HIGH-LEVEL GOAL
+────────────────────────────────────────
+Build a hobby-grade but scalable web platform that connects backyard gardeners & local farmers to buyers who want fresh, local produce. Core v1 features:
+• Farmers list produce and keep inventory up-to-date.  
+• Buyers search/browse produce, view farm profiles, and purchase items (checkout stub).  
+• Optional “pick & pack” info (buyers see farm visit instructions but still pay on-site).  
+• Mobile/tablet-friendly UI.  
+Roles: **farmer**, **buyer**, **admin**.
+
+────────────────────────────────────────
+🟢 2. TECH STACK (hard requirements)
+────────────────────────────────────────
+• **Next.js 14 (App Router)** – full-stack in one repo, TSX throughout.  
+• **Postgres** via **Drizzle ORM** (`@drizzle-orm/postgres-js`).  
+• **Drizzle Kit** for migrations (`/drizzle.config.ts`, `/migrations`).  
+• **Tailwind CSS** for styling (mobile-first).  
+• **Stripe** & **SendGrid** **stubs** – build service layers that read keys from `process.env` but default to a fake provider so the repl never throws if keys are missing. Expose hooks so real keys drop-in later.  
+• **Sentry** (free tier) with lazy import so it only initialises when `SENTRY_DSN` exists.  
+• **ESLint** + **Prettier** + **Husky** pre-commit.  
+• **TypeScript** everywhere.
+
+────────────────────────────────────────
+🟢 3. FILE/BACKEND REQUIREMENTS
+────────────────────────────────────────
+📁 **/src/db/schema.ts**  
+```ts
+// drizzle schema for tables   (1) users  (2) farms  (3) produce_items  (4) inventories
+// (5) orders  (6) order_items  (7) leases  (8) sessions (for auth)
+📁 /migrations/ – initial migration auto-generated & applied by npm run db:migrate.
+
+📁 /src/lib/
+
+db.ts – drizzle client factory.
+
+stripe.ts – stubbed checkout (logs to console if no key).
+
+email.ts – SendGrid stub (console log).
+
+sentry.ts – conditional initialise.
+
+📁 /src/app/api/ (Next.js Route Handlers)
+
+/produce/[id]/route.ts (GET)
+
+/produce/route.ts (GET search + POST create)
+
+/orders/route.ts (POST create, uses stubbed Stripe)
+
+/leases/route.ts (POST create)
+
+All handlers must verify role via session.
+
+📁 /src/app/ pages:
+
+(home) listing + search bar.
+
+produce/[id]/page.tsx (details, add to cart).
+
+farms/[id]/page.tsx (farm profile w/ pics/video).
+
+cart/page.tsx (simple cart → “fake” checkout).
+
+dashboard folder: farmer CRUD, inventory, leases.
+
+Minimal admin page to view all users.
+
+📁 /public/er-diagram.png – ER diagram auto-generated via drizzle-kit studio or equivalent (you may embed a hand-drawn PNG if easier).
+
+📁 /README.md must include:
+
+project intro, quick-start (npm i, npm run dev, npm run db:migrate)
+
+env var table (POSTGRES_URL, STRIPE_KEY, SENDGRID_KEY, SENTRY_DSN)
+
+how to run Drizzle migrations
+
+link to ER diagram.
+
+📁 .env.example with placeholder keys.
+
+📁 /scripts/seed.ts – seeds two farmers, one buyer, three produce items, sample inventory.
+
+────────────────────────────────────────
+🟢 4. FRONTEND UX REQUIREMENTS
+────────────────────────────────────────
+
+Use Tailwind & Headless UI for forms/modals.
+
+Mobile-first layout; cards stack on ≤768 px.
+
+Simple color palette (gray-neutral + green accents).
+
+Hero banner on home with tagline “Grow Local, Eat Local.”
+
+Pagination or infinite scroll for produce list.
+
+Image upload for farmers (use standard <input type="file">, store filenames in DB, save to /public/uploads on dev).
+
+────────────────────────────────────────
+🟢 5. RUNTIME & TOOLING
+────────────────────────────────────────
+
+Supply replit.nix so Postgres + Node 20 spin up automatically.
+
+Add Procfile if needed for Replit web servers.
+
+Create GitHub Action (.github/workflows/ci.yml) that runs npm run lint && npm run build (optional, but include).
+
+Add husky hooks: pre-commit → npm run lint.
+
+────────────────────────────────────────
+🟢 6. ACCEPTANCE CHECKS (agent must self-verify)
+────────────────────────────────────────
+
+npm run db:migrate executes with zero errors on a clean Postgres.
+
+npm run dev starts Next.js and serves / at localhost:3000.
+
+Hitting /api/produce (GET) returns seeded produce JSON.
+
+Front page renders produce cards, responsive at 375 px and 1440 px.
+
+ESLint passes with no error-level rules.
+
+README & er-diagram.png exist.
+
+App boots even when STRIPE_KEY, SENDGRID_KEY, SENTRY_DSN are unset.
+
+────────────────────────────────────────
+🟢 7. STYLE GUIDELINES FOR YOU, Replit AI
+────────────────────────────────────────
+
+No follow-up questions – make sane assumptions.
+
+Output file-by-file in this format:
+
+arduino
+Copy
+Edit
+// File: path/filename.ext
+<code here>
+Start with a short “PLAN” section summarising the folder tree you will create, then output files.
+
+Keep comments concise but helpful.
+
+Where something would normally call an external API (Stripe, SendGrid), create a mocked implementation that logs:
+console.info("[MOCK] Sent email to …").
