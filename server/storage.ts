@@ -30,6 +30,7 @@ export interface IStorage {
 
   // Farm operations
   getFarm(id: number): Promise<Farm | undefined>;
+  getFarms(): Promise<Farm[]>;
   getFarmsByOwner(ownerId: number): Promise<Farm[]>;
   createFarm(farm: InsertFarm): Promise<Farm>;
   updateFarm(id: number, farm: Partial<InsertFarm>): Promise<Farm>;
@@ -88,6 +89,13 @@ export class DatabaseStorage implements IStorage {
   async getFarm(id: number): Promise<Farm | undefined> {
     const [farm] = await db.select().from(farms).where(eq(farms.id, id));
     return farm;
+  }
+
+  async getFarms(): Promise<Farm[]> {
+    return await db
+      .select()
+      .from(farms)
+      .orderBy(asc(farms.name));
   }
 
   async getFarmsByOwner(ownerId: number): Promise<Farm[]> {

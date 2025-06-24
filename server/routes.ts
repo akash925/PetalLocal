@@ -190,6 +190,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Farm routes
+  app.get("/api/farms", async (req, res) => {
+    try {
+      const { query, filter } = req.query;
+      
+      // For now, get all farms (can be enhanced with search/filter logic)
+      const farms = await storage.getFarms();
+      
+      let filteredFarms = farms;
+      
+      // Apply search filter
+      if (query && typeof query === 'string') {
+        filteredFarms = filteredFarms.filter((farm: Farm) => 
+          farm.name.toLowerCase().includes(query.toLowerCase()) ||
+          farm.description?.toLowerCase().includes(query.toLowerCase()) ||
+          farm.city?.toLowerCase().includes(query.toLowerCase())
+        );
+      }
+      
+      // Apply category filter
+      if (filter && typeof filter === 'string') {
+        filteredFarms = filteredFarms.filter((farm: Farm) => {
+          switch (filter) {
+            case 'organic':
+              return farm.isOrganic;
+            case 'family-owned':
+              return farm.description?.toLowerCase().includes('family');
+            case 'small-scale':
+              return true; // All our farms are small-scale for demo
+            case 'sustainable':
+              return farm.description?.toLowerCase().includes('sustainable') || farm.isOrganic;
+            default:
+              return true;
+          }
+        });
+      }
+      
+      res.json(filteredFarms);
+    } catch (error) {
+      console.error("Get farms error:", error);
+      res.status(500).json({ message: "Failed to get farms" });
+    }
+  });
+
   app.get("/api/farms/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
