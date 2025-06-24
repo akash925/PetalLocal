@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertUserSchema, insertFarmSchema, insertProduceItemSchema, insertOrderSchema } from "@shared/schema";
@@ -7,6 +7,14 @@ import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { stripeService } from "./services/stripe";
 import { emailService } from "./services/email";
+
+// Extend session interface
+declare module "express-session" {
+  interface SessionData {
+    userId: number;
+    userRole: string;
+  }
+}
 
 // Session configuration
 const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
@@ -19,15 +27,22 @@ const sessionStore = new pgStore({
 });
 
 // Authentication middleware
+interface AuthenticatedRequest extends Request {
+  session: session.Session & Partial<session.SessionData> & {
+    userId: number;
+    userRole: string;
+  };
+}
+
 const requireAuth = (req: any, res: any, next: any) => {
-  if (!req.session.userId) {
+  if (!req.session?.userId) {
     return res.status(401).json({ message: "Unauthorized" });
   }
   next();
 };
 
 const requireRole = (role: string) => (req: any, res: any, next: any) => {
-  if (!req.session.userId || req.session.userRole !== role) {
+  if (!req.session?.userId || req.session?.userRole !== role) {
     return res.status(403).json({ message: "Forbidden" });
   }
   next();
@@ -112,9 +127,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  app.get("/api/auth/user", requireAuth, async (req, res) => {
+  app.get("/api/auth/user", requireAuth, async (req: any, res) => {
     try {
-      const user = await storage.getUser(req.session.userId);
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
@@ -189,11 +208,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/farms", requireAuth, requireRole("farmer"), async (req, res) => {
+  app.post("/api/farms", requireAuth, requireRole("farmer"), async (req: any, res) => {
     try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
       const farmData = insertFarmSchema.parse({
         ...req.body,
-        ownerId: req.session.userId,
+        ownerId: userId,
       });
       const farm = await storage.createFarm(farmData);
       res.json(farm);
@@ -204,9 +227,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Order routes
-  app.get("/api/orders", requireAuth, async (req, res) => {
+  app.get("/api/orders", requireAuth, async (req: any, res) => {
     try {
-      const orders = await storage.getOrdersByBuyer(req.session.userId);
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const orders = await storage.getOrdersByBuyer(userId);
       res.json(orders);
     } catch (error) {
       console.error("Get orders error:", error);
@@ -214,11 +241,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/orders", requireAuth, async (req, res) => {
+  app.post("/api/orders", requireAuth, async (req: any, res) => {
     try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
       const orderData = insertOrderSchema.parse({
         ...req.body,
-        buyerId: req.session.userId,
+        buyerId: userId,
       });
 
       // Create order
@@ -239,7 +271,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Process payment with Stripe
       const paymentResult = await stripeService.createPaymentIntent(
-        order.totalAmount,
+        parseFloat(order.totalAmount.toString()),
         order.id
       );
 
@@ -250,7 +282,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Send confirmation email
-      const user = await storage.getUser(req.session.userId);
+      const user = await storage.getUser(userId);
       if (user?.email) {
         await emailService.sendOrderConfirmation(user.email, order);
       }

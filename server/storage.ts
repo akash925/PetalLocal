@@ -130,11 +130,11 @@ export class DatabaseStorage implements IStorage {
     let whereClause = eq(produceItems.isActive, true);
     
     if (query) {
-      whereClause = and(whereClause, like(produceItems.name, `%${query}%`));
+      whereClause = and(whereClause, like(produceItems.name, `%${query}%`)) || whereClause;
     }
     
     if (category) {
-      whereClause = and(whereClause, eq(produceItems.category, category));
+      whereClause = and(whereClause, eq(produceItems.category, category)) || whereClause;
     }
 
     return await db
