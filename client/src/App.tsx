@@ -17,6 +17,7 @@ import Login from "@/pages/auth/login";
 import Register from "@/pages/auth/register";
 import FarmerDashboard from "@/pages/dashboard/farmer";
 import AdminDashboard from "@/pages/dashboard/admin";
+import Messages from "@/pages/messages";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -35,6 +36,7 @@ function Router() {
           <Route path="/auth/register" component={Register} />
           <Route path="/dashboard/farmer" component={FarmerDashboard} />
           <Route path="/dashboard/admin" component={AdminDashboard} />
+          <Route path="/messages" component={Messages} />
           <Route component={NotFound} />
         </Switch>
       </main>

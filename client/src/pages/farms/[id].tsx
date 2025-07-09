@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ProduceCard } from "@/components/produce-card";
+import { MessageFarmerButton } from "@/components/message-farmer-button";
 import { MapPin, Phone, Globe, Mail, ArrowLeft, Star } from "lucide-react";
 import { Link } from "wouter";
 
@@ -176,9 +177,16 @@ export default function FarmDetail() {
                   </div>
                 )}
 
-                <Button className="w-full bg-green-500 hover:bg-green-600 mt-4">
+                <MessageFarmerButton
+                  farmerId={farmData.ownerId}
+                  farmerName={farmData.name}
+                  triggerText="Contact Farm"
+                  variant="default"
+                  size="default"
+                />
+                <Button className="w-full bg-green-500 hover:bg-green-600 mt-2">
                   <Mail className="w-4 h-4 mr-2" />
-                  Contact Farm
+                  Email Farm
                 </Button>
               </CardContent>
             </Card>

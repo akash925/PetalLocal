@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/use-toast";
+import { MessageFarmerButton } from "@/components/message-farmer-button";
 import { MapPin, Calendar, Truck, Store, Heart, ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
@@ -202,11 +203,20 @@ export default function ProduceDetail() {
                   </div>
                 </div>
                 
-                <Link href={`/farms/${produceItem.farmId}`}>
-                  <Button variant="outline" className="w-full mt-4">
-                    Visit Farm Page
-                  </Button>
-                </Link>
+                <div className="flex gap-2 mt-4">
+                  <MessageFarmerButton
+                    farmerId={produceItem.farm?.ownerId || 0}
+                    farmerName={produceItem.farm?.name || "the farmer"}
+                    triggerText="Message Farmer"
+                    variant="outline"
+                    size="default"
+                  />
+                  <Link href={`/farms/${produceItem.farmId}`}>
+                    <Button variant="outline" className="flex-1">
+                      Visit Farm Page
+                    </Button>
+                  </Link>
+                </div>
               </CardContent>
             </Card>
           </div>

@@ -3,9 +3,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Menu, User, LogOut } from "lucide-react";
+import { ShoppingCart, Menu, User, LogOut, MessageCircle } from "lucide-react";
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -15,6 +15,12 @@ export function Header() {
   const { itemCount } = useCart();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { toast } = useToast();
+
+  // Get unread message count
+  const { data: unreadCount = { count: 0 } } = useQuery({
+    queryKey: ["/api/messages/unread-count"],
+    enabled: isAuthenticated,
+  });
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
@@ -74,6 +80,20 @@ export function Header() {
 
           {/* Right side */}
           <div className="flex items-center space-x-4">
+            {/* Messages */}
+            {isAuthenticated && (
+              <Link href="/messages">
+                <Button variant="ghost" size="sm" className="relative">
+                  <MessageCircle className="w-5 h-5" />
+                  {unreadCount.count > 0 && (
+                    <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs bg-red-500">
+                      {unreadCount.count}
+                    </Badge>
+                  )}
+                </Button>
+              </Link>
+            )}
+
             {/* Cart */}
             <Link href="/cart">
               <Button variant="ghost" size="sm" className="relative">

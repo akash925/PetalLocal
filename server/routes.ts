@@ -1,7 +1,7 @@
 import type { Express, Request } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserSchema, insertFarmSchema, insertProduceItemSchema, insertOrderSchema, type Farm } from "@shared/schema";
+import { insertUserSchema, insertFarmSchema, insertProduceItemSchema, insertOrderSchema, insertMessageSchema, type Farm } from "@shared/schema";
 import bcrypt from "bcryptjs";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
@@ -345,6 +345,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Get admin users error:", error);
       res.status(500).json({ message: "Failed to get users" });
+    }
+  });
+
+  // Message routes
+  app.get("/api/messages", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const messages = await storage.getMessagesByUser(userId);
+      res.json(messages);
+    } catch (error) {
+      console.error("Get messages error:", error);
+      res.status(500).json({ message: "Failed to get messages" });
+    }
+  });
+
+  app.get("/api/messages/conversation/:userId", requireAuth, async (req: any, res) => {
+    try {
+      const currentUserId = req.session?.userId;
+      const otherUserId = parseInt(req.params.userId);
+      
+      if (!currentUserId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const messages = await storage.getConversation(currentUserId, otherUserId);
+      res.json(messages);
+    } catch (error) {
+      console.error("Get conversation error:", error);
+      res.status(500).json({ message: "Failed to get conversation" });
+    }
+  });
+
+  app.post("/api/messages", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const messageData = insertMessageSchema.parse({
+        ...req.body,
+        senderId: userId,
+      });
+      
+      const message = await storage.createMessage(messageData);
+      res.json(message);
+    } catch (error) {
+      console.error("Create message error:", error);
+      res.status(500).json({ message: "Failed to create message" });
+    }
+  });
+
+  app.put("/api/messages/:id/read", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.session?.userId;
+      const messageId = parseInt(req.params.id);
+      
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const message = await storage.markMessageAsRead(messageId);
+      res.json(message);
+    } catch (error) {
+      console.error("Mark message as read error:", error);
+      res.status(500).json({ message: "Failed to mark message as read" });
+    }
+  });
+
+  app.get("/api/messages/unread-count", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      const count = await storage.getUnreadMessageCount(userId);
+      res.json({ count });
+    } catch (error) {
+      console.error("Get unread count error:", error);
+      res.status(500).json({ message: "Failed to get unread count" });
     }
   });
 

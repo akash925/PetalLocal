@@ -98,6 +98,18 @@ export const orderItems = pgTable("order_items", {
   totalPrice: decimal("total_price", { precision: 10, scale: 2 }).notNull(),
 });
 
+// Messages table for farmer-to-buyer communication
+export const messages = pgTable("messages", {
+  id: serial("id").primaryKey(),
+  senderId: integer("sender_id").notNull().references(() => users.id),
+  receiverId: integer("receiver_id").notNull().references(() => users.id),
+  subject: varchar("subject", { length: 255 }),
+  content: text("content").notNull(),
+  isRead: boolean("is_read").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Sessions table for authentication
 export const sessions = pgTable(
   "sessions",
@@ -113,6 +125,8 @@ export const sessions = pgTable(
 export const usersRelations = relations(users, ({ many, one }) => ({
   farms: many(farms),
   orders: many(orders),
+  sentMessages: many(messages, { relationName: "sentMessages" }),
+  receivedMessages: many(messages, { relationName: "receivedMessages" }),
 }));
 
 export const farmsRelations = relations(farms, ({ one, many }) => ({
@@ -138,6 +152,19 @@ export const ordersRelations = relations(orders, ({ one, many }) => ({
 export const orderItemsRelations = relations(orderItems, ({ one }) => ({
   order: one(orders, { fields: [orderItems.orderId], references: [orders.id] }),
   produceItem: one(produceItems, { fields: [orderItems.produceItemId], references: [produceItems.id] }),
+}));
+
+export const messagesRelations = relations(messages, ({ one }) => ({
+  sender: one(users, { 
+    fields: [messages.senderId], 
+    references: [users.id],
+    relationName: "sentMessages"
+  }),
+  receiver: one(users, { 
+    fields: [messages.receiverId], 
+    references: [users.id],
+    relationName: "receivedMessages"
+  }),
 }));
 
 // Insert schemas
@@ -174,6 +201,12 @@ export const insertOrderItemSchema = createInsertSchema(orderItems).omit({
   id: true,
 });
 
+export const insertMessageSchema = createInsertSchema(messages).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -187,3 +220,5 @@ export type Order = typeof orders.$inferSelect;
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
 export type OrderItem = typeof orderItems.$inferSelect;
 export type InsertOrderItem = z.infer<typeof insertOrderItemSchema>;
+export type Message = typeof messages.$inferSelect;
+export type InsertMessage = z.infer<typeof insertMessageSchema>;
