@@ -171,7 +171,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get inventory
       const inventory = await storage.getInventory(id);
       
-      res.json({ ...item, inventory });
+      // Get farm information
+      const farm = await storage.getFarm(item.farmId);
+      
+      res.json({ ...item, inventory, farm });
     } catch (error) {
       console.error("Get produce item error:", error);
       res.status(500).json({ message: "Failed to get produce item" });

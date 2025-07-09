@@ -22,7 +22,7 @@ import {
   type InsertMessage,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, like, desc, asc } from "drizzle-orm";
+import { eq, and, or, like, desc, asc } from "drizzle-orm";
 
 export interface IStorage {
   // User operations

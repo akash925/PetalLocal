@@ -204,13 +204,15 @@ export default function ProduceDetail() {
                 </div>
                 
                 <div className="flex gap-2 mt-4">
-                  <MessageFarmerButton
-                    farmerId={produceItem.farm?.ownerId || 0}
-                    farmerName={produceItem.farm?.name || "the farmer"}
-                    triggerText="Message Farmer"
-                    variant="outline"
-                    size="default"
-                  />
+                  {produceItem.farm?.ownerId && (
+                    <MessageFarmerButton
+                      farmerId={produceItem.farm.ownerId}
+                      farmerName={produceItem.farm.name || "the farmer"}
+                      triggerText="Message Farmer"
+                      variant="outline"
+                      size="default"
+                    />
+                  )}
                   <Link href={`/farms/${produceItem.farmId}`}>
                     <Button variant="outline" className="flex-1">
                       Visit Farm Page

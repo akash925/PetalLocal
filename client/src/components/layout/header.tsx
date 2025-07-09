@@ -110,10 +110,15 @@ export function Header() {
             <div className="hidden md:flex items-center space-x-4">
               {isAuthenticated ? (
                 <div className="flex items-center space-x-2">
-                  <User className="w-5 h-5 text-gray-500" />
-                  <span className="text-sm text-gray-700">
-                    {user?.firstName || user?.email}
-                  </span>
+                  <div className="flex items-center space-x-2 px-3 py-1 bg-green-50 rounded-lg">
+                    <User className="w-4 h-4 text-green-600" />
+                    <span className="text-sm text-green-700 font-medium">
+                      {user?.firstName || user?.email}
+                    </span>
+                    <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
+                      {user?.role || 'buyer'}
+                    </span>
+                  </div>
                   <Button
                     variant="ghost"
                     size="sm"
