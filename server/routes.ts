@@ -182,14 +182,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/produce", requireAuth, requireRole("farmer"), async (req, res) => {
+  app.post("/api/produce", requireAuth, requireRole("farmer"), async (req: any, res) => {
     try {
+      console.log("Creating produce with data:", req.body);
+      console.log("User session:", req.session);
+      
       const itemData = insertProduceItemSchema.parse(req.body);
+      console.log("Validated data:", itemData);
+      
       const item = await storage.createProduceItem(itemData);
+      console.log("Created produce item:", item);
+      
       res.json(item);
     } catch (error) {
       console.error("Create produce error:", error);
-      res.status(500).json({ message: "Failed to create produce item" });
+      if (error instanceof Error) {
+        res.status(500).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: "Failed to create produce item" });
+      }
     }
   });
 
@@ -250,19 +261,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/farms", requireAuth, requireRole("farmer"), async (req: any, res) => {
     try {
+      console.log("Creating farm with data:", req.body);
+      console.log("User session:", req.session);
+      
       const userId = req.session?.userId;
       if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
       }
+      
       const farmData = insertFarmSchema.parse({
         ...req.body,
         ownerId: userId,
       });
+      console.log("Validated farm data:", farmData);
+      
       const farm = await storage.createFarm(farmData);
+      console.log("Created farm:", farm);
+      
       res.json(farm);
     } catch (error) {
       console.error("Create farm error:", error);
-      res.status(500).json({ message: "Failed to create farm" });
+      if (error instanceof Error) {
+        res.status(500).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: "Failed to create farm" });
+      }
     }
   });
 
