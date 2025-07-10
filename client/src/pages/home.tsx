@@ -166,6 +166,24 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Call to Action for Farmers */}
+      <section className="py-16 bg-green-600">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-bold text-white mb-4">
+            Are You a Local Farmer?
+          </h2>
+          <p className="text-xl text-green-100 mb-8">
+            Join our community and start selling your fresh produce directly to local customers. 
+            Keep 90% of every sale and build lasting relationships with your community.
+          </p>
+          <Link href="/sell">
+            <Button size="lg" className="bg-white text-green-600 hover:bg-gray-100 px-8 py-3 text-lg">
+              Start Selling Today
+            </Button>
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }

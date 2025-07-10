@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -21,8 +22,20 @@ export default function FarmerDashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [location] = useLocation();
   const [isAddingProduce, setIsAddingProduce] = useState(false);
   const [isCreatingFarm, setIsCreatingFarm] = useState(false);
+  const [activeTab, setActiveTab] = useState("produce");
+
+  // Check URL parameters for tab routing
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tab = urlParams.get('tab');
+    if (tab === 'add-produce') {
+      setActiveTab("produce");
+      setIsAddingProduce(true);
+    }
+  }, [location]);
 
   // Get farmer's farms
   const { data: farms = [] } = useQuery({
@@ -178,7 +191,7 @@ export default function FarmerDashboard() {
           <p className="text-gray-600">Manage your farm and produce listings</p>
         </div>
 
-        <Tabs defaultValue="produce" className="space-y-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList>
             <TabsTrigger value="produce">My Produce</TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>

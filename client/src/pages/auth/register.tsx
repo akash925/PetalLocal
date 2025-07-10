@@ -32,6 +32,10 @@ export default function Register() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
+  // Check for role parameter in URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const roleParam = urlParams.get('role');
+
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
@@ -39,7 +43,7 @@ export default function Register() {
       password: "",
       firstName: "",
       lastName: "",
-      role: "buyer",
+      role: roleParam === "farmer" ? "farmer" : "buyer",
       phone: "",
       address: "",
       city: "",
