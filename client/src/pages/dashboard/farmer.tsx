@@ -371,19 +371,166 @@ export default function FarmerDashboard() {
           </TabsContent>
 
           <TabsContent value="farm">
-            <Card>
-              <CardHeader>
-                <CardTitle>Farm Profile</CardTitle>
-                <CardDescription>
-                  Manage your farm information and settings
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <p className="text-gray-500">Farm profile management coming soon</p>
-                </div>
-              </CardContent>
-            </Card>
+            {farms.length === 0 ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Create Your Farm Profile</CardTitle>
+                  <CardDescription>
+                    Set up your farm profile to start listing produce
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center py-8">
+                    <p className="text-gray-500 text-lg mb-4">You haven't created a farm profile yet</p>
+                    <Button className="bg-green-500 hover:bg-green-600">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Farm Profile
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-6">
+                {farms.map((farm) => (
+                  <Card key={farm.id}>
+                    <div className="relative">
+                      {/* Farm Hero Image */}
+                      <div className="h-48 bg-gray-200 rounded-t-lg overflow-hidden">
+                        {farm.imageUrl ? (
+                          <img
+                            src={farm.imageUrl}
+                            alt={farm.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
+                            <Package className="w-16 h-16 text-white opacity-50" />
+                          </div>
+                        )}
+                      </div>
+                      
+                      {/* Farm Rating */}
+                      <div className="absolute top-4 left-4 flex items-center bg-white rounded-full px-3 py-1 shadow-lg">
+                        <span className="text-yellow-500 mr-1">★</span>
+                        <span className="text-sm font-medium">4.8</span>
+                        <span className="text-xs text-gray-500 ml-1">(24 reviews)</span>
+                      </div>
+                    </div>
+
+                    <CardContent className="p-6">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Farm Details */}
+                        <div className="space-y-4">
+                          <div>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-2">{farm.name}</h2>
+                            <p className="text-gray-600 mb-4">{farm.description}</p>
+                            
+                            {farm.isOrganic && (
+                              <Badge className="bg-green-100 text-green-800 mb-4">
+                                Certified Organic
+                              </Badge>
+                            )}
+                          </div>
+                          
+                          <div className="space-y-3">
+                            <div className="flex items-start text-sm text-gray-600">
+                              <svg className="w-4 h-4 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                              </svg>
+                              <div>
+                                <p>{farm.address}</p>
+                                <p>{farm.city}, {farm.state} {farm.zipCode}</p>
+                              </div>
+                            </div>
+                            
+                            {farm.phoneNumber && (
+                              <div className="flex items-center text-sm text-gray-600">
+                                <svg className="w-4 h-4 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                  <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
+                                </svg>
+                                <span>{farm.phoneNumber}</span>
+                              </div>
+                            )}
+                            
+                            {farm.website && (
+                              <div className="flex items-center text-sm text-gray-600">
+                                <svg className="w-4 h-4 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M4.083 9h1.946c.089-1.546.383-2.97.837-4.118A6.004 6.004 0 004.083 9zM10 2a8 8 0 100 16 8 8 0 000-16zm0 2c-.076 0-.232.032-.465.262-.238.234-.497.623-.737 1.182-.389.907-.673 2.142-.766 3.556h3.936c-.093-1.414-.377-2.649-.766-3.556-.24-.56-.5-.948-.737-1.182C10.232 4.032 10.076 4 10 4zm3.971 5c-.089-1.546-.383-2.97-.837-4.118A6.004 6.004 0 0115.917 9h-1.946zm-2.003 2H8.032c.093 1.414.377 2.649.766 3.556.24.56.5.948.737 1.182.233.23.389.262.465.262.076 0 .232-.032.465-.262.238-.234.498-.623.737-1.182.389-.907.673-2.142.766-3.556zm1.166 4.118c.454-1.147.748-2.572.837-4.118h1.946a6.004 6.004 0 01-2.783 4.118zm-6.268 0C6.412 13.97 6.118 12.546 6.03 11H4.083a6.004 6.004 0 002.783 4.118z" clipRule="evenodd" />
+                                </svg>
+                                <a 
+                                  href={farm.website}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-green-600 hover:text-green-700"
+                                >
+                                  Visit Website
+                                </a>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex gap-2 mt-4">
+                            <Button variant="outline" className="flex-1">
+                              <Edit className="w-4 h-4 mr-2" />
+                              Edit Farm
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Farm Stats */}
+                        <div className="space-y-4">
+                          <Card>
+                            <CardHeader>
+                              <CardTitle className="text-lg">Farm Stats</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Produce Items</span>
+                                <span className="font-medium">{produceItems.length} active</span>
+                              </div>
+                              
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Farming Method</span>
+                                <span className="font-medium">
+                                  {farm.isOrganic ? "Organic" : "Conventional"}
+                                </span>
+                              </div>
+                              
+                              <div className="flex justify-between text-sm">
+                                <span className="text-gray-600">Status</span>
+                                <span className="font-medium text-green-600">Active</span>
+                              </div>
+                            </CardContent>
+                          </Card>
+
+                          <Card>
+                            <CardHeader>
+                              <CardTitle className="text-lg">Services</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              <div className="space-y-3 text-sm text-gray-600">
+                                <div className="flex justify-between">
+                                  <span>Pickup Available</span>
+                                  <span className="font-medium text-green-600">Yes</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Delivery Available</span>
+                                  <span className="font-medium text-green-600">Yes</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span>Farm Tours</span>
+                                  <span className="font-medium text-green-600">By Appointment</span>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>

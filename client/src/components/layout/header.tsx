@@ -3,7 +3,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCart } from "@/hooks/useCart";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Menu, User, LogOut, MessageCircle } from "lucide-react";
+import { ShoppingCart, Menu, User, LogOut, MessageCircle, ChevronDown, Settings } from "lucide-react";
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -14,6 +14,7 @@ export function Header() {
   const { user, isAuthenticated } = useAuth();
   const { itemCount } = useCart();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const { toast } = useToast();
 
   // Get unread message count
@@ -66,11 +67,7 @@ export function Header() {
             <Link href="/farms" className={`px-3 py-2 text-sm font-medium ${location === '/farms' ? 'text-green-600' : 'text-gray-500 hover:text-green-600'}`}>
               Local Farms
             </Link>
-            {isAuthenticated && user?.role === 'farmer' && (
-              <Link href="/dashboard/farmer" className={`px-3 py-2 text-sm font-medium ${location === '/dashboard/farmer' ? 'text-green-600' : 'text-gray-500 hover:text-green-600'}`}>
-                Dashboard
-              </Link>
-            )}
+
             {isAuthenticated && user?.role === 'admin' && (
               <Link href="/dashboard/admin" className={`px-3 py-2 text-sm font-medium ${location === '/dashboard/admin' ? 'text-green-600' : 'text-gray-500 hover:text-green-600'}`}>
                 Admin
@@ -109,24 +106,53 @@ export function Header() {
             {/* User Menu */}
             <div className="flex items-center space-x-4">
               {isAuthenticated ? (
-                <div className="flex items-center space-x-2">
-                  <div className="flex items-center space-x-2 px-3 py-1 bg-green-50 rounded-lg">
-                    <User className="w-4 h-4 text-green-600" />
-                    <span className="text-sm text-green-700 font-medium">
-                      {user?.firstName || user?.email}
-                    </span>
-                    <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
-                      {user?.role || 'buyer'}
-                    </span>
+                <div className="relative">
+                  <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 px-3 py-1 bg-green-50 rounded-lg cursor-pointer hover:bg-green-100"
+                         onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}>
+                      <User className="w-4 h-4 text-green-600" />
+                      <span className="text-sm text-green-700 font-medium">
+                        {user?.firstName || user?.email}
+                      </span>
+                      <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
+                        {user?.role || 'buyer'}
+                      </span>
+                      <ChevronDown className="w-4 h-4 text-green-600" />
+                    </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => logoutMutation.mutate()}
-                    disabled={logoutMutation.isPending}
-                  >
-                    <LogOut className="w-4 h-4" />
-                  </Button>
+                  
+                  {/* User dropdown menu */}
+                  {isUserMenuOpen && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
+                      <div className="px-4 py-2 text-sm text-gray-700 border-b border-gray-100">
+                        <div className="font-medium">Hello, {user?.firstName || user?.email}</div>
+                        <div className="text-xs text-gray-500 capitalize">{user?.role || 'buyer'}</div>
+                      </div>
+                      
+                      {user?.role === 'farmer' && (
+                        <Link href="/dashboard/farmer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                          <Settings className="w-4 h-4 inline mr-2" />
+                          Dashboard
+                        </Link>
+                      )}
+                      
+                      {user?.role === 'admin' && (
+                        <Link href="/dashboard/admin" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                          <Settings className="w-4 h-4 inline mr-2" />
+                          Admin Dashboard
+                        </Link>
+                      )}
+                      
+                      <button
+                        onClick={() => logoutMutation.mutate()}
+                        disabled={logoutMutation.isPending}
+                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                      >
+                        <LogOut className="w-4 h-4 inline mr-2" />
+                        Sign Out
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <>
@@ -154,7 +180,7 @@ export function Header() {
           </div>
         </div>
 
-        {/* Mobile menu */}
+        {/* Mobile menu for small screens */}
         {isMobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-gray-200">
             <div className="flex flex-col space-y-2">
@@ -166,6 +192,16 @@ export function Header() {
               </Link>
               {isAuthenticated ? (
                 <>
+                  {user?.role === 'farmer' && (
+                    <Link href="/dashboard/farmer" className="px-3 py-2 text-sm font-medium text-gray-700">
+                      Dashboard
+                    </Link>
+                  )}
+                  {user?.role === 'admin' && (
+                    <Link href="/dashboard/admin" className="px-3 py-2 text-sm font-medium text-gray-700">
+                      Admin Dashboard
+                    </Link>
+                  )}
                   <div className="px-3 py-2 text-sm font-medium text-gray-700">
                     Hello, {user?.firstName || user?.email}
                   </div>
