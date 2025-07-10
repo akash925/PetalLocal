@@ -1,0 +1,99 @@
+}
+Auth check - User ID: 4
+Auth passed for user: 4
+8:07:30 PM [express] GET /api/auth/user 304 in 198ms :: {"id":4,"email":"akash@agarwalhome.com","fir…
+8:07:30 PM [express] GET /api/messages/unread-count 304 in 409ms :: {"count":0}
+8:07:30 PM [express] GET /api/farms/owned/4 304 in 427ms :: [{"id":7,"ownerId":4,"name":"Shoreland P…
+Searching for: { query: undefined, category: undefined }
+Search result count: 12
+8:07:31 PM [express] GET /api/produce 304 in 206ms :: [{"id":12,"name":"Frontend Test Carrots","desc…
+Auth check - Session: Session {
+  cookie: {
+    path: '/',
+    _expires: 2025-07-17T17:22:12.328Z,
+    originalMaxAge: 604800000,
+    httpOnly: true,
+    secure: false
+  },
+  userId: 4,
+  userRole: 'farmer'
+}
+Auth check - User ID: 4
+Auth passed for user: 4
+Role check for 'farmer' - User role: farmer
+Role check passed for 'farmer'
+Creating produce with data: {
+  name: 'Eureka Lemons',
+  description: 'Test',
+  category: 'fruits',
+  variety: 'Eureka',
+  unit: 'each',
+  pricePerUnit: 0.79,
+  isOrganic: false,
+  isSeasonal: false,
+  isHeirloom: false,
+  farmId: 7
+}
+User session: Session {
+  cookie: {
+    path: '/',
+    _expires: 2025-07-17T17:22:12.328Z,
+    originalMaxAge: 604800000,
+    httpOnly: true,
+    secure: false
+  },
+  userId: 4,
+  userRole: 'farmer'
+}
+Create produce error: ZodError: [
+  {
+    "code": "invalid_type",
+    "expected": "string",
+    "received": "number",
+    "path": [
+      "pricePerUnit"
+    ],
+    "message": "Expected string, received number"
+  }
+]
+    at get error [as error] (file:///home/runner/workspace/node_modules/zod/lib/index.mjs:587:31)
+    at ZodObject.parse (file:///home/runner/workspace/node_modules/zod/lib/index.mjs:663:22)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:197:48)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/runner/workspace/node_modules/express/lib/router/route.js:149:13)
+    at <anonymous> (/home/runner/workspace/server/routes.ts:56:3)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/runner/workspace/node_modules/express/lib/router/route.js:149:13)
+    at requireAuth (/home/runner/workspace/server/routes.ts:46:3)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at next (/home/runner/workspace/node_modules/express/lib/router/route.js:149:13)
+    at Route.dispatch (/home/runner/workspace/node_modules/express/lib/router/route.js:119:3)
+    at Layer.handle [as handle_request] (/home/runner/workspace/node_modules/express/lib/router/layer.js:95:5)
+    at /home/runner/workspace/node_modules/express/lib/router/index.js:284:15
+    at Function.process_params (/home/runner/workspace/node_modules/express/lib/router/index.js:346:12)
+    at next (/home/runner/workspace/node_modules/express/lib/router/index.js:280:10)
+    at /home/runner/workspace/node_modules/express-session/index.js:514:7
+    at /home/runner/workspace/node_modules/connect-pg-simple/index.js:370:18
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+  issues: [
+    {
+      code: 'invalid_type',
+      expected: 'string',
+      received: 'number',
+      path: [Array],
+      message: 'Expected string, received number'
+    }
+  ],
+  addIssue: [Function (anonymous)],
+  addIssues: [Function (anonymous)],
+  errors: [
+    {
+      code: 'invalid_type',
+      expected: 'string',
+      received: 'number',
+      path: [Array],
+      message: 'Expected string, received number'
+    }
+  ]
+}
+8:10:23 PM [express] POST /api/produce 500 in 2846ms :: {"message":"[\n  {\n    \"code\": \"invalid_…

@@ -185,7 +185,7 @@ export default function FarmerDashboard() {
     
     const submitData = {
       ...data,
-      pricePerUnit: parseFloat(data.pricePerUnit) || 0,
+      pricePerUnit: data.pricePerUnit, // Keep as string since database expects string
       farmId: farmId,
     };
     
