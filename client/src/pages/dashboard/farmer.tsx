@@ -89,6 +89,7 @@ export default function FarmerDashboard() {
       phoneNumber: "",
       website: "",
       isOrganic: false,
+      ownerId: user?.id,
     },
   });
 

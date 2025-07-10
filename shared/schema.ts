@@ -187,6 +187,7 @@ export const insertFarmSchema = createInsertSchema(farms).omit({
   state: z.string().optional(),
   phoneNumber: z.string().optional(),
   website: z.string().optional(),
+  ownerId: z.number().optional(),
 });
 
 export const insertProduceItemSchema = createInsertSchema(produceItems).omit({
