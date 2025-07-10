@@ -99,10 +99,13 @@ export default function FarmerDashboard() {
 
   const createProduceMutation = useMutation({
     mutationFn: async (data: any) => {
+      console.log("Creating produce with data:", data);
+      console.log("User data:", user);
       const response = await apiRequest("POST", "/api/produce", data);
       return response;
     },
     onSuccess: (data) => {
+      console.log("Produce created successfully:", data);
       toast({
         title: "Success!",
         description: "Produce item created successfully and is now available for purchase",
@@ -113,6 +116,7 @@ export default function FarmerDashboard() {
       form.reset();
     },
     onError: (error) => {
+      console.error("Error creating produce:", error);
       toast({
         title: "Error creating produce",
         description: error.message || "Failed to create produce item. Please try again.",
