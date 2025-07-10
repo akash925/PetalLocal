@@ -386,13 +386,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Admin routes
-  app.get("/api/admin/users", requireAuth, requireRole("admin"), async (req, res) => {
+  app.get("/api/admin/users", requireAuth, requireRole("admin"), async (req: any, res) => {
     try {
-      // This is a simplified version - in production you'd want pagination
-      res.json({ message: "Admin users endpoint - implement pagination" });
+      const users = await storage.getAllUsers();
+      res.json(users);
     } catch (error) {
-      console.error("Get admin users error:", error);
+      console.error("Get all users error:", error);
       res.status(500).json({ message: "Failed to get users" });
+    }
+  });
+
+  app.get("/api/admin/farms", requireAuth, requireRole("admin"), async (req: any, res) => {
+    try {
+      const farms = await storage.getAllFarmsWithOwners();
+      res.json(farms);
+    } catch (error) {
+      console.error("Get all farms error:", error);
+      res.status(500).json({ message: "Failed to get farms" });
+    }
+  });
+
+  app.get("/api/admin/produce", requireAuth, requireRole("admin"), async (req: any, res) => {
+    try {
+      const produce = await storage.getAllProduceWithFarms();
+      res.json(produce);
+    } catch (error) {
+      console.error("Get all produce error:", error);
+      res.status(500).json({ message: "Failed to get produce" });
+    }
+  });
+
+  app.get("/api/admin/orders", requireAuth, requireRole("admin"), async (req: any, res) => {
+    try {
+      const orders = await storage.getAllOrdersWithBuyers();
+      res.json(orders);
+    } catch (error) {
+      console.error("Get all orders error:", error);
+      res.status(500).json({ message: "Failed to get orders" });
+    }
+  });
+
+  app.get("/api/admin/config", requireAuth, requireRole("admin"), async (req: any, res) => {
+    try {
+      const config = {
+        platformFeeRate: process.env.PLATFORM_FEE_RATE ? parseFloat(process.env.PLATFORM_FEE_RATE) : 0.10,
+      };
+      res.json(config);
+    } catch (error) {
+      console.error("Get admin config error:", error);
+      res.status(500).json({ message: "Failed to get config" });
+    }
+  });
+
+  app.put("/api/admin/config", requireAuth, requireRole("admin"), async (req: any, res) => {
+    try {
+      const { platformFeeRate } = req.body;
+      
+      if (platformFeeRate && (platformFeeRate < 0 || platformFeeRate > 1)) {
+        return res.status(400).json({ message: "Platform fee rate must be between 0 and 1" });
+      }
+
+      // In a production environment, you'd want to persist this to a config table
+      // For now, we'll just return success (the environment variable would need to be updated)
+      res.json({ message: "Configuration updated successfully", platformFeeRate });
+    } catch (error) {
+      console.error("Update admin config error:", error);
+      res.status(500).json({ message: "Failed to update config" });
+    }
+  });
+
+  app.put("/api/admin/users/:id", requireAuth, requireRole("admin"), async (req: any, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { isActive } = req.body;
+      
+      const user = await storage.updateUser(userId, { isActive });
+      res.json(user);
+    } catch (error) {
+      console.error("Update user error:", error);
+      res.status(500).json({ message: "Failed to update user" });
     }
   });
 

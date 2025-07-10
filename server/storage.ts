@@ -30,6 +30,7 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: number, user: Partial<InsertUser>): Promise<User>;
+  getAllUsers(): Promise<User[]>;
 
   // Farm operations
   getFarm(id: number): Promise<Farm | undefined>;
@@ -38,6 +39,7 @@ export interface IStorage {
   createFarm(farm: InsertFarm): Promise<Farm>;
   updateFarm(id: number, farm: Partial<InsertFarm>): Promise<Farm>;
   deleteFarm(id: number): Promise<void>;
+  getAllFarmsWithOwners(): Promise<any[]>;
 
   // Produce operations
   getProduceItem(id: number): Promise<ProduceItem | undefined>;
@@ -46,6 +48,7 @@ export interface IStorage {
   createProduceItem(item: InsertProduceItem): Promise<ProduceItem>;
   updateProduceItem(id: number, item: Partial<InsertProduceItem>): Promise<ProduceItem>;
   deleteProduceItem(id: number): Promise<void>;
+  getAllProduceWithFarms(): Promise<any[]>;
 
   // Inventory operations
   getInventory(produceItemId: number): Promise<Inventory | undefined>;
@@ -56,6 +59,7 @@ export interface IStorage {
   getOrdersByBuyer(buyerId: number): Promise<Order[]>;
   createOrder(order: InsertOrder): Promise<Order>;
   updateOrder(id: number, order: Partial<InsertOrder>): Promise<Order>;
+  getAllOrdersWithBuyers(): Promise<any[]>;
 
   // Order item operations
   getOrderItems(orderId: number): Promise<OrderItem[]>;
@@ -96,6 +100,10 @@ export class DatabaseStorage implements IStorage {
     return updatedUser;
   }
 
+  async getAllUsers(): Promise<User[]> {
+    return await db.select().from(users).orderBy(desc(users.createdAt));
+  }
+
   // Farm operations
   async getFarm(id: number): Promise<Farm | undefined> {
     const [farm] = await db.select().from(farms).where(eq(farms.id, id));
@@ -129,6 +137,37 @@ export class DatabaseStorage implements IStorage {
 
   async deleteFarm(id: number): Promise<void> {
     await db.delete(farms).where(eq(farms.id, id));
+  }
+
+  async getAllFarmsWithOwners(): Promise<any[]> {
+    return await db
+      .select({
+        id: farms.id,
+        name: farms.name,
+        description: farms.description,
+        address: farms.address,
+        city: farms.city,
+        state: farms.state,
+        zipCode: farms.zipCode,
+        latitude: farms.latitude,
+        longitude: farms.longitude,
+        imageUrl: farms.imageUrl,
+        website: farms.website,
+        phoneNumber: farms.phoneNumber,
+        isOrganic: farms.isOrganic,
+        isActive: farms.isActive,
+        createdAt: farms.createdAt,
+        updatedAt: farms.updatedAt,
+        owner: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+        },
+      })
+      .from(farms)
+      .leftJoin(users, eq(farms.ownerId, users.id))
+      .orderBy(desc(farms.createdAt));
   }
 
   // Produce operations
@@ -193,6 +232,36 @@ export class DatabaseStorage implements IStorage {
     await db.delete(produceItems).where(eq(produceItems.id, id));
   }
 
+  async getAllProduceWithFarms(): Promise<any[]> {
+    return await db
+      .select({
+        id: produceItems.id,
+        name: produceItems.name,
+        description: produceItems.description,
+        category: produceItems.category,
+        variety: produceItems.variety,
+        unit: produceItems.unit,
+        pricePerUnit: produceItems.pricePerUnit,
+        imageUrl: produceItems.imageUrl,
+        isOrganic: produceItems.isOrganic,
+        isSeasonal: produceItems.isSeasonal,
+        isHeirloom: produceItems.isHeirloom,
+        harvestDate: produceItems.harvestDate,
+        isActive: produceItems.isActive,
+        createdAt: produceItems.createdAt,
+        updatedAt: produceItems.updatedAt,
+        farm: {
+          id: farms.id,
+          name: farms.name,
+          city: farms.city,
+          state: farms.state,
+        },
+      })
+      .from(produceItems)
+      .leftJoin(farms, eq(produceItems.farmId, farms.id))
+      .orderBy(desc(produceItems.createdAt));
+  }
+
   // Inventory operations
   async getInventory(produceItemId: number): Promise<Inventory | undefined> {
     const [inventory] = await db
@@ -237,6 +306,31 @@ export class DatabaseStorage implements IStorage {
       .where(eq(orders.id, id))
       .returning();
     return updatedOrder;
+  }
+
+  async getAllOrdersWithBuyers(): Promise<any[]> {
+    return await db
+      .select({
+        id: orders.id,
+        totalAmount: orders.totalAmount,
+        status: orders.status,
+        deliveryMethod: orders.deliveryMethod,
+        deliveryAddress: orders.deliveryAddress,
+        deliveryDate: orders.deliveryDate,
+        paymentStatus: orders.paymentStatus,
+        paymentIntentId: orders.paymentIntentId,
+        createdAt: orders.createdAt,
+        updatedAt: orders.updatedAt,
+        buyer: {
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+        },
+      })
+      .from(orders)
+      .leftJoin(users, eq(orders.buyerId, users.id))
+      .orderBy(desc(orders.createdAt));
   }
 
   // Order item operations
