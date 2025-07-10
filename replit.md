@@ -108,18 +108,20 @@ RESTful API endpoints organized by domain:
 - **Start command**: Production starts with `npm run start`
 
 ## Recent Changes
-- July 10, 2025: Comprehensive end-to-end testing completed successfully
-  - ✅ Full farmer workflow: Account creation → Farm creation → Product listing
-  - ✅ Full buyer workflow: Account creation → Product search → Order placement → Payment processing
-  - ✅ Search functionality working with case-insensitive matching (finds "carrot" results)
-  - ✅ Map functionality with clickable farm markers navigating to farm profiles
-  - ✅ Platform fee calculation working (8% platform fee hidden from customers)
+- July 10, 2025: Platform fee updated to 10% and made configurable
+  - ✅ Platform fee increased from 8% to 10% as requested
+  - ✅ Platform fee made configurable via PLATFORM_FEE_RATE environment variable
+  - ✅ Created server/config.ts for centralized platform settings
+  - ✅ Complete frontend user journey tested and validated
+  - ✅ All API endpoints working: authentication, farms, produce, orders, payments
+  - ✅ Search functionality working with case-insensitive matching
+  - ✅ Map functionality with clickable farm markers
   - ✅ Stripe payment integration functional with real payment intents
   - ✅ Email notifications sent for order confirmations
-  - ✅ All API endpoints validated: authentication, farms, produce, orders, payments
-  - Test accounts created: test-farmer@example.com, test-buyer@example.com
-  - Test farm "Test Farm E2E" with "E2E Test Tomatoes" product listing
-  - Order #1 successfully placed for $13.00 with pickup delivery method
+  - ✅ Payment processing correctly calculates 10% platform fee (e.g., $2.40 on $23.96 order)
+  - Test accounts: frontend-farmer@test.com, frontend-buyer@test.com
+  - Test farm "Frontend Test Farm" with "Frontend Test Carrots" product listing
+  - Platform fee calculation: $1.20 on $11.98 order, $2.40 on $23.96 order
 
 - June 24, 2025: Complete FarmDirect marketplace built and deployed
   - Fixed SelectItem component errors preventing produce/farms pages from loading
