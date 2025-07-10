@@ -236,6 +236,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/farms/owned/:userId", requireAuth, async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const farms = await storage.getFarmsByOwner(userId);
+      res.json(farms);
+    } catch (error) {
+      console.error("Get owned farms error:", error);
+      res.status(500).json({ message: "Failed to get owned farms" });
+    }
+  });
+
   app.get("/api/farms/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);

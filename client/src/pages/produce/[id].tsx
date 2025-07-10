@@ -31,7 +31,7 @@ export default function ProduceDetail() {
         name: produceItem.name,
         price: parseFloat(produceItem.pricePerUnit),
         unit: produceItem.unit,
-        farmName: "Local Farm", // This would come from farm data
+        farmName: produceItem.farm?.name || "Local Farm",
         imageUrl: produceItem.imageUrl,
       });
     }
@@ -40,6 +40,8 @@ export default function ProduceDetail() {
       title: "Added to cart",
       description: `${quantity} ${produceItem.unit}${quantity > 1 ? 's' : ''} of ${produceItem.name} added to your cart.`,
     });
+    
+    setQuantity(1); // Reset quantity after adding
   };
 
   if (isLoading) {
@@ -204,15 +206,6 @@ export default function ProduceDetail() {
                 </div>
                 
                 <div className="flex gap-2 mt-4">
-                  {produceItem.farm?.ownerId && (
-                    <MessageFarmerButton
-                      farmerId={produceItem.farm.ownerId}
-                      farmerName={produceItem.farm.name || "the farmer"}
-                      triggerText="Message Farmer"
-                      variant="outline"
-                      size="default"
-                    />
-                  )}
                   <Link href={`/farms/${produceItem.farmId}`}>
                     <Button variant="outline" className="flex-1">
                       Visit Farm Page

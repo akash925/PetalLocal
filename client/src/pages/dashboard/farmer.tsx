@@ -22,15 +22,29 @@ export default function FarmerDashboard() {
   const queryClient = useQueryClient();
   const [isAddingProduce, setIsAddingProduce] = useState(false);
 
+  // Get farmer's farms
+  const { data: farms = [] } = useQuery({
+    queryKey: ["/api/farms", "owned", user?.id],
+    queryFn: async () => {
+      const response = await fetch(`/api/farms/owned/${user?.id}`);
+      if (!response.ok) throw new Error("Failed to fetch farms");
+      return response.json();
+    },
+    enabled: !!user,
+  });
+
   // Get farmer's produce items
   const { data: produceItems = [] } = useQuery({
     queryKey: ["/api/produce", user?.id],
     queryFn: async () => {
       const response = await fetch("/api/produce");
       if (!response.ok) throw new Error("Failed to fetch produce");
-      return response.json();
+      const allProduce = await response.json();
+      // Filter to only show produce from farmer's farms
+      const farmIds = farms.map(f => f.id);
+      return allProduce.filter(item => farmIds.includes(item.farmId));
     },
-    enabled: !!user,
+    enabled: !!user && farms.length > 0,
   });
 
   const form = useForm({
@@ -71,10 +85,20 @@ export default function FarmerDashboard() {
   });
 
   const onSubmit = (data: any) => {
+    const farmId = farms.length > 0 ? farms[0].id : null;
+    if (!farmId) {
+      toast({
+        title: "Error",
+        description: "You need to create a farm first before adding produce.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     createProduceMutation.mutate({
       ...data,
       pricePerUnit: parseFloat(data.pricePerUnit),
-      farmId: 1, // This would be the farmer's farm ID
+      farmId: farmId,
     });
   };
 

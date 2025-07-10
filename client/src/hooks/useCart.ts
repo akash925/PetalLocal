@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 interface CartItem {
   id: number;
@@ -11,7 +11,21 @@ interface CartItem {
 }
 
 export function useCart() {
-  const [items, setItems] = useState<CartItem[]>([]);
+  const [items, setItems] = useState<CartItem[]>(() => {
+    // Load cart from localStorage on initialization
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('cart');
+      return saved ? JSON.parse(saved) : [];
+    }
+    return [];
+  });
+
+  // Save cart to localStorage whenever items change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('cart', JSON.stringify(items));
+    }
+  }, [items]);
 
   const addItem = useCallback((item: Omit<CartItem, "quantity">) => {
     setItems(prev => {
