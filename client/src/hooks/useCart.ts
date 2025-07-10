@@ -20,6 +20,31 @@ export function useCart() {
     return [];
   });
 
+  // Clear cart when user logs out (listen for storage events)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'user-logged-out') {
+        setItems([]);
+        localStorage.removeItem('cart');
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also check for custom logout event
+    const handleLogout = () => {
+      setItems([]);
+      localStorage.removeItem('cart');
+    };
+    
+    window.addEventListener('user-logout', handleLogout);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('user-logout', handleLogout);
+    };
+  }, []);
+
   // Save cart to localStorage whenever items change
   useEffect(() => {
     if (typeof window !== 'undefined') {

@@ -30,7 +30,7 @@ export function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">For Farmers</h3>
             <ul className="space-y-2 text-gray-300">
-              <li><Link href="/auth/register" className="hover:text-green-400 transition-colors duration-200">Sell Your Produce</Link></li>
+              <li><Link href="/sell" className="hover:text-green-400 transition-colors duration-200">Sell Your Produce</Link></li>
               <li><Link href="/dashboard/farmer" className="hover:text-green-400 transition-colors duration-200">Farmer Dashboard</Link></li>
             </ul>
           </div>

@@ -50,6 +50,11 @@ export function Header() {
       // Immediately clear the user cache for instant state update
       queryClient.setQueryData(["/api/auth/user"], null);
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      
+      // Clear cart on logout
+      localStorage.removeItem('cart');
+      window.dispatchEvent(new CustomEvent('user-logout'));
+      
       toast({
         title: "Logged out",
         description: "You have been successfully logged out.",

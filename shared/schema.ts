@@ -178,6 +178,8 @@ export const insertFarmSchema = createInsertSchema(farms).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  zipCode: z.string().min(1, "ZIP code is required"),
 });
 
 export const insertProduceItemSchema = createInsertSchema(produceItems).omit({

@@ -291,8 +291,8 @@ export default function FarmerDashboard() {
                                   type="number"
                                   step="0.01"
                                   placeholder="0.00"
-                                  {...field}
-                                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                                  value={field.value}
+                                  onChange={(e) => field.onChange(e.target.value)}
                                 />
                               </FormControl>
                               <FormMessage />

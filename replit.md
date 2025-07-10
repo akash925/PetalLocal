@@ -108,17 +108,18 @@ RESTful API endpoints organized by domain:
 - **Start command**: Production starts with `npm run start`
 
 ## Recent Changes
-- July 10, 2025: Admin portal and final UX fixes completed
-  - ✅ Admin portal created with full platform oversight
-  - ✅ Admin account: akash.agarwal@conmitto.io (password: admin123secure)
-  - ✅ Admin dashboard protected - redirects non-admins immediately
-  - ✅ Platform fee UI fixed - displays as percentage, accepts percentage input
-  - ✅ Instant logout state management - user state updates immediately
-  - ✅ Platform fee configurable via environment variable and admin interface
-  - ✅ Revenue analytics display with dynamic platform fee calculations
-  - Admin features: view all users, farms, products, orders; manage platform settings
-  - Platform fee calculation: properly converts percentage input to decimal for backend
-  - Ready for test deployment with all core functionality validated
+- July 10, 2025: Enhanced farmer onboarding and UX fixes completed
+  - ✅ Created "Sell Your Produce" page with beautiful farmer onboarding experience
+  - ✅ Smart routing: farmers redirect to add produce, non-users see comprehensive signup flow
+  - ✅ Enhanced home page with prominent farmer call-to-action section
+  - ✅ Registration form pre-selects farmer role when coming from sell page
+  - ✅ Fixed farm profile creation: ZIP code now required for map functionality
+  - ✅ Fixed price per unit input to properly handle number validation
+  - ✅ Added scroll-to-top navigation for better user experience
+  - ✅ Cart automatically clears when user logs out
+  - ✅ Tab routing in farmer dashboard for seamless produce creation
+  - ✅ Footer updated with "Sell Your Produce" link in farmer section
+  - Platform ready for enhanced farmer acquisition and streamlined onboarding
 
 - June 24, 2025: Complete FarmDirect marketplace built and deployed
   - Fixed SelectItem component errors preventing produce/farms pages from loading
