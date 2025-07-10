@@ -108,18 +108,15 @@ RESTful API endpoints organized by domain:
 - **Start command**: Production starts with `npm run start`
 
 ## Recent Changes
-- July 10, 2025: Enhanced farmer onboarding and UX fixes completed
-  - ✅ Created "Sell Your Produce" page with beautiful farmer onboarding experience
-  - ✅ Smart routing: farmers redirect to add produce, non-users see comprehensive signup flow
-  - ✅ Enhanced home page with prominent farmer call-to-action section
-  - ✅ Registration form pre-selects farmer role when coming from sell page
-  - ✅ Fixed farm profile creation: ZIP code now required for map functionality
-  - ✅ Fixed price per unit input to properly handle number validation
-  - ✅ Added scroll-to-top navigation for better user experience
-  - ✅ Cart automatically clears when user logs out
-  - ✅ Tab routing in farmer dashboard for seamless produce creation
-  - ✅ Footer updated with "Sell Your Produce" link in farmer section
-  - Platform ready for enhanced farmer acquisition and streamlined onboarding
+- July 10, 2025: Interactive map integration and cart persistence fixes completed
+  - ✅ Integrated free OpenStreetMap API with Leaflet for interactive farm locations
+  - ✅ Real-time map with organic/conventional farm color coding and legend
+  - ✅ Map shows user location, farm markers with popups, and distance display
+  - ✅ Fixed cart persistence bug - cart now clears properly when logged out
+  - ✅ Auth-aware cart management prevents items showing for non-authenticated users
+  - ✅ Enhanced map view with professional layout and farm information cards
+  - ✅ Previous fixes: ZIP code validation, price input, scroll-to-top, farmer onboarding
+  - Platform now features authentic interactive mapping with real farm data
 
 - June 24, 2025: Complete FarmDirect marketplace built and deployed
   - Fixed SelectItem component errors preventing produce/farms pages from loading

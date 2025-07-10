@@ -20,29 +20,33 @@ export function useCart() {
     return [];
   });
 
-  // Clear cart when user logs out (listen for storage events)
+  // Clear cart when user logs out
   useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'user-logged-out') {
-        setItems([]);
-        localStorage.removeItem('cart');
-      }
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    
-    // Also check for custom logout event
     const handleLogout = () => {
       setItems([]);
-      localStorage.removeItem('cart');
     };
     
     window.addEventListener('user-logout', handleLogout);
     
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('user-logout', handleLogout);
     };
+  }, []);
+
+  // Check auth status and clear cart if logged out
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/auth/user');
+        if (response.status === 401) {
+          setItems([]);
+        }
+      } catch (error) {
+        setItems([]);
+      }
+    };
+    
+    checkAuth();
   }, []);
 
   // Save cart to localStorage whenever items change

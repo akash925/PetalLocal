@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FarmCard } from "@/components/farm-card";
-import { FarmMap } from "@/components/farm-map";
+import { InteractiveMap } from "@/components/interactive-map";
 import { Search, Filter, Grid, Map } from "lucide-react";
 
 export default function BrowseFarms() {
@@ -102,29 +102,42 @@ export default function BrowseFarms() {
 
         {/* Results */}
         {farms.length > 0 ? (
-          viewMode === "grid" ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {farms.map((farm: any) => (
-                <FarmCard
-                  key={farm.id}
-                  id={farm.id}
-                  name={farm.name}
-                  description={farm.description}
-                  ownerName={`${farm.owner?.firstName || ''} ${farm.owner?.lastName || ''}`.trim()}
-                  imageUrl={farm.imageUrl}
-                  isOrganic={farm.isOrganic}
-                  city={farm.city}
-                  state={farm.state}
-                />
-              ))}
-            </div>
-          ) : (
-            <FarmMap 
-              farms={farms} 
-              selectedFarm={selectedFarm}
-              onFarmSelect={setSelectedFarm}
-            />
-          )
+          <div className="space-y-6">
+            {viewMode === "grid" ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {farms.map((farm: any) => (
+                  <FarmCard
+                    key={farm.id}
+                    id={farm.id}
+                    name={farm.name}
+                    description={farm.description}
+                    ownerName={`${farm.owner?.firstName || ''} ${farm.owner?.lastName || ''}`.trim()}
+                    imageUrl={farm.imageUrl}
+                    isOrganic={farm.isOrganic}
+                    city={farm.city}
+                    state={farm.state}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="bg-white rounded-lg shadow-sm border">
+                <div className="p-4 border-b">
+                  <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+                    <Map className="w-5 h-5 mr-2 text-green-600" />
+                    Farm Locations
+                  </h2>
+                  <p className="text-gray-600 text-sm mt-1">Interactive map showing local farms in your area</p>
+                </div>
+                <div className="p-4">
+                  <InteractiveMap 
+                    farms={farms} 
+                    selectedFarm={selectedFarm}
+                    onFarmSelect={setSelectedFarm}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
         ) : (
           <div className="text-center py-12">
             <h3 className="text-xl font-semibold text-gray-900 mb-2">No farms found</h3>
