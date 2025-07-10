@@ -53,8 +53,13 @@ export function InteractiveMap({ farms, onFarmSelect, className = "" }: MapProps
     let centerLng = -98.5795;
     let zoom = 4;
 
-    // If we have farms with coordinates, center on them
-    const farmsWithCoords = farms.filter(f => f.latitude && f.longitude);
+    // If we have farms with valid coordinates, center on them
+    const farmsWithCoords = farms.filter(f => 
+      f.latitude && f.longitude && 
+      !isNaN(f.latitude) && !isNaN(f.longitude) &&
+      f.latitude !== 0 && f.longitude !== 0
+    );
+    
     if (farmsWithCoords.length > 0) {
       const avgLat = farmsWithCoords.reduce((sum, f) => sum + (f.latitude || 0), 0) / farmsWithCoords.length;
       const avgLng = farmsWithCoords.reduce((sum, f) => sum + (f.longitude || 0), 0) / farmsWithCoords.length;
@@ -71,7 +76,7 @@ export function InteractiveMap({ farms, onFarmSelect, className = "" }: MapProps
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    // Add markers for farms
+    // Add markers for farms with valid coordinates
     farmsWithCoords.forEach((farm) => {
       const color = farm.isOrganic ? '#22c55e' : '#f97316'; // Green for organic, orange for conventional
       
@@ -86,7 +91,7 @@ export function InteractiveMap({ farms, onFarmSelect, className = "" }: MapProps
       marker.bindPopup(`
         <div class="p-2">
           <h4 class="font-semibold text-gray-900">${farm.name}</h4>
-          <p class="text-sm text-gray-600">${farm.address}</p>
+          <p class="text-sm text-gray-600">${farm.address || 'Address not provided'}</p>
           <p class="text-sm text-gray-600">${farm.city}, ${farm.state}</p>
           <p class="text-xs mt-1 ${farm.isOrganic ? 'text-green-600' : 'text-orange-600'}">
             ${farm.isOrganic ? 'Organic Farm' : 'Conventional Farm'}
@@ -126,8 +131,12 @@ export function InteractiveMap({ farms, onFarmSelect, className = "" }: MapProps
     };
   }, [farms, onFarmSelect]);
 
-  // Fallback for farms without coordinates
-  const farmsWithoutCoords = farms.filter(f => !f.latitude || !f.longitude);
+  // Fallback for farms without valid coordinates
+  const farmsWithoutCoords = farms.filter(f => 
+    !f.latitude || !f.longitude || 
+    isNaN(f.latitude) || isNaN(f.longitude) ||
+    f.latitude === 0 || f.longitude === 0
+  );
 
   return (
     <div className={className}>
