@@ -54,7 +54,8 @@ export default function Cart() {
       return;
     }
     
-    checkoutMutation.mutate();
+    // Redirect to checkout page
+    window.location.href = '/checkout';
   };
 
   if (items.length === 0) {
@@ -188,9 +189,8 @@ export default function Cart() {
                   className="w-full bg-green-500 hover:bg-green-600"
                   size="lg"
                   onClick={handleCheckout}
-                  disabled={checkoutMutation.isPending}
                 >
-                  {checkoutMutation.isPending ? "Processing..." : "Checkout"}
+                  Proceed to Checkout
                 </Button>
 
                 {!isAuthenticated && (

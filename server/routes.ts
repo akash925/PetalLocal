@@ -247,6 +247,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/farms", requireAuth, requireRole("farmer"), async (req: any, res) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      const farmData = insertFarmSchema.parse({
+        ...req.body,
+        ownerId: userId,
+      });
+      const farm = await storage.createFarm(farmData);
+      res.json(farm);
+    } catch (error) {
+      console.error("Create farm error:", error);
+      res.status(500).json({ message: "Failed to create farm" });
+    }
+  });
+
   app.get("/api/farms/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -265,21 +283,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/farms", requireAuth, requireRole("farmer"), async (req: any, res) => {
+
+
+  // Stripe payment routes
+  app.post("/api/create-payment-intent", requireAuth, async (req: any, res) => {
     try {
-      const userId = req.session?.userId;
-      if (!userId) {
-        return res.status(401).json({ message: "Unauthorized" });
+      const { amount, items } = req.body;
+      
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ message: "Invalid amount" });
       }
-      const farmData = insertFarmSchema.parse({
-        ...req.body,
-        ownerId: userId,
-      });
-      const farm = await storage.createFarm(farmData);
-      res.json(farm);
+
+      const paymentResult = await stripeService.createPaymentIntent(amount, 0);
+      
+      if (paymentResult.success) {
+        res.json({ clientSecret: paymentResult.paymentIntentId });
+      } else {
+        res.status(500).json({ message: paymentResult.error || "Failed to create payment intent" });
+      }
     } catch (error) {
-      console.error("Create farm error:", error);
-      res.status(500).json({ message: "Failed to create farm" });
+      console.error("Create payment intent error:", error);
+      res.status(500).json({ message: "Failed to create payment intent" });
     }
   });
 

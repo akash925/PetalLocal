@@ -18,6 +18,8 @@ import Register from "@/pages/auth/register";
 import FarmerDashboard from "@/pages/dashboard/farmer";
 import AdminDashboard from "@/pages/dashboard/admin";
 import Messages from "@/pages/messages";
+import Checkout from "@/pages/checkout";
+import OrderConfirmation from "@/pages/order-confirmation";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -32,6 +34,8 @@ function Router() {
           <Route path="/farms" component={BrowseFarms} />
           <Route path="/farms/:id" component={FarmDetail} />
           <Route path="/cart" component={Cart} />
+          <Route path="/checkout" component={Checkout} />
+          <Route path="/order-confirmation" component={OrderConfirmation} />
           <Route path="/auth/login" component={Login} />
           <Route path="/auth/register" component={Register} />
           <Route path="/dashboard/farmer" component={FarmerDashboard} />

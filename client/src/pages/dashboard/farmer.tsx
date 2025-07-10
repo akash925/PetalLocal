@@ -10,10 +10,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
-import { insertProduceItemSchema } from "@shared/schema";
+import { insertProduceItemSchema, insertFarmSchema } from "@shared/schema";
 import { Plus, Edit, Trash2, Package } from "lucide-react";
 
 export default function FarmerDashboard() {
@@ -21,6 +22,7 @@ export default function FarmerDashboard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isAddingProduce, setIsAddingProduce] = useState(false);
+  const [isCreatingFarm, setIsCreatingFarm] = useState(false);
 
   // Get farmer's farms
   const { data: farms = [] } = useQuery({
@@ -62,23 +64,63 @@ export default function FarmerDashboard() {
     },
   });
 
+  const farmForm = useForm({
+    resolver: zodResolver(insertFarmSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      address: "",
+      city: "",
+      state: "",
+      zipCode: "",
+      phoneNumber: "",
+      website: "",
+      isOrganic: false,
+    },
+  });
+
   const createProduceMutation = useMutation({
     mutationFn: async (data: any) => {
-      await apiRequest("POST", "/api/produce", data);
+      const response = await apiRequest("POST", "/api/produce", data);
+      return response;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast({
-        title: "Success",
-        description: "Produce item created successfully",
+        title: "Success!",
+        description: "Produce item created successfully and is now available for purchase",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/produce"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/produce", user?.id] });
       setIsAddingProduce(false);
       form.reset();
     },
     onError: (error) => {
       toast({
-        title: "Error",
-        description: error.message,
+        title: "Error creating produce",
+        description: error.message || "Failed to create produce item. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const createFarmMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiRequest("POST", "/api/farms", data);
+      return response;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Farm created successfully!",
+        description: "Your farm profile is now live and ready for produce listings",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/farms", "owned", user?.id] });
+      setIsCreatingFarm(false);
+      farmForm.reset();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error creating farm",
+        description: error.message || "Failed to create farm profile. Please try again.",
         variant: "destructive",
       });
     },
@@ -99,6 +141,13 @@ export default function FarmerDashboard() {
       ...data,
       pricePerUnit: parseFloat(data.pricePerUnit),
       farmId: farmId,
+    });
+  };
+
+  const onFarmSubmit = (data: any) => {
+    createFarmMutation.mutate({
+      ...data,
+      ownerId: user?.id,
     });
   };
 
@@ -372,23 +421,210 @@ export default function FarmerDashboard() {
 
           <TabsContent value="farm">
             {farms.length === 0 ? (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Create Your Farm Profile</CardTitle>
-                  <CardDescription>
-                    Set up your farm profile to start listing produce
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center py-8">
-                    <p className="text-gray-500 text-lg mb-4">You haven't created a farm profile yet</p>
-                    <Button className="bg-green-500 hover:bg-green-600">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Create Farm Profile
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <>
+                {!isCreatingFarm ? (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Create Your Farm Profile</CardTitle>
+                      <CardDescription>
+                        Set up your farm profile to start listing produce
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-center py-8">
+                        <p className="text-gray-500 text-lg mb-4">You haven't created a farm profile yet</p>
+                        <Button 
+                          onClick={() => setIsCreatingFarm(true)}
+                          className="bg-green-500 hover:bg-green-600"
+                        >
+                          <Plus className="w-4 h-4 mr-2" />
+                          Create Farm Profile
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Create Your Farm Profile</CardTitle>
+                      <CardDescription>
+                        Tell buyers about your farm and location
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Form {...farmForm}>
+                        <form onSubmit={farmForm.handleSubmit(onFarmSubmit)} className="space-y-6">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                              control={farmForm.control}
+                              name="name"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Farm Name</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="e.g., Sunny Acres Farm" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={farmForm.control}
+                              name="phoneNumber"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Phone Number</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="(555) 123-4567" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
+                          <FormField
+                            control={farmForm.control}
+                            name="description"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Farm Description</FormLabel>
+                                <FormControl>
+                                  <Textarea 
+                                    placeholder="Tell buyers about your farm, your growing methods, and what makes your produce special..."
+                                    rows={4}
+                                    {...field} 
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <div className="space-y-4">
+                            <h3 className="text-lg font-medium">Location</h3>
+                            <FormField
+                              control={farmForm.control}
+                              name="address"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Street Address</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="123 Farm Road" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <FormField
+                                control={farmForm.control}
+                                name="city"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>City</FormLabel>
+                                    <FormControl>
+                                      <Input placeholder="Springfield" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+
+                              <FormField
+                                control={farmForm.control}
+                                name="state"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>State</FormLabel>
+                                    <FormControl>
+                                      <Input placeholder="CA" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+
+                              <FormField
+                                control={farmForm.control}
+                                name="zipCode"
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Zip Code</FormLabel>
+                                    <FormControl>
+                                      <Input placeholder="12345" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                          </div>
+
+                          <div className="space-y-4">
+                            <h3 className="text-lg font-medium">Additional Information</h3>
+                            <FormField
+                              control={farmForm.control}
+                              name="website"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Website (Optional)</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="https://www.yourfarm.com" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={farmForm.control}
+                              name="isOrganic"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <div className="space-y-1 leading-none">
+                                    <FormLabel>
+                                      Certified Organic Farm
+                                    </FormLabel>
+                                  </div>
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
+                          <div className="flex gap-4 pt-4">
+                            <Button
+                              type="submit"
+                              disabled={createFarmMutation.isPending}
+                              className="bg-green-500 hover:bg-green-600"
+                            >
+                              {createFarmMutation.isPending ? "Creating..." : "Create Farm Profile"}
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => {
+                                setIsCreatingFarm(false);
+                                farmForm.reset();
+                              }}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </form>
+                      </Form>
+                    </CardContent>
+                  </Card>
+                )}
+              </>
             ) : (
               <div className="space-y-6">
                 {farms.map((farm) => (
