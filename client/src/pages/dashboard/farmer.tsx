@@ -25,6 +25,7 @@ export default function FarmerDashboard() {
   const [location] = useLocation();
   const [isAddingProduce, setIsAddingProduce] = useState(false);
   const [isCreatingFarm, setIsCreatingFarm] = useState(false);
+  const [isEditingFarm, setIsEditingFarm] = useState(false);
   const [activeTab, setActiveTab] = useState("produce");
 
   // Check URL parameters for tab routing
@@ -89,6 +90,9 @@ export default function FarmerDashboard() {
       phoneNumber: "",
       website: "",
       isOrganic: false,
+      pickupAvailable: true,
+      deliveryAvailable: false,
+      farmToursAvailable: "no",
       ownerId: user?.id,
     },
   });
@@ -140,6 +144,29 @@ export default function FarmerDashboard() {
     },
   });
 
+  const updateFarmMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const farmId = farms[0]?.id;
+      const response = await apiRequest("PUT", `/api/farms/${farmId}`, data);
+      return response;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Farm updated successfully!",
+        description: "Your farm profile changes have been saved",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/farms", "owned", user?.id] });
+      setIsEditingFarm(false);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error updating farm",
+        description: error.message || "Failed to update farm profile. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const onSubmit = (data: any) => {
     console.log("Form submitted with data:", data);
     const farmId = farms.length > 0 ? farms[0].id : null;
@@ -173,7 +200,33 @@ export default function FarmerDashboard() {
     };
     
     console.log("Submitting farm data:", submitData);
-    createFarmMutation.mutate(submitData);
+    if (isEditingFarm) {
+      updateFarmMutation.mutate(submitData);
+    } else {
+      createFarmMutation.mutate(submitData);
+    }
+  };
+
+  const handleEditFarm = () => {
+    if (farms.length > 0) {
+      const farm = farms[0];
+      farmForm.reset({
+        name: farm.name || "",
+        description: farm.description || "",
+        address: farm.address || "",
+        city: farm.city || "",
+        state: farm.state || "",
+        zipCode: farm.zipCode || "",
+        phoneNumber: farm.phoneNumber || "",
+        website: farm.website || "",
+        isOrganic: farm.isOrganic || false,
+        pickupAvailable: farm.pickupAvailable || true,
+        deliveryAvailable: farm.deliveryAvailable || false,
+        farmToursAvailable: farm.farmToursAvailable || "no",
+        ownerId: farm.ownerId,
+      });
+      setIsEditingFarm(true);
+    }
   };
 
   if (user?.role !== "farmer") {
@@ -632,6 +685,73 @@ export default function FarmerDashboard() {
                             />
                           </div>
 
+                          <div className="space-y-4">
+                            <h3 className="text-lg font-medium">Services</h3>
+                            
+                            <FormField
+                              control={farmForm.control}
+                              name="pickupAvailable"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <div className="space-y-1 leading-none">
+                                    <FormLabel>
+                                      Pickup Available
+                                    </FormLabel>
+                                  </div>
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={farmForm.control}
+                              name="deliveryAvailable"
+                              render={({ field }) => (
+                                <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                                  <FormControl>
+                                    <Checkbox
+                                      checked={field.value}
+                                      onCheckedChange={field.onChange}
+                                    />
+                                  </FormControl>
+                                  <div className="space-y-1 leading-none">
+                                    <FormLabel>
+                                      Delivery Available
+                                    </FormLabel>
+                                  </div>
+                                </FormItem>
+                              )}
+                            />
+
+                            <FormField
+                              control={farmForm.control}
+                              name="farmToursAvailable"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Farm Tours</FormLabel>
+                                  <Select onValueChange={field.onChange} value={field.value}>
+                                    <FormControl>
+                                      <SelectTrigger>
+                                        <SelectValue placeholder="Select tour availability" />
+                                      </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                      <SelectItem value="no">No</SelectItem>
+                                      <SelectItem value="by_appointment">By Appointment</SelectItem>
+                                      <SelectItem value="yes">Yes</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+
                           <div className="flex gap-4 pt-4">
                             <Button
                               type="submit"
@@ -683,11 +803,11 @@ export default function FarmerDashboard() {
                         )}
                       </div>
                       
-                      {/* Farm Rating */}
-                      <div className="absolute top-4 left-4 flex items-center bg-white rounded-full px-3 py-1 shadow-lg">
-                        <span className="text-yellow-500 mr-1">★</span>
-                        <span className="text-sm font-medium">4.8</span>
-                        <span className="text-xs text-gray-500 ml-1">(24 reviews)</span>
+                      {/* Farm Status Badge */}
+                      <div className="absolute top-4 left-4">
+                        <Badge className="bg-green-100 text-green-800">
+                          Active Farm
+                        </Badge>
                       </div>
                     </div>
 
@@ -744,7 +864,11 @@ export default function FarmerDashboard() {
                           </div>
 
                           <div className="flex gap-2 mt-4">
-                            <Button variant="outline" className="flex-1">
+                            <Button 
+                              variant="outline" 
+                              className="flex-1"
+                              onClick={handleEditFarm}
+                            >
                               <Edit className="w-4 h-4 mr-2" />
                               Edit Farm
                             </Button>
@@ -785,15 +909,22 @@ export default function FarmerDashboard() {
                               <div className="space-y-3 text-sm text-gray-600">
                                 <div className="flex justify-between">
                                   <span>Pickup Available</span>
-                                  <span className="font-medium text-green-600">Yes</span>
+                                  <span className={`font-medium ${farm.pickupAvailable ? 'text-green-600' : 'text-gray-500'}`}>
+                                    {farm.pickupAvailable ? 'Yes' : 'No'}
+                                  </span>
                                 </div>
                                 <div className="flex justify-between">
                                   <span>Delivery Available</span>
-                                  <span className="font-medium text-green-600">Yes</span>
+                                  <span className={`font-medium ${farm.deliveryAvailable ? 'text-green-600' : 'text-gray-500'}`}>
+                                    {farm.deliveryAvailable ? 'Yes' : 'No'}
+                                  </span>
                                 </div>
                                 <div className="flex justify-between">
                                   <span>Farm Tours</span>
-                                  <span className="font-medium text-green-600">By Appointment</span>
+                                  <span className={`font-medium ${farm.farmToursAvailable !== 'no' ? 'text-green-600' : 'text-gray-500'}`}>
+                                    {farm.farmToursAvailable === 'yes' ? 'Yes' : 
+                                     farm.farmToursAvailable === 'by_appointment' ? 'By Appointment' : 'No'}
+                                  </span>
                                 </div>
                               </div>
                             </CardContent>
@@ -804,6 +935,258 @@ export default function FarmerDashboard() {
                   </Card>
                 ))}
               </div>
+            )}
+
+            {isEditingFarm && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Edit Farm Profile</CardTitle>
+                  <CardDescription>
+                    Update your farm information and services
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Form {...farmForm}>
+                    <form onSubmit={farmForm.handleSubmit(onFarmSubmit)} className="space-y-6">
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-medium">Basic Information</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={farmForm.control}
+                            name="name"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Farm Name</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Green Valley Farm" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={farmForm.control}
+                            name="phoneNumber"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Phone Number</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="(555) 123-4567" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <FormField
+                          control={farmForm.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Description</FormLabel>
+                              <FormControl>
+                                <Textarea
+                                  placeholder="Describe your farm..."
+                                  className="min-h-[100px]"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-medium">Location</h3>
+                        <FormField
+                          control={farmForm.control}
+                          name="address"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Address</FormLabel>
+                              <FormControl>
+                                <Input placeholder="123 Farm Road" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <FormField
+                            control={farmForm.control}
+                            name="city"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>City</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Springfield" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={farmForm.control}
+                            name="state"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>State</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="CA" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={farmForm.control}
+                            name="zipCode"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Zip Code</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="12345" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-medium">Additional Information</h3>
+                        <FormField
+                          control={farmForm.control}
+                          name="website"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Website (Optional)</FormLabel>
+                              <FormControl>
+                                <Input placeholder="https://www.yourfarm.com" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={farmForm.control}
+                          name="isOrganic"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                              <div className="space-y-1 leading-none">
+                                <FormLabel>
+                                  Certified Organic Farm
+                                </FormLabel>
+                              </div>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-medium">Services</h3>
+                        
+                        <FormField
+                          control={farmForm.control}
+                          name="pickupAvailable"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                              <div className="space-y-1 leading-none">
+                                <FormLabel>
+                                  Pickup Available
+                                </FormLabel>
+                              </div>
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={farmForm.control}
+                          name="deliveryAvailable"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-center space-x-3 space-y-0">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                              <div className="space-y-1 leading-none">
+                                <FormLabel>
+                                  Delivery Available
+                                </FormLabel>
+                              </div>
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={farmForm.control}
+                          name="farmToursAvailable"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Farm Tours</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select tour availability" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  <SelectItem value="no">No</SelectItem>
+                                  <SelectItem value="by_appointment">By Appointment</SelectItem>
+                                  <SelectItem value="yes">Yes</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="flex gap-4 pt-4">
+                        <Button
+                          type="submit"
+                          disabled={updateFarmMutation.isPending}
+                          className="bg-green-500 hover:bg-green-600"
+                        >
+                          {updateFarmMutation.isPending ? "Updating..." : "Update Farm Profile"}
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            setIsEditingFarm(false);
+                            farmForm.reset();
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                </CardContent>
+              </Card>
             )}
           </TabsContent>
         </Tabs>

@@ -296,6 +296,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/farms/:id", requireAuth, requireRole("farmer"), async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const userId = req.session?.userId;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      // Check if farm exists and belongs to user
+      const existingFarm = await storage.getFarm(id);
+      if (!existingFarm) {
+        return res.status(404).json({ message: "Farm not found" });
+      }
+      
+      if (existingFarm.ownerId !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const farmData = insertFarmSchema.partial().parse(req.body);
+      const updatedFarm = await storage.updateFarm(id, farmData);
+      
+      res.json(updatedFarm);
+    } catch (error) {
+      console.error("Update farm error:", error);
+      if (error instanceof Error) {
+        res.status(500).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: "Failed to update farm" });
+      }
+    }
+  });
+
   app.get("/api/farms/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);

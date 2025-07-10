@@ -38,6 +38,9 @@ export const farms = pgTable("farms", {
   website: text("website"),
   phoneNumber: varchar("phone_number", { length: 20 }),
   isOrganic: boolean("is_organic").default(false),
+  pickupAvailable: boolean("pickup_available").default(true),
+  deliveryAvailable: boolean("delivery_available").default(false),
+  farmToursAvailable: varchar("farm_tours_available", { length: 50 }).default("no"), // "no", "yes", "by_appointment"
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -188,6 +191,9 @@ export const insertFarmSchema = createInsertSchema(farms).omit({
   phoneNumber: z.string().optional(),
   website: z.string().optional(),
   ownerId: z.number().optional(),
+  pickupAvailable: z.boolean().optional(),
+  deliveryAvailable: z.boolean().optional(),
+  farmToursAvailable: z.string().optional(),
 });
 
 export const insertProduceItemSchema = createInsertSchema(produceItems).omit({
