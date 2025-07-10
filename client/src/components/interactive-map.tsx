@@ -42,6 +42,8 @@ export function InteractiveMap({ farms, onFarmSelect, className = "" }: MapProps
 
   useEffect(() => {
     if (!L || !mapRef.current) return;
+    
+    const initMap = () => {
 
     // Clean up existing map
     if (mapInstanceRef.current) {
@@ -115,36 +117,54 @@ export function InteractiveMap({ farms, onFarmSelect, className = "" }: MapProps
     // Try to get user location and center map on it
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((position) => {
+        if (!map || !position?.coords) return;
+        
         const userLat = position.coords.latitude;
         const userLng = position.coords.longitude;
         
-        // Always center on user location when available
-        map.setView([userLat, userLng], 12);
+        // Validate coordinates before using them
+        if (isNaN(userLat) || isNaN(userLng)) return;
         
-        // Add user location marker
-        L.circleMarker([userLat, userLng], {
-          color: '#3b82f6',
-          fillColor: '#3b82f6',
-          fillOpacity: 0.8,
-          radius: 8,
-          weight: 3
-        }).addTo(map).bindPopup('📍 Your Location');
+        // Always center on user location when available
+        try {
+          map.setView([userLat, userLng], 12);
+          
+          // Add user location marker
+          L.circleMarker([userLat, userLng], {
+            color: '#3b82f6',
+            fillColor: '#3b82f6',
+            fillOpacity: 0.8,
+            radius: 8,
+            weight: 3
+          }).addTo(map).bindPopup('📍 Your Location');
+        } catch (error) {
+          console.error('Error adding user location to map:', error);
+        }
       }, (error) => {
         console.log('Geolocation not available or denied, using default center');
         // If farms exist and geolocation fails, center on farms
-        if (farmsWithCoords.length > 0) {
-          const avgLat = farmsWithCoords.reduce((sum, f) => sum + parseFloat(f.latitude!), 0) / farmsWithCoords.length;
-          const avgLng = farmsWithCoords.reduce((sum, f) => sum + parseFloat(f.longitude!), 0) / farmsWithCoords.length;
-          if (!isNaN(avgLat) && !isNaN(avgLng)) {
-            map.setView([avgLat, avgLng], 10);
+        if (map && farmsWithCoords.length > 0) {
+          try {
+            const avgLat = farmsWithCoords.reduce((sum, f) => sum + parseFloat(f.latitude!), 0) / farmsWithCoords.length;
+            const avgLng = farmsWithCoords.reduce((sum, f) => sum + parseFloat(f.longitude!), 0) / farmsWithCoords.length;
+            if (!isNaN(avgLat) && !isNaN(avgLng)) {
+              map.setView([avgLat, avgLng], 10);
+            }
+          } catch (error) {
+            console.error('Error setting fallback map center:', error);
           }
         }
       });
     }
 
     mapInstanceRef.current = map;
+    };
 
+    // Add small delay to ensure proper initialization
+    const timer = setTimeout(initMap, 100);
+    
     return () => {
+      clearTimeout(timer);
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
       }

@@ -49,8 +49,10 @@ export function ProduceMap({ produce, onProduceSelect, className = "" }: Produce
 
   useEffect(() => {
     if (!L || !mapRef.current) return;
-
-    // Clean up existing map
+    
+    // Small delay to ensure DOM is ready
+    const initMap = () => {
+      // Clean up existing map
     if (mapInstanceRef.current) {
       mapInstanceRef.current.remove();
     }
@@ -160,33 +162,51 @@ export function ProduceMap({ produce, onProduceSelect, className = "" }: Produce
     // Try to get user location and center map on it
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((position) => {
+        if (!map || !position?.coords) return;
+        
         const userLat = position.coords.latitude;
         const userLng = position.coords.longitude;
         
-        // Always center on user location when available
-        map.setView([userLat, userLng], 12);
+        // Validate coordinates before using them
+        if (isNaN(userLat) || isNaN(userLng)) return;
         
-        // Add user location marker
-        L.circleMarker([userLat, userLng], {
-          color: '#3b82f6',
-          fillColor: '#3b82f6',
-          fillOpacity: 0.8,
-          radius: 8,
-          weight: 3
-        }).addTo(map).bindPopup('📍 Your Location');
+        // Always center on user location when available
+        try {
+          map.setView([userLat, userLng], 12);
+          
+          // Add user location marker
+          L.circleMarker([userLat, userLng], {
+            color: '#3b82f6',
+            fillColor: '#3b82f6',
+            fillOpacity: 0.8,
+            radius: 8,
+            weight: 3
+          }).addTo(map).bindPopup('📍 Your Location');
+        } catch (error) {
+          console.error('Error adding user location to map:', error);
+        }
       }, (error) => {
         console.log('Geolocation not available or denied, using fallback center');
         // If geolocation fails, center on farms if available
-        if (farms.length > 0) {
-          map.setView([farmCenterLat, farmCenterLng], farmZoom);
+        if (map && farms.length > 0) {
+          try {
+            map.setView([farmCenterLat, farmCenterLng], farmZoom);
+          } catch (error) {
+            console.error('Error setting fallback map center:', error);
+          }
         }
         // Otherwise keep the default California center
       });
     }
 
     mapInstanceRef.current = map;
+    };
 
+    // Add small delay to ensure proper initialization
+    const timer = setTimeout(initMap, 100);
+    
     return () => {
+      clearTimeout(timer);
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
       }
