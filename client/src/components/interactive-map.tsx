@@ -53,19 +53,28 @@ export function InteractiveMap({ farms, onFarmSelect, className = "" }: MapProps
     let centerLng = -98.5795;
     let zoom = 4;
 
-    // If we have farms with valid coordinates, center on them
-    const farmsWithCoords = farms.filter(f => 
-      f.latitude && f.longitude && 
-      !isNaN(f.latitude) && !isNaN(f.longitude) &&
-      f.latitude !== 0 && f.longitude !== 0
-    );
+    // Helper function to validate coordinates
+    const isValidCoordinate = (lat: any, lng: any): boolean => {
+      if (lat === null || lat === undefined || lng === null || lng === undefined) return false;
+      const numLat = parseFloat(lat);
+      const numLng = parseFloat(lng);
+      return !isNaN(numLat) && !isNaN(numLng) && 
+             numLat !== 0 && numLng !== 0 &&
+             numLat >= -90 && numLat <= 90 &&
+             numLng >= -180 && numLng <= 180;
+    };
+
+    // Filter farms with valid coordinates
+    const farmsWithCoords = farms.filter(f => isValidCoordinate(f.latitude, f.longitude));
     
     if (farmsWithCoords.length > 0) {
-      const avgLat = farmsWithCoords.reduce((sum, f) => sum + (f.latitude || 0), 0) / farmsWithCoords.length;
-      const avgLng = farmsWithCoords.reduce((sum, f) => sum + (f.longitude || 0), 0) / farmsWithCoords.length;
-      centerLat = avgLat;
-      centerLng = avgLng;
-      zoom = 10;
+      const avgLat = farmsWithCoords.reduce((sum, f) => sum + parseFloat(f.latitude!), 0) / farmsWithCoords.length;
+      const avgLng = farmsWithCoords.reduce((sum, f) => sum + parseFloat(f.longitude!), 0) / farmsWithCoords.length;
+      if (!isNaN(avgLat) && !isNaN(avgLng)) {
+        centerLat = avgLat;
+        centerLng = avgLng;
+        zoom = 10;
+      }
     }
 
     // Create map
@@ -78,9 +87,15 @@ export function InteractiveMap({ farms, onFarmSelect, className = "" }: MapProps
 
     // Add markers for farms with valid coordinates
     farmsWithCoords.forEach((farm) => {
+      const lat = parseFloat(farm.latitude!);
+      const lng = parseFloat(farm.longitude!);
+      
+      // Double-check coordinates are valid before creating marker
+      if (isNaN(lat) || isNaN(lng)) return;
+      
       const color = farm.isOrganic ? '#22c55e' : '#f97316'; // Green for organic, orange for conventional
       
-      const marker = L.circleMarker([farm.latitude!, farm.longitude!], {
+      const marker = L.circleMarker([lat, lng], {
         color: color,
         fillColor: color,
         fillOpacity: 0.7,
@@ -131,12 +146,19 @@ export function InteractiveMap({ farms, onFarmSelect, className = "" }: MapProps
     };
   }, [farms, onFarmSelect]);
 
+  // Helper function to validate coordinates (same as above)
+  const isValidCoordinate = (lat: any, lng: any): boolean => {
+    if (lat === null || lat === undefined || lng === null || lng === undefined) return false;
+    const numLat = parseFloat(lat);
+    const numLng = parseFloat(lng);
+    return !isNaN(numLat) && !isNaN(numLng) && 
+           numLat !== 0 && numLng !== 0 &&
+           numLat >= -90 && numLat <= 90 &&
+           numLng >= -180 && numLng <= 180;
+  };
+
   // Fallback for farms without valid coordinates
-  const farmsWithoutCoords = farms.filter(f => 
-    !f.latitude || !f.longitude || 
-    isNaN(f.latitude) || isNaN(f.longitude) ||
-    f.latitude === 0 || f.longitude === 0
-  );
+  const farmsWithoutCoords = farms.filter(f => !isValidCoordinate(f.latitude, f.longitude));
 
   return (
     <div className={className}>
