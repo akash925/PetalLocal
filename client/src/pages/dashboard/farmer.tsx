@@ -57,7 +57,7 @@ export default function FarmerDashboard() {
       category: "",
       variety: "",
       unit: "",
-      pricePerUnit: 0,
+      pricePerUnit: "0",
       isOrganic: false,
       isSeasonal: false,
       isHeirloom: false,
@@ -127,6 +127,7 @@ export default function FarmerDashboard() {
   });
 
   const onSubmit = (data: any) => {
+    console.log("Form submitted with data:", data);
     const farmId = farms.length > 0 ? farms[0].id : null;
     if (!farmId) {
       toast({
@@ -137,18 +138,25 @@ export default function FarmerDashboard() {
       return;
     }
     
-    createProduceMutation.mutate({
+    const submitData = {
       ...data,
-      pricePerUnit: parseFloat(data.pricePerUnit),
+      pricePerUnit: parseFloat(data.pricePerUnit) || 0,
       farmId: farmId,
-    });
+    };
+    
+    console.log("Submitting data:", submitData);
+    createProduceMutation.mutate(submitData);
   };
 
   const onFarmSubmit = (data: any) => {
-    createFarmMutation.mutate({
+    console.log("Farm form submitted with data:", data);
+    const submitData = {
       ...data,
       ownerId: user?.id,
-    });
+    };
+    
+    console.log("Submitting farm data:", submitData);
+    createFarmMutation.mutate(submitData);
   };
 
   if (user?.role !== "farmer") {
@@ -271,6 +279,7 @@ export default function FarmerDashboard() {
                                   step="0.01"
                                   placeholder="0.00"
                                   {...field}
+                                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                                 />
                               </FormControl>
                               <FormMessage />

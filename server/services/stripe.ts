@@ -4,6 +4,8 @@ interface PaymentResult {
   success: boolean;
   clientSecret?: string;
   paymentIntentId?: string;
+  platformFee?: string;
+  farmerAmount?: string;
   error?: string;
 }
 
@@ -31,11 +33,17 @@ class StripeService {
     try {
       console.log(`[STRIPE] Creating payment intent for order ${orderId} amount: ${amount}`);
       
+      const PLATFORM_FEE_RATE = 0.10; // 10%
+      const platformFee = amount * PLATFORM_FEE_RATE;
+      const farmerAmount = amount - platformFee;
+      
       const paymentIntent = await this.stripe.paymentIntents.create({
         amount: Math.round(amount * 100), // Convert to cents
         currency: 'usd',
         metadata: {
           orderId: orderId.toString(),
+          platformFee: platformFee.toFixed(2),
+          farmerAmount: farmerAmount.toFixed(2),
         },
         automatic_payment_methods: {
           enabled: true,
@@ -46,6 +54,8 @@ class StripeService {
         success: true,
         clientSecret: paymentIntent.client_secret!,
         paymentIntentId: paymentIntent.id,
+        platformFee: platformFee.toFixed(2),
+        farmerAmount: farmerAmount.toFixed(2),
       };
     } catch (error) {
       console.error('[STRIPE] Payment intent creation failed:', error);

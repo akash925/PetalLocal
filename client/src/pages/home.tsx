@@ -46,6 +46,11 @@ export default function Home() {
                   placeholder="Search for fresh produce..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && searchQuery.trim()) {
+                      window.location.href = `/produce?search=${encodeURIComponent(searchQuery)}`;
+                    }
+                  }}
                   className="w-full pl-12 pr-4 py-4 text-lg rounded-xl border-0 shadow-lg"
                 />
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center">

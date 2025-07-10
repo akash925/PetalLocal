@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { MapPin, Navigation } from "lucide-react";
+import { MapPin, Navigation, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useLocation } from "wouter";
 
 interface Farm {
   id: number;
@@ -42,6 +43,7 @@ export function FarmMap({ farms, selectedFarm, onFarmSelect }: FarmMapProps) {
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>([36.7783, -119.4179]);
   const mapContainerRef = useRef<HTMLDivElement>(null);
+  const [, setLocation] = useLocation();
 
   useEffect(() => {
     // Get user's location
@@ -151,7 +153,10 @@ export function FarmMap({ farms, selectedFarm, onFarmSelect }: FarmMapProps) {
                     left: `${x}%`,
                     top: `${y}%`,
                   }}
-                  onClick={() => onFarmSelect?.(farm)}
+                  onClick={() => {
+                    onFarmSelect?.(farm);
+                    setLocation(`/farms/${farm.id}`);
+                  }}
                   title={`${farm.name} - ${farm.city}, ${farm.state}`}
                 >
                   <div className={`w-full h-full rounded-full border-2 border-white shadow-lg ${
@@ -214,7 +219,10 @@ export function FarmMap({ farms, selectedFarm, onFarmSelect }: FarmMapProps) {
                     ? 'border-green-500 bg-green-50'
                     : 'border-gray-200 hover:border-gray-300 hover:shadow-md'
                 }`}
-                onClick={() => onFarmSelect?.(farm)}
+                onClick={() => {
+                  onFarmSelect?.(farm);
+                  setLocation(`/farms/${farm.id}`);
+                }}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">

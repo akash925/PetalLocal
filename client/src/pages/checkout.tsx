@@ -214,7 +214,7 @@ export default function Checkout() {
                     <span>${total.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between items-center text-sm text-gray-600">
-                    <span>Platform fee (8%)</span>
+                    <span>Platform fee (10%)</span>
                     <span>${platformFee}</span>
                   </div>
                   <div className="flex justify-between items-center text-sm text-green-600">

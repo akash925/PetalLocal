@@ -124,10 +124,7 @@ export function Header() {
                   {/* User dropdown menu */}
                   {isUserMenuOpen && (
                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 border border-gray-200">
-                      <div className="px-4 py-2 text-sm text-gray-700 border-b border-gray-100">
-                        <div className="font-medium">Hello, {user?.firstName || user?.email}</div>
-                        <div className="text-xs text-gray-500 capitalize">{user?.role || 'buyer'}</div>
-                      </div>
+
                       
                       {user?.role === 'farmer' && (
                         <Link href="/dashboard/farmer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
