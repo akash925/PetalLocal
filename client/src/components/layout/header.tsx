@@ -107,7 +107,7 @@ export function Header() {
             </Link>
 
             {/* User Menu */}
-            <div className="hidden md:flex items-center space-x-4">
+            <div className="flex items-center space-x-4">
               {isAuthenticated ? (
                 <div className="flex items-center space-x-2">
                   <div className="flex items-center space-x-2 px-3 py-1 bg-green-50 rounded-lg">
@@ -164,7 +164,20 @@ export function Header() {
               <Link href="/farms" className="px-3 py-2 text-sm font-medium text-gray-700">
                 Local Farms
               </Link>
-              {!isAuthenticated && (
+              {isAuthenticated ? (
+                <>
+                  <div className="px-3 py-2 text-sm font-medium text-gray-700">
+                    Hello, {user?.firstName || user?.email}
+                  </div>
+                  <button
+                    onClick={() => logoutMutation.mutate()}
+                    disabled={logoutMutation.isPending}
+                    className="px-3 py-2 text-sm font-medium text-red-600 text-left"
+                  >
+                    Sign Out
+                  </button>
+                </>
+              ) : (
                 <>
                   <Link href="/auth/login" className="px-3 py-2 text-sm font-medium text-gray-700">
                     Sign In
