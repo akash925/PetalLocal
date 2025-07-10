@@ -537,9 +537,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create order
       const order = await storage.createOrder(orderData);
 
-      // Create order items
+      // Create order items and reduce inventory
       if (req.body.items && Array.isArray(req.body.items)) {
         for (const item of req.body.items) {
+          // Create order item
           await storage.createOrderItem({
             orderId: order.id,
             produceItemId: item.produceItemId,
@@ -547,6 +548,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             pricePerUnit: item.pricePerUnit,
             totalPrice: (item.quantity * item.pricePerUnit).toString(),
           });
+
+          // Reduce inventory for the purchased item
+          const currentInventory = await storage.getInventory(item.produceItemId);
+          if (currentInventory) {
+            const newQuantity = Math.max(0, currentInventory.quantityAvailable - item.quantity);
+            await storage.updateInventory(item.produceItemId, {
+              quantityAvailable: newQuantity
+            });
+          }
         }
       }
 

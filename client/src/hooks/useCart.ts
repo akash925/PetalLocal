@@ -56,17 +56,17 @@ export function useCart() {
     }
   }, [items]);
 
-  const addItem = useCallback((item: Omit<CartItem, "quantity">) => {
+  const addItem = useCallback((item: Omit<CartItem, "quantity">, quantity: number = 1) => {
     setItems(prev => {
       const existingItem = prev.find(i => i.id === item.id);
       if (existingItem) {
         return prev.map(i =>
           i.id === item.id
-            ? { ...i, quantity: i.quantity + 1 }
+            ? { ...i, quantity: i.quantity + quantity }
             : i
         );
       }
-      return [...prev, { ...item, quantity: 1 }];
+      return [...prev, { ...item, quantity }];
     });
   }, []);
 

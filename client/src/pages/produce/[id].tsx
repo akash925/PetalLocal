@@ -25,16 +25,14 @@ export default function ProduceDetail() {
   const handleAddToCart = () => {
     if (!produceItem) return;
     
-    for (let i = 0; i < quantity; i++) {
-      addItem({
-        id: produceItem.id,
-        name: produceItem.name,
-        price: parseFloat(produceItem.pricePerUnit),
-        unit: produceItem.unit,
-        farmName: produceItem.farm?.name || "Local Farm",
-        imageUrl: produceItem.imageUrl,
-      });
-    }
+    addItem({
+      id: produceItem.id,
+      name: produceItem.name,
+      price: parseFloat(produceItem.pricePerUnit),
+      unit: produceItem.unit,
+      farmName: produceItem.farm?.name || "Local Farm",
+      imageUrl: produceItem.imageUrl,
+    }, quantity);
     
     toast({
       title: "Added to cart",

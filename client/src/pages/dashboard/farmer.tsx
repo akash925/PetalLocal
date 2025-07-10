@@ -38,6 +38,7 @@ export default function FarmerDashboard() {
   const [activeTab, setActiveTab] = useState("produce");
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [editingInventory, setEditingInventory] = useState<number | null>(null);
+  const [editingItem, setEditingItem] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Check URL parameters for tab routing
@@ -182,6 +183,30 @@ export default function FarmerDashboard() {
       toast({
         title: "Error updating farm",
         description: error.message || "Failed to update farm profile. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const editProduceMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: any }) => {
+      const response = await apiRequest("PUT", `/api/produce/${id}`, data);
+      return response;
+    },
+    onSuccess: () => {
+      toast({
+        title: "Produce item updated successfully!",
+        description: "Your produce item changes have been saved",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/produce"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/produce", user?.id] });
+      setEditingItem(null);
+      form.reset();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error updating produce item",
+        description: error.message || "Failed to update produce item. Please try again.",
         variant: "destructive",
       });
     },
@@ -668,7 +693,26 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                     <div className="flex justify-between items-start mb-3">
                       <h3 className="font-semibold text-gray-900">{item.name}</h3>
                       <div className="flex gap-1">
-                        <Button variant="ghost" size="sm">
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => {
+                            // Populate form with existing data
+                            form.reset({
+                              name: item.name || "",
+                              description: item.description || "",
+                              category: item.category || "",
+                              variety: item.variety || "",
+                              unit: item.unit || "",
+                              pricePerUnit: item.pricePerUnit || "0",
+                              quantityAvailable: item.inventory?.quantityAvailable?.toString() || "0",
+                              isOrganic: item.isOrganic || false,
+                              isSeasonal: item.isSeasonal || false,
+                              isHeirloom: item.isHeirloom || false,
+                            });
+                            setEditingItem(item.id);
+                          }}
+                        >
                           <Edit className="w-4 h-4" />
                         </Button>
                         <Button variant="ghost" size="sm" className="text-red-500">
@@ -765,6 +809,171 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                   </CardContent>
                 </Card>
               ))}
+              
+              {/* Edit Item Form */}
+              {editingItem && (
+                <Card className="border-2 border-blue-200">
+                  <CardHeader>
+                    <CardTitle className="text-blue-600">Edit Produce Item</CardTitle>
+                    <CardDescription>Update the details of your produce item</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Form {...form}>
+                      <form onSubmit={form.handleSubmit((data) => {
+                        const editData = {
+                          ...data,
+                          pricePerUnit: data.pricePerUnit,
+                          farmId: farms[0]?.id,
+                          quantityAvailable: data.quantityAvailable || "0",
+                        };
+                        
+                        // Call edit mutation
+                        editProduceMutation.mutate({
+                          id: editingItem,
+                          data: editData
+                        });
+                      })} className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="name"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Product Name</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="e.g., Fresh Tomatoes" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="category"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Category</FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select category" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="vegetables">Vegetables</SelectItem>
+                                    <SelectItem value="fruits">Fruits</SelectItem>
+                                    <SelectItem value="herbs">Herbs</SelectItem>
+                                    <SelectItem value="grains">Grains</SelectItem>
+                                    <SelectItem value="dairy">Dairy</SelectItem>
+                                    <SelectItem value="other">Other</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <FormField
+                            control={form.control}
+                            name="pricePerUnit"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Price per Unit</FormLabel>
+                                <FormControl>
+                                  <Input type="number" step="0.01" placeholder="e.g., 4.99" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="unit"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Unit</FormLabel>
+                                <Select onValueChange={field.onChange} value={field.value}>
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select unit" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="lb">Pound (lb)</SelectItem>
+                                    <SelectItem value="kg">Kilogram (kg)</SelectItem>
+                                    <SelectItem value="each">Each</SelectItem>
+                                    <SelectItem value="bunch">Bunch</SelectItem>
+                                    <SelectItem value="dozen">Dozen</SelectItem>
+                                    <SelectItem value="pint">Pint</SelectItem>
+                                    <SelectItem value="quart">Quart</SelectItem>
+                                    <SelectItem value="gallon">Gallon</SelectItem>
+                                    <SelectItem value="bag">Bag</SelectItem>
+                                    <SelectItem value="box">Box</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="quantityAvailable"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Quantity Available</FormLabel>
+                                <FormControl>
+                                  <Input type="number" placeholder="e.g., 50" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                        
+                        <FormField
+                          control={form.control}
+                          name="description"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Description</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  placeholder="Describe your produce - growing methods, taste, best uses..."
+                                  rows={3}
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        
+                        <div className="flex gap-2">
+                          <Button
+                            type="submit"
+                            className="bg-blue-500 hover:bg-blue-600"
+                            disabled={editProduceMutation.isPending}
+                          >
+                            {editProduceMutation.isPending ? "Updating..." : "Update Item"}
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setEditingItem(null)}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </form>
+                    </Form>
+                  </CardContent>
+                </Card>
+              )}
             </div>
 
             {produceItems.length === 0 && !isAddingProduce && (
