@@ -1,0 +1,89 @@
+
+> rest-express@1.0.0 dev
+7:18:31 PM [express] serving on port 5000s
+Browserslist: browsers data (caniuse-lite) is 9 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+Auth check - Session: Session {
+  cookie: {
+    path: '/',
+    _expires: 2025-07-17T19:18:35.668Z,
+    originalMaxAge: 604800000,
+    httpOnly: true,
+    secure: false
+  }
+}
+Auth check - User ID: undefined
+Auth failed - No userId in session
+7:18:35 PM [express] GET /api/auth/user 401 in 5ms :: {"message":"Unauthorized"}
+Auth check - Session: Session {
+  cookie: {
+    path: '/',
+    _expires: 2025-07-17T19:18:35.675Z,
+    originalMaxAge: 604800000,
+    httpOnly: true,
+    secure: false
+  }
+}
+Auth check - User ID: undefined
+Auth failed - No userId in session
+7:18:35 PM [express] GET /api/auth/user 401 in 1ms :: {"message":"Unauthorized"}
+Auth check - Session: Session {
+  cookie: {
+    path: '/',
+    _expires: 2025-07-17T17:22:12.328Z,
+    originalMaxAge: 604800000,
+    httpOnly: true,
+    secure: false
+  },
+  userId: 4,
+  userRole: 'farmer'
+}
+Auth check - User ID: 4
+Auth passed for user: 4
+7:18:44 PM [express] GET /api/auth/user 304 in 3138ms :: {"id":4,"email":"akash@agarwalhome.com","fi…
+Auth check - Session: Session {
+  cookie: {
+    path: '/',
+    _expires: 2025-07-17T17:22:12.328Z,
+    originalMaxAge: 604800000,
+    httpOnly: true,
+    secure: false
+  },
+  userId: 4,
+  userRole: 'farmer'
+}
+Auth check - User ID: 4
+Auth passed for user: 4
+7:18:44 PM [express] GET /api/auth/user 304 in 195ms :: {"id":4,"email":"akash@agarwalhome.com","fir…
+Auth check - Session: Session {
+  cookie: {
+    path: '/',
+    _expires: 2025-07-17T17:22:12.328Z,
+    originalMaxAge: 604800000,
+    httpOnly: true,
+    secure: false
+  },
+  userId: 4,
+  userRole: 'farmer'
+}
+Auth check - User ID: 4
+Auth passed for user: 4
+Auth check - Session: Session {
+  cookie: {
+    path: '/',
+    _expires: 2025-07-17T17:22:12.328Z,
+    originalMaxAge: 604800000,
+    httpOnly: true,
+    secure: false
+  },
+  userId: 4,
+  userRole: 'farmer'
+}
+Auth check - User ID: 4
+Auth passed for user: 4
+7:18:44 PM [express] GET /api/messages/unread-count 304 in 196ms :: {"count":0}
+7:18:45 PM [express] GET /api/farms/owned/4 304 in 407ms :: [{"id":7,"ownerId":4,"name":"Shoreland P…
+Searching for: { query: undefined, category: undefined }
+Search result count: 12
+7:18:45 PM [express] GET /api/produce 304 in 203ms :: [{"id":12,"name":"Frontend Test Carrots","desc…

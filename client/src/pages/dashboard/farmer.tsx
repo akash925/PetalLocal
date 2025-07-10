@@ -64,7 +64,7 @@ export default function FarmerDashboard() {
   });
 
   const form = useForm({
-    resolver: zodResolver(insertProduceItemSchema),
+    resolver: zodResolver(insertProduceItemSchema.omit({ farmId: true })),
     defaultValues: {
       name: "",
       description: "",
@@ -281,7 +281,12 @@ export default function FarmerDashboard() {
                 </CardHeader>
                 <CardContent>
                   <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    <form onSubmit={(e) => {
+                      console.log("Form onSubmit triggered");
+                      console.log("Form validation state:", form.formState);
+                      console.log("Form errors:", form.formState.errors);
+                      form.handleSubmit(onSubmit)(e);
+                    }} className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
@@ -409,7 +414,8 @@ export default function FarmerDashboard() {
                           onClick={(e) => {
                             console.log("Create Produce Item button clicked");
                             console.log("Form values:", form.getValues());
-                            console.log("Form state:", form.formState);
+                            console.log("Form errors:", form.formState.errors);
+                            console.log("Form is valid:", form.formState.isValid);
                             console.log("Farms available:", farms);
                           }}
                         >
