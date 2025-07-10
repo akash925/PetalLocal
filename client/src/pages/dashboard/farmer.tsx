@@ -163,6 +163,9 @@ export default function FarmerDashboard() {
 
   const onFarmSubmit = (data: any) => {
     console.log("Farm form submitted with data:", data);
+    console.log("Form validation state:", farmForm.formState);
+    console.log("Form errors:", farmForm.formState.errors);
+    
     const submitData = {
       ...data,
       ownerId: user?.id,

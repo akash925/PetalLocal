@@ -180,6 +180,13 @@ export const insertFarmSchema = createInsertSchema(farms).omit({
   updatedAt: true,
 }).extend({
   zipCode: z.string().min(1, "ZIP code is required"),
+  name: z.string().optional(),
+  description: z.string().optional(),
+  address: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  phoneNumber: z.string().optional(),
+  website: z.string().optional(),
 });
 
 export const insertProduceItemSchema = createInsertSchema(produceItems).omit({
