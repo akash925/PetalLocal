@@ -7,6 +7,7 @@ import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { stripeService } from "./services/stripe";
 import { emailService } from "./services/email";
+import { calculatePlatformFee } from "./config";
 
 // Extend session interface
 declare module "express-session" {
@@ -294,10 +295,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid amount" });
       }
 
-      // Platform take rate (configurable)
-      const platformTakeRate = 0.08; // 8% platform fee
-      const platformFee = amount * platformTakeRate;
-      const farmerAmount = amount - platformFee;
+      // Calculate platform fee using configurable rate
+      const { platformFee, farmerAmount } = calculatePlatformFee(amount);
 
       console.log(`[PAYMENT] Total: $${amount}, Platform Fee: $${platformFee.toFixed(2)}, Farmer Gets: $${farmerAmount.toFixed(2)}`);
 
