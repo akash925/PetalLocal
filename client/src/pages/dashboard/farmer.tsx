@@ -57,7 +57,7 @@ export default function FarmerDashboard() {
       category: "",
       variety: "",
       unit: "",
-      pricePerUnit: "",
+      pricePerUnit: 0,
       isOrganic: false,
       isSeasonal: false,
       isHeirloom: false,
