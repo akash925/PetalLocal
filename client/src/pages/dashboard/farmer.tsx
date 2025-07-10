@@ -478,7 +478,13 @@ export default function FarmerDashboard() {
                     </CardHeader>
                     <CardContent>
                       <Form {...farmForm}>
-                        <form onSubmit={farmForm.handleSubmit(onFarmSubmit)} className="space-y-6">
+                        <form onSubmit={(e) => {
+                          console.log("Form onSubmit event triggered");
+                          console.log("Form data before submit:", farmForm.getValues());
+                          console.log("Form valid:", farmForm.formState.isValid);
+                          console.log("Form errors:", farmForm.formState.errors);
+                          farmForm.handleSubmit(onFarmSubmit)(e);
+                        }} className="space-y-6">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <FormField
                               control={farmForm.control}
@@ -629,6 +635,12 @@ export default function FarmerDashboard() {
                             <Button
                               type="submit"
                               disabled={createFarmMutation.isPending}
+                              onClick={(e) => {
+                                console.log("Create Farm Profile button clicked");
+                                console.log("Form values:", farmForm.getValues());
+                                console.log("Form state:", farmForm.formState);
+                                console.log("Event:", e);
+                              }}
                               className="bg-green-500 hover:bg-green-600"
                             >
                               {createFarmMutation.isPending ? "Creating..." : "Create Farm Profile"}
