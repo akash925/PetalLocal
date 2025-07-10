@@ -4,7 +4,7 @@ import { useCart } from "@/hooks/useCart";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, Menu, User, LogOut, MessageCircle, ChevronDown, Settings } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +16,25 @@ export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const { toast } = useToast();
+  const userMenuRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close menus when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+        setIsMobileMenuOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // Get unread message count
   const { data: unreadCount = { count: 0 } } = useQuery({
@@ -108,7 +127,7 @@ export function Header() {
             {/* User Menu */}
             <div className="flex items-center space-x-4">
               {isAuthenticated ? (
-                <div className="relative">
+                <div className="relative" ref={userMenuRef}>
                   <div className="flex items-center space-x-2">
                     <div className="flex items-center space-x-2 px-3 py-1 bg-green-50 rounded-lg cursor-pointer hover:bg-green-100"
                          onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}>
@@ -143,7 +162,10 @@ export function Header() {
                       )}
                       
                       <button
-                        onClick={() => logoutMutation.mutate()}
+                        onClick={() => {
+                          logoutMutation.mutate();
+                          setIsUserMenuOpen(false);
+                        }}
                         disabled={logoutMutation.isPending}
                         className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
                       >
@@ -181,7 +203,7 @@ export function Header() {
 
         {/* Mobile menu for small screens */}
         {isMobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200">
+          <div className="md:hidden py-4 border-t border-gray-200" ref={mobileMenuRef}>
             <div className="flex flex-col space-y-2">
               <Link href="/produce" className="px-3 py-2 text-sm font-medium text-gray-700">
                 Browse Produce
@@ -205,7 +227,10 @@ export function Header() {
                     Hello, {user?.firstName || user?.email}
                   </div>
                   <button
-                    onClick={() => logoutMutation.mutate()}
+                    onClick={() => {
+                      logoutMutation.mutate();
+                      setIsMobileMenuOpen(false);
+                    }}
                     disabled={logoutMutation.isPending}
                     className="px-3 py-2 text-sm font-medium text-red-600 text-left"
                   >
