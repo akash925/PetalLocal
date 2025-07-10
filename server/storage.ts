@@ -176,10 +176,32 @@ export class DatabaseStorage implements IStorage {
     return item;
   }
 
-  async getProduceItemsByFarm(farmId: number): Promise<ProduceItem[]> {
+  async getProduceItemsByFarm(farmId: number): Promise<any[]> {
     return await db
-      .select()
+      .select({
+        id: produceItems.id,
+        name: produceItems.name,
+        description: produceItems.description,
+        category: produceItems.category,
+        variety: produceItems.variety,
+        pricePerUnit: produceItems.pricePerUnit,
+        unit: produceItems.unit,
+        imageUrl: produceItems.imageUrl,
+        isOrganic: produceItems.isOrganic,
+        isSeasonal: produceItems.isSeasonal,
+        isHeirloom: produceItems.isHeirloom,
+        harvestDate: produceItems.harvestDate,
+        farmId: produceItems.farmId,
+        isActive: produceItems.isActive,
+        createdAt: produceItems.createdAt,
+        updatedAt: produceItems.updatedAt,
+        inventory: {
+          quantityAvailable: inventories.quantityAvailable,
+          lastUpdated: inventories.lastUpdated,
+        }
+      })
       .from(produceItems)
+      .leftJoin(inventories, eq(produceItems.id, inventories.produceItemId))
       .where(and(eq(produceItems.farmId, farmId), eq(produceItems.isActive, true)))
       .orderBy(asc(produceItems.name));
   }
@@ -227,10 +249,15 @@ export class DatabaseStorage implements IStorage {
           latitude: farms.latitude,
           longitude: farms.longitude,
           isOrganic: farms.isOrganic,
+        },
+        inventory: {
+          quantityAvailable: inventories.quantityAvailable,
+          lastUpdated: inventories.lastUpdated,
         }
       })
       .from(produceItems)
       .leftJoin(farms, eq(produceItems.farmId, farms.id))
+      .leftJoin(inventories, eq(produceItems.id, inventories.produceItemId))
       .where(conditions.length > 1 ? and(...conditions) : conditions[0])
       .orderBy(desc(produceItems.createdAt));
     
@@ -296,12 +323,26 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateInventory(produceItemId: number, inventory: Partial<InsertInventory>): Promise<Inventory> {
-    const [updatedInventory] = await db
-      .update(inventories)
-      .set({ ...inventory, lastUpdated: new Date() })
-      .where(eq(inventories.produceItemId, produceItemId))
-      .returning();
-    return updatedInventory;
+    // Try to insert first, if it exists, update it
+    try {
+      const [newInventory] = await db
+        .insert(inventories)
+        .values({ 
+          produceItemId, 
+          quantityAvailable: inventory.quantityAvailable || 0,
+          lastUpdated: new Date() 
+        })
+        .returning();
+      return newInventory;
+    } catch (error) {
+      // If insert fails due to unique constraint, update existing record
+      const [updatedInventory] = await db
+        .update(inventories)
+        .set({ ...inventory, lastUpdated: new Date() })
+        .where(eq(inventories.produceItemId, produceItemId))
+        .returning();
+      return updatedInventory;
+    }
   }
 
   // Order operations

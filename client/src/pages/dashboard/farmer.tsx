@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useForm } from "react-hook-form";
@@ -15,8 +15,17 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
-import { insertProduceItemSchema, insertFarmSchema } from "@shared/schema";
-import { Plus, Edit, Trash2, Package } from "lucide-react";
+import { insertProduceItemSchema, insertFarmSchema, insertInventorySchema } from "@shared/schema";
+import { z } from "zod";
+import { Plus, Edit, Trash2, Package, Upload, Download, Image } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 export default function FarmerDashboard() {
   const { user } = useAuth();
@@ -27,6 +36,9 @@ export default function FarmerDashboard() {
   const [isCreatingFarm, setIsCreatingFarm] = useState(false);
   const [isEditingFarm, setIsEditingFarm] = useState(false);
   const [activeTab, setActiveTab] = useState("produce");
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
+  const [editingInventory, setEditingInventory] = useState<number | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Check URL parameters for tab routing
   useEffect(() => {
@@ -64,7 +76,10 @@ export default function FarmerDashboard() {
   });
 
   const form = useForm({
-    resolver: zodResolver(insertProduceItemSchema.omit({ farmId: true })),
+    resolver: zodResolver(insertProduceItemSchema.omit({ farmId: true }).extend({
+      quantityAvailable: z.string().optional(),
+      imageFile: z.any().optional(),
+    })),
     defaultValues: {
       name: "",
       description: "",
@@ -72,6 +87,7 @@ export default function FarmerDashboard() {
       variety: "",
       unit: "",
       pricePerUnit: "0",
+      quantityAvailable: "0",
       isOrganic: false,
       isSeasonal: false,
       isHeirloom: false,
@@ -187,6 +203,7 @@ export default function FarmerDashboard() {
       ...data,
       pricePerUnit: data.pricePerUnit, // Keep as string since database expects string
       farmId: farmId,
+      quantityAvailable: data.quantityAvailable || "0",
     };
     
     console.log("Submitting data:", submitData);
@@ -262,13 +279,120 @@ export default function FarmerDashboard() {
           <TabsContent value="produce" className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-semibold text-gray-900">Produce Items</h2>
-              <Button
-                onClick={() => setIsAddingProduce(true)}
-                className="bg-green-500 hover:bg-green-600"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Produce
-              </Button>
+              <div className="flex gap-2">
+                <Dialog open={showBulkUpload} onOpenChange={setShowBulkUpload}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="border-green-500 text-green-600 hover:bg-green-50">
+                      <Upload className="w-4 h-4 mr-2" />
+                      Bulk Upload CSV
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Bulk Upload Produce Items</DialogTitle>
+                      <DialogDescription>
+                        Upload multiple produce items at once using our CSV template
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="p-4 bg-blue-50 rounded-lg">
+                        <h4 className="font-medium text-blue-900 mb-2">Step 1: Download Template</h4>
+                        <p className="text-sm text-blue-700 mb-3">
+                          Download our CSV template with all the required columns and sample data
+                        </p>
+                        <Button 
+                          variant="outline" 
+                          className="w-full" 
+                          onClick={() => {
+                            const csvContent = `name,description,category,variety,unit,pricePerUnit,quantityAvailable,isOrganic,isSeasonal,isHeirloom
+Fresh Tomatoes,Vine-ripened organic tomatoes,vegetables,Roma,lb,4.50,25,true,true,false
+Sweet Corn,Fresh picked sweet corn,vegetables,Silver Queen,each,1.25,50,false,true,false
+Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
+                            const blob = new Blob([csvContent], { type: 'text/csv' });
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = 'produce-template.csv';
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                          }}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Download CSV Template
+                        </Button>
+                      </div>
+                      
+                      <div className="p-4 bg-green-50 rounded-lg">
+                        <h4 className="font-medium text-green-900 mb-2">Step 2: Upload Your CSV</h4>
+                        <p className="text-sm text-green-700 mb-3">
+                          Upload your completed CSV file to create multiple produce items
+                        </p>
+                        <input
+                          type="file"
+                          accept=".csv"
+                          ref={fileInputRef}
+                          className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              try {
+                                const text = await file.text();
+                                const lines = text.split('\n').filter(line => line.trim());
+                                const headers = lines[0].split(',').map(h => h.trim());
+                                
+                                const csvData = lines.slice(1).map(line => {
+                                  const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
+                                  const row: any = {};
+                                  headers.forEach((header, index) => {
+                                    row[header] = values[index];
+                                  });
+                                  return row;
+                                });
+
+                                // Upload to backend
+                                const response = await apiRequest("POST", "/api/produce/bulk-upload", {
+                                  csvData
+                                });
+
+                                toast({
+                                  title: "CSV Upload Complete",
+                                  description: `Created ${response.created} items${response.errors > 0 ? `, ${response.errors} errors` : ''}`,
+                                });
+
+                                // Refresh the produce list
+                                queryClient.invalidateQueries({ queryKey: ["/api/produce", user?.id] });
+                                setShowBulkUpload(false);
+
+                              } catch (error: any) {
+                                toast({
+                                  title: "Upload Error",
+                                  description: error.message || "Failed to process CSV file",
+                                  variant: "destructive",
+                                });
+                              }
+                            }
+                          }}
+                        />
+                        <Button 
+                          className="w-full bg-green-500 hover:bg-green-600" 
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          <Upload className="w-4 h-4 mr-2" />
+                          Upload CSV File
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+                
+                <Button
+                  onClick={() => setIsAddingProduce(true)}
+                  className="bg-green-500 hover:bg-green-600"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Produce
+                </Button>
+              </div>
             </div>
 
             {isAddingProduce && (
@@ -406,6 +530,104 @@ export default function FarmerDashboard() {
                         />
                       </div>
 
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="quantityAvailable"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Quantity Available</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  placeholder="0"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="imageFile"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Product Image (Optional)</FormLabel>
+                              <FormControl>
+                                <div className="flex items-center gap-2">
+                                  <Input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => field.onChange(e.target.files?.[0])}
+                                    className="flex-1"
+                                  />
+                                  <Image className="w-4 h-4 text-gray-400" />
+                                </div>
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="isOrganic"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                              <div className="space-y-1 leading-none">
+                                <FormLabel>Organic</FormLabel>
+                              </div>
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="isSeasonal"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                              <div className="space-y-1 leading-none">
+                                <FormLabel>Seasonal</FormLabel>
+                              </div>
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="isHeirloom"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value}
+                                  onCheckedChange={field.onChange}
+                                />
+                              </FormControl>
+                              <div className="space-y-1 leading-none">
+                                <FormLabel>Heirloom</FormLabel>
+                              </div>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
                       <div className="flex gap-4 pt-4">
                         <Button
                           type="submit"
@@ -468,10 +690,77 @@ export default function FarmerDashboard() {
                           per {item.unit}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <Package className="w-4 h-4" />
-                        <span>In Stock</span>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Package className="w-4 h-4" />
+                          <span className={
+                            item.inventory?.quantityAvailable > 0 
+                              ? "text-green-600" 
+                              : "text-red-500"
+                          }>
+                            {item.inventory?.quantityAvailable > 0 
+                              ? `${item.inventory.quantityAvailable} in stock` 
+                              : "Out of stock"
+                            }
+                          </span>
+                        </div>
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => setEditingInventory(editingInventory === item.id ? null : item.id)}
+                          className="text-blue-600 hover:text-blue-700"
+                        >
+                          Update Stock
+                        </Button>
                       </div>
+                      
+                      {editingInventory === item.id && (
+                        <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                          <div className="flex gap-2">
+                            <Input
+                              type="number"
+                              placeholder="Quantity"
+                              defaultValue={item.inventory?.quantityAvailable || 0}
+                              className="flex-1"
+                              id={`inventory-${item.id}`}
+                            />
+                            <Button 
+                              size="sm"
+                              onClick={async () => {
+                                const input = document.getElementById(`inventory-${item.id}`) as HTMLInputElement;
+                                const quantity = input.value;
+                                try {
+                                  await apiRequest("PUT", `/api/inventory/${item.id}`, {
+                                    quantityAvailable: parseInt(quantity)
+                                  });
+                                  toast({
+                                    title: "Stock updated",
+                                    description: "Inventory has been updated successfully",
+                                  });
+                                  queryClient.invalidateQueries({ queryKey: ["/api/produce", user?.id] });
+                                  setEditingInventory(null);
+                                } catch (error: any) {
+                                  toast({
+                                    title: "Error",
+                                    description: error.message || "Failed to update inventory",
+                                    variant: "destructive",
+                                  });
+                                }
+                              }}
+                              className="bg-green-500 hover:bg-green-600"
+                            >
+                              Save
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => setEditingInventory(null)}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

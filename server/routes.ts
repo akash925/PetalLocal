@@ -194,11 +194,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log("Creating produce with data:", req.body);
       console.log("User session:", req.session);
       
-      const itemData = insertProduceItemSchema.parse(req.body);
-      console.log("Validated data:", itemData);
+      const { quantityAvailable, ...itemData } = req.body;
+      const parsedItemData = insertProduceItemSchema.parse(itemData);
+      console.log("Validated data:", parsedItemData);
       
-      const item = await storage.createProduceItem(itemData);
+      const item = await storage.createProduceItem(parsedItemData);
       console.log("Created produce item:", item);
+      
+      // Create initial inventory if quantityAvailable is provided
+      if (quantityAvailable !== undefined) {
+        await storage.updateInventory(item.id, {
+          produceItemId: item.id,
+          quantityAvailable: parseInt(quantityAvailable) || 0,
+        });
+      }
       
       res.json(item);
     } catch (error) {
@@ -344,6 +353,124 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Get farm error:", error);
       res.status(500).json({ message: "Failed to get farm" });
+    }
+  });
+
+  // Inventory routes
+  app.put("/api/inventory/:produceItemId", requireAuth, requireRole("farmer"), async (req: any, res) => {
+    try {
+      const produceItemId = parseInt(req.params.produceItemId);
+      const userId = req.session?.userId;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      // Check if produce item exists and belongs to user's farm
+      const produceItem = await storage.getProduceItem(produceItemId);
+      if (!produceItem) {
+        return res.status(404).json({ message: "Produce item not found" });
+      }
+      
+      const farm = await storage.getFarm(produceItem.farmId);
+      if (!farm || farm.ownerId !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const inventoryData = {
+        produceItemId,
+        quantityAvailable: req.body.quantityAvailable || 0,
+      };
+      
+      const inventory = await storage.updateInventory(produceItemId, inventoryData);
+      res.json(inventory);
+    } catch (error) {
+      console.error("Update inventory error:", error);
+      if (error instanceof Error) {
+        res.status(500).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: "Failed to update inventory" });
+      }
+    }
+  });
+
+  app.get("/api/inventory/:produceItemId", async (req, res) => {
+    try {
+      const produceItemId = parseInt(req.params.produceItemId);
+      const inventory = await storage.getInventory(produceItemId);
+      
+      if (!inventory) {
+        return res.status(404).json({ message: "Inventory not found" });
+      }
+      
+      res.json(inventory);
+    } catch (error) {
+      console.error("Get inventory error:", error);
+      res.status(500).json({ message: "Failed to get inventory" });
+    }
+  });
+
+  // CSV Bulk Upload route
+  app.post("/api/produce/bulk-upload", requireAuth, requireRole("farmer"), async (req: any, res) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+      
+      // Get farmer's farms
+      const farms = await storage.getFarmsByOwner(userId);
+      if (farms.length === 0) {
+        return res.status(400).json({ message: "You need to create a farm first" });
+      }
+      
+      const farmId = farms[0].id; // Use first farm
+      const { csvData } = req.body;
+      
+      if (!csvData || !Array.isArray(csvData)) {
+        return res.status(400).json({ message: "Invalid CSV data" });
+      }
+      
+      const createdItems = [];
+      const errors = [];
+      
+      for (let i = 0; i < csvData.length; i++) {
+        try {
+          const row = csvData[i];
+          const itemData = insertProduceItemSchema.parse({
+            ...row,
+            farmId,
+            pricePerUnit: row.pricePerUnit.toString(),
+            isOrganic: row.isOrganic === 'true' || row.isOrganic === true,
+            isSeasonal: row.isSeasonal === 'true' || row.isSeasonal === true,
+            isHeirloom: row.isHeirloom === 'true' || row.isHeirloom === true,
+          });
+          
+          const item = await storage.createProduceItem(itemData);
+          
+          // Create inventory if quantity provided
+          if (row.quantityAvailable !== undefined) {
+            await storage.updateInventory(item.id, {
+              produceItemId: item.id,
+              quantityAvailable: parseInt(row.quantityAvailable) || 0,
+            });
+          }
+          
+          createdItems.push(item);
+        } catch (error) {
+          errors.push({ row: i + 1, error: error instanceof Error ? error.message : 'Unknown error' });
+        }
+      }
+      
+      res.json({
+        success: true,
+        created: createdItems.length,
+        errors: errors.length,
+        errorDetails: errors,
+      });
+    } catch (error) {
+      console.error("Bulk upload error:", error);
+      res.status(500).json({ message: "Failed to process bulk upload" });
     }
   });
 
