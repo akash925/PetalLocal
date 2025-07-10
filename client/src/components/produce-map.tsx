@@ -9,22 +9,29 @@ if (typeof window !== 'undefined') {
   });
 }
 
-interface MapProps {
-  farms: Array<{
+interface ProduceMapProps {
+  produce: Array<{
     id: number;
     name: string;
-    latitude?: number;
-    longitude?: number;
-    address: string;
-    city: string;
-    state: string;
+    pricePerUnit: number;
+    unit: string;
     isOrganic?: boolean;
+    farm?: {
+      id: number;
+      name: string;
+      latitude?: number;
+      longitude?: number;
+      address?: string;
+      city: string;
+      state: string;
+      isOrganic?: boolean;
+    };
   }>;
-  onFarmSelect?: (farm: any) => void;
+  onProduceSelect?: (produce: any) => void;
   className?: string;
 }
 
-export function InteractiveMap({ farms, onFarmSelect, className = "" }: MapProps) {
+export function ProduceMap({ produce, onProduceSelect, className = "" }: ProduceMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
 
@@ -48,11 +55,6 @@ export function InteractiveMap({ farms, onFarmSelect, className = "" }: MapProps
       mapInstanceRef.current.remove();
     }
 
-    // Default center (US center)
-    let centerLat = 39.8283;
-    let centerLng = -98.5795;
-    let zoom = 4;
-
     // Helper function to validate coordinates
     const isValidCoordinate = (lat: any, lng: any): boolean => {
       if (lat === null || lat === undefined || lng === null || lng === undefined) return false;
@@ -64,12 +66,28 @@ export function InteractiveMap({ farms, onFarmSelect, className = "" }: MapProps
              numLng >= -180 && numLng <= 180;
     };
 
-    // Filter farms with valid coordinates
-    const farmsWithCoords = farms.filter(f => isValidCoordinate(f.latitude, f.longitude));
-    
-    if (farmsWithCoords.length > 0) {
-      const avgLat = farmsWithCoords.reduce((sum, f) => sum + parseFloat(f.latitude!), 0) / farmsWithCoords.length;
-      const avgLng = farmsWithCoords.reduce((sum, f) => sum + parseFloat(f.longitude!), 0) / farmsWithCoords.length;
+    // Group produce by farm with valid coordinates
+    const produceByFarm = new Map();
+    produce.forEach(item => {
+      if (item.farm && isValidCoordinate(item.farm.latitude, item.farm.longitude)) {
+        const farmId = item.farm.id;
+        if (!produceByFarm.has(farmId)) {
+          produceByFarm.set(farmId, { farm: item.farm, produce: [] });
+        }
+        produceByFarm.get(farmId).produce.push(item);
+      }
+    });
+
+    // Default center (US center)
+    let centerLat = 39.8283;
+    let centerLng = -98.5795;
+    let zoom = 4;
+
+    // If we have farms with coordinates, center on them
+    if (produceByFarm.size > 0) {
+      const farms = Array.from(produceByFarm.values()).map(entry => entry.farm);
+      const avgLat = farms.reduce((sum, f) => sum + parseFloat(f.latitude!), 0) / farms.length;
+      const avgLng = farms.reduce((sum, f) => sum + parseFloat(f.longitude!), 0) / farms.length;
       if (!isNaN(avgLat) && !isNaN(avgLng)) {
         centerLat = avgLat;
         centerLng = avgLng;
@@ -85,48 +103,64 @@ export function InteractiveMap({ farms, onFarmSelect, className = "" }: MapProps
       attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    // Add markers for farms with valid coordinates
-    farmsWithCoords.forEach((farm) => {
+    // Add markers for farms with produce
+    produceByFarm.forEach((farmData) => {
+      const farm = farmData.farm;
+      const farmProduce = farmData.produce;
       const lat = parseFloat(farm.latitude!);
       const lng = parseFloat(farm.longitude!);
       
-      // Double-check coordinates are valid before creating marker
       if (isNaN(lat) || isNaN(lng)) return;
       
-      const color = farm.isOrganic ? '#22c55e' : '#f97316'; // Green for organic, orange for conventional
+      const color = farm.isOrganic ? '#22c55e' : '#f97316';
       
       const marker = L.circleMarker([lat, lng], {
         color: color,
         fillColor: color,
         fillOpacity: 0.7,
-        radius: 8,
-        weight: 2
+        radius: 10,
+        weight: 3
       }).addTo(map);
 
+      // Create popup content with produce list
+      const produceList = farmProduce.map(item => 
+        `<div class="flex justify-between items-center py-1">
+          <span class="font-medium text-sm">${item.name}</span>
+          <span class="text-green-600 font-bold text-sm">$${item.pricePerUnit}/${item.unit}</span>
+        </div>`
+      ).join('');
+
       marker.bindPopup(`
-        <div class="p-2">
-          <h4 class="font-semibold text-gray-900">${farm.name}</h4>
-          <p class="text-sm text-gray-600">${farm.address || 'Address not provided'}</p>
-          <p class="text-sm text-gray-600">${farm.city}, ${farm.state}</p>
-          <p class="text-xs mt-1 ${farm.isOrganic ? 'text-green-600' : 'text-orange-600'}">
-            ${farm.isOrganic ? 'Organic Farm' : 'Conventional Farm'}
+        <div class="p-3 min-w-[200px]">
+          <h4 class="font-semibold text-gray-900 mb-2">${farm.name}</h4>
+          <p class="text-sm text-gray-600 mb-3">${farm.city}, ${farm.state}</p>
+          <div class="border-t pt-2">
+            <h5 class="font-medium text-gray-800 mb-2 text-sm">Available Produce (${farmProduce.length} items):</h5>
+            <div class="space-y-1 max-h-32 overflow-y-auto">
+              ${produceList}
+            </div>
+          </div>
+          <p class="text-xs mt-2 ${farm.isOrganic ? 'text-green-600' : 'text-orange-600'}">
+            ${farm.isOrganic ? '🌱 Organic Farm' : '🌾 Conventional Farm'}
           </p>
         </div>
       `);
 
       marker.on('click', () => {
-        onFarmSelect?.(farm);
+        if (onProduceSelect && farmProduce.length > 0) {
+          onProduceSelect(farmProduce[0]);
+        }
       });
     });
 
-    // Add user location and center map on it if available
+    // Add user location and center on it if available
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((position) => {
         const userLat = position.coords.latitude;
         const userLng = position.coords.longitude;
         
-        // Center map on user location if no farms with coordinates
-        if (farmsWithCoords.length === 0) {
+        // Center map on user location if no farms
+        if (produceByFarm.size === 0) {
           map.setView([userLat, userLng], 12);
         }
         
@@ -149,21 +183,16 @@ export function InteractiveMap({ farms, onFarmSelect, className = "" }: MapProps
         mapInstanceRef.current.remove();
       }
     };
-  }, [farms, onFarmSelect]);
+  }, [produce, onProduceSelect]);
 
-  // Helper function to validate coordinates (same as above)
-  const isValidCoordinate = (lat: any, lng: any): boolean => {
-    if (lat === null || lat === undefined || lng === null || lng === undefined) return false;
-    const numLat = parseFloat(lat);
-    const numLng = parseFloat(lng);
-    return !isNaN(numLat) && !isNaN(numLng) && 
-           numLat !== 0 && numLng !== 0 &&
-           numLat >= -90 && numLat <= 90 &&
-           numLng >= -180 && numLng <= 180;
-  };
-
-  // Fallback for farms without valid coordinates
-  const farmsWithoutCoords = farms.filter(f => !isValidCoordinate(f.latitude, f.longitude));
+  // Get produce without farm coordinates
+  const produceWithoutCoords = produce.filter(item => 
+    !item.farm || 
+    !item.farm.latitude || 
+    !item.farm.longitude ||
+    isNaN(parseFloat(item.farm.latitude)) || 
+    isNaN(parseFloat(item.farm.longitude))
+  );
 
   return (
     <div className={className}>
@@ -192,23 +221,23 @@ export function InteractiveMap({ farms, onFarmSelect, className = "" }: MapProps
           </div>
         </div>
 
-        {/* Farms without coordinates */}
-        {farmsWithoutCoords.length > 0 && (
+        {/* Produce without coordinates */}
+        {produceWithoutCoords.length > 0 && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <h4 className="font-medium text-gray-900 mb-2 flex items-center">
               <MapPin className="w-4 h-4 mr-2 text-yellow-600" />
-              Farms not shown on map (missing coordinates):
+              Produce not shown on map (missing farm coordinates):
             </h4>
-            <div className="space-y-2">
-              {farmsWithoutCoords.map((farm) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {produceWithoutCoords.map((item) => (
                 <div
-                  key={farm.id}
+                  key={item.id}
                   className="flex items-center justify-between p-2 bg-white rounded cursor-pointer hover:bg-gray-50"
-                  onClick={() => onFarmSelect?.(farm)}
+                  onClick={() => onProduceSelect?.(item)}
                 >
-                  <span className="font-medium">{farm.name}</span>
-                  <span className="text-sm text-gray-500">
-                    {farm.city}, {farm.state}
+                  <span className="font-medium">{item.name}</span>
+                  <span className="text-sm text-green-600 font-bold">
+                    ${item.pricePerUnit}/{item.unit}
                   </span>
                 </div>
               ))}

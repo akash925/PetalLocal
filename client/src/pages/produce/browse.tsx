@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ProduceCard } from "@/components/produce-card";
+import { ProduceMap } from "@/components/produce-map";
 import { Search, Filter, Grid, Map } from "lucide-react";
 
 export default function BrowseProduce() {
@@ -136,72 +137,21 @@ export default function BrowseProduce() {
               ))}
             </div>
           ) : (
-            <div className="space-y-6">
-              {/* Map View for Produce */}
-              <div className="bg-white rounded-xl shadow-sm p-6">
-                <h3 className="text-lg font-semibold mb-4">Produce Map</h3>
-                <div className="h-96 bg-gradient-to-br from-green-50 to-blue-50 rounded-lg relative overflow-hidden border-2 border-dashed border-gray-300">
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <Map className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <h4 className="text-lg font-semibold text-gray-700 mb-2">Interactive Produce Map</h4>
-                      <p className="text-gray-600">Showing {produce.length} produce items from local farms</p>
-                    </div>
-                  </div>
-                  
-                  {/* Produce markers */}
-                  {produce.slice(0, 6).map((item: any, index: number) => {
-                    const angle = (index * 60) + 30;
-                    const radius = 25 + (index % 2) * 20;
-                    const x = 50 + radius * Math.cos(angle * Math.PI / 180);
-                    const y = 50 + radius * Math.sin(angle * Math.PI / 180);
-                    
-                    return (
-                      <div
-                        key={item.id}
-                        className="absolute transform -translate-x-1/2 -translate-y-1/2 cursor-pointer"
-                        style={{ left: `${x}%`, top: `${y}%` }}
-                        title={`${item.name} - $${item.pricePerUnit}/${item.unit}`}
-                      >
-                        <div className={`w-8 h-8 rounded-full border-2 border-white shadow-lg flex items-center justify-center text-white text-xs font-bold ${
-                          item.isOrganic ? 'bg-green-500' : 'bg-orange-500'
-                        }`}>
-                          {item.name.charAt(0)}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+            <div className="bg-white rounded-lg shadow-sm border">
+              <div className="p-4 border-b">
+                <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+                  <Map className="w-5 h-5 mr-2 text-green-600" />
+                  Produce Locations
+                </h2>
+                <p className="text-gray-600 text-sm mt-1">Interactive map showing produce from local farms</p>
               </div>
-              
-              {/* Produce List */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {produce.map((item: any) => (
-                  <div key={item.id} className="bg-white rounded-lg shadow-sm p-4 border hover:shadow-md transition-shadow">
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-semibold text-gray-900">{item.name}</h4>
-                      <span className="text-lg font-bold text-green-600">${item.pricePerUnit}/{item.unit}</span>
-                    </div>
-                    <p className="text-sm text-gray-600 mb-2">{item.category}</p>
-                    <div className="flex items-center gap-2">
-                      {item.isOrganic && (
-                        <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                          Organic
-                        </span>
-                      )}
-                      {item.isSeasonal && (
-                        <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                          Seasonal
-                        </span>
-                      )}
-                      {item.isHeirloom && (
-                        <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">
-                          Heirloom
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
+              <div className="p-4">
+                <ProduceMap 
+                  produce={produce}
+                  onProduceSelect={(item) => {
+                    console.log('Selected produce:', item);
+                  }}
+                />
               </div>
             </div>
           )

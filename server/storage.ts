@@ -184,7 +184,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(asc(produceItems.name));
   }
 
-  async searchProduceItems(query?: string, category?: string): Promise<ProduceItem[]> {
+  async searchProduceItems(query?: string, category?: string): Promise<any[]> {
     console.log('Searching for:', { query, category });
     
     let conditions = [eq(produceItems.isActive, true)];
@@ -205,8 +205,32 @@ export class DatabaseStorage implements IStorage {
     }
 
     const result = await db
-      .select()
+      .select({
+        id: produceItems.id,
+        name: produceItems.name,
+        description: produceItems.description,
+        category: produceItems.category,
+        variety: produceItems.variety,
+        pricePerUnit: produceItems.pricePerUnit,
+        unit: produceItems.unit,
+        imageUrl: produceItems.imageUrl,
+        isOrganic: produceItems.isOrganic,
+        isSeasonal: produceItems.isSeasonal,
+        isHeirloom: produceItems.isHeirloom,
+        farmId: produceItems.farmId,
+        farm: {
+          id: farms.id,
+          name: farms.name,
+          city: farms.city,
+          state: farms.state,
+          address: farms.address,
+          latitude: farms.latitude,
+          longitude: farms.longitude,
+          isOrganic: farms.isOrganic,
+        }
+      })
       .from(produceItems)
+      .leftJoin(farms, eq(produceItems.farmId, farms.id))
       .where(conditions.length > 1 ? and(...conditions) : conditions[0])
       .orderBy(desc(produceItems.createdAt));
     
