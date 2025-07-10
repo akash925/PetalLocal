@@ -28,6 +28,8 @@ export function Header() {
       await apiRequest("POST", "/api/auth/logout");
     },
     onSuccess: () => {
+      // Immediately clear the user cache for instant state update
+      queryClient.setQueryData(["/api/auth/user"], null);
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "Logged out",

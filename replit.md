@@ -108,20 +108,17 @@ RESTful API endpoints organized by domain:
 - **Start command**: Production starts with `npm run start`
 
 ## Recent Changes
-- July 10, 2025: Platform fee updated to 10% and made configurable
-  - ✅ Platform fee increased from 8% to 10% as requested
-  - ✅ Platform fee made configurable via PLATFORM_FEE_RATE environment variable
-  - ✅ Created server/config.ts for centralized platform settings
-  - ✅ Complete frontend user journey tested and validated
-  - ✅ All API endpoints working: authentication, farms, produce, orders, payments
-  - ✅ Search functionality working with case-insensitive matching
-  - ✅ Map functionality with clickable farm markers
-  - ✅ Stripe payment integration functional with real payment intents
-  - ✅ Email notifications sent for order confirmations
-  - ✅ Payment processing correctly calculates 10% platform fee (e.g., $2.40 on $23.96 order)
-  - Test accounts: frontend-farmer@test.com, frontend-buyer@test.com
-  - Test farm "Frontend Test Farm" with "Frontend Test Carrots" product listing
-  - Platform fee calculation: $1.20 on $11.98 order, $2.40 on $23.96 order
+- July 10, 2025: Admin portal and final UX fixes completed
+  - ✅ Admin portal created with full platform oversight
+  - ✅ Admin account: akash.agarwal@conmitto.io (password: admin123secure)
+  - ✅ Admin dashboard protected - redirects non-admins immediately
+  - ✅ Platform fee UI fixed - displays as percentage, accepts percentage input
+  - ✅ Instant logout state management - user state updates immediately
+  - ✅ Platform fee configurable via environment variable and admin interface
+  - ✅ Revenue analytics display with dynamic platform fee calculations
+  - Admin features: view all users, farms, products, orders; manage platform settings
+  - Platform fee calculation: properly converts percentage input to decimal for backend
+  - Ready for test deployment with all core functionality validated
 
 - June 24, 2025: Complete FarmDirect marketplace built and deployed
   - Fixed SelectItem component errors preventing produce/farms pages from loading

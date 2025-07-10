@@ -468,6 +468,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/admin/analytics", async (req: any, res) => {
+    try {
+      // Return empty analytics for now - frontend calculates from other data
+      res.json({});
+    } catch (error) {
+      console.error("Get admin analytics error:", error);
+      res.status(500).json({ message: "Failed to get analytics" });
+    }
+  });
+
   // Message routes
   app.get("/api/messages", requireAuth, async (req: any, res) => {
     try {

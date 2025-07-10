@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,8 +15,31 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { formatDistance } from "date-fns";
 
 export default function AdminDashboard() {
-  const [platformFeeRate, setPlatformFeeRate] = useState("0.10");
+  const { user, isLoading, isAuthenticated } = useAuth();
+  const [platformFeeRate, setPlatformFeeRate] = useState("10");
   const { toast } = useToast();
+
+  // Redirect non-admin users immediately
+  useEffect(() => {
+    if (!isLoading && (!isAuthenticated || user?.role !== "admin")) {
+      window.location.href = "/";
+      return;
+    }
+  }, [isLoading, isAuthenticated, user]);
+
+  // Show loading while checking auth
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  // Protect route - don't render content for non-admins
+  if (!isAuthenticated || user?.role !== "admin") {
+    return null;
+  }
 
   // Fetch all data for admin overview
   const { data: users = [] } = useQuery({
@@ -45,15 +69,16 @@ export default function AdminDashboard() {
   // Update platform fee mutation
   const updatePlatformFeeMutation = useMutation({
     mutationFn: async (newRate: string) => {
+      const decimalRate = parseFloat(newRate) / 100; // Convert percentage to decimal
       await apiRequest("PUT", "/api/admin/config", { 
-        platformFeeRate: parseFloat(newRate) 
+        platformFeeRate: decimalRate 
       });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/config"] });
       toast({
         title: "Platform fee updated",
-        description: `Platform fee rate set to ${(parseFloat(platformFeeRate) * 100).toFixed(1)}%`,
+        description: `Platform fee rate set to ${platformFeeRate}%`,
       });
     },
     onError: (error) => {
@@ -436,15 +461,15 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                     <div>
-                      <div className="text-sm font-medium text-gray-600">Platform Revenue (10%)</div>
+                      <div className="text-sm font-medium text-gray-600">Platform Revenue ({((platformConfig.platformFeeRate || 0.10) * 100).toFixed(1)}%)</div>
                       <div className="text-2xl font-bold text-green-600">
-                        ${(orders.reduce((sum: number, order: any) => sum + parseFloat(order.totalAmount || 0), 0) * 0.10).toFixed(2)}
+                        ${(orders.reduce((sum: number, order: any) => sum + parseFloat(order.totalAmount || 0), 0) * (platformConfig.platformFeeRate || 0.10)).toFixed(2)}
                       </div>
                     </div>
                     <div>
-                      <div className="text-sm font-medium text-gray-600">Farmer Payouts (90%)</div>
+                      <div className="text-sm font-medium text-gray-600">Farmer Payouts ({(100 - ((platformConfig.platformFeeRate || 0.10) * 100)).toFixed(1)}%)</div>
                       <div className="text-2xl font-bold">
-                        ${(orders.reduce((sum: number, order: any) => sum + parseFloat(order.totalAmount || 0), 0) * 0.90).toFixed(2)}
+                        ${(orders.reduce((sum: number, order: any) => sum + parseFloat(order.totalAmount || 0), 0) * (1 - (platformConfig.platformFeeRate || 0.10))).toFixed(2)}
                       </div>
                     </div>
                   </div>
