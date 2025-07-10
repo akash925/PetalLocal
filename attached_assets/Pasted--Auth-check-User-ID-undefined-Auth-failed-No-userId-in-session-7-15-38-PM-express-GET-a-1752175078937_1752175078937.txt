@@ -1,0 +1,76 @@
+  }
+}
+Auth check - User ID: undefined
+Auth failed - No userId in session
+7:15:38 PM [express] GET /api/auth/user 401 in 7ms :: {"message":"Unauthorized"}
+Auth check - Session: Session {
+  cookie: {
+    path: '/',
+    _expires: 2025-07-17T19:15:38.726Z,
+    originalMaxAge: 604800000,
+    httpOnly: true,
+    secure: false
+  }
+}
+Auth check - User ID: undefined
+Auth failed - No userId in session
+7:15:38 PM [express] GET /api/auth/user 401 in 0ms :: {"message":"Unauthorized"}
+Auth check - Session: Session {
+  cookie: {
+    path: '/',
+    _expires: 2025-07-17T17:22:12.328Z,
+    originalMaxAge: 604800000,
+    httpOnly: true,
+    secure: false
+  },
+  userId: 4,
+  userRole: 'farmer'
+}
+Auth check - User ID: 4
+Auth passed for user: 4
+7:15:46 PM [express] GET /api/auth/user 304 in 2420ms :: {"id":4,"email":"akash@agarwalhome.com","fi…
+Auth check - Session: Session {
+  cookie: {
+    path: '/',
+    _expires: 2025-07-17T17:22:12.328Z,
+    originalMaxAge: 604800000,
+    httpOnly: true,
+    secure: false
+  },
+  userId: 4,
+  userRole: 'farmer'
+}
+Auth check - User ID: 4
+Auth passed for user: 4
+Auth check - Session: Session {
+  cookie: {
+    path: '/',
+    _expires: 2025-07-17T17:22:12.328Z,
+    originalMaxAge: 604800000,
+    httpOnly: true,
+    secure: false
+  },
+  userId: 4,
+  userRole: 'farmer'
+}
+Auth check - User ID: 4
+Auth passed for user: 4
+7:15:47 PM [express] GET /api/auth/user 304 in 194ms :: {"id":4,"email":"akash@agarwalhome.com","fir…
+Auth check - Session: Session {
+  cookie: {
+    path: '/',
+    _expires: 2025-07-17T17:22:12.328Z,
+    originalMaxAge: 604800000,
+    httpOnly: true,
+    secure: false
+  },
+  userId: 4,
+  userRole: 'farmer'
+}
+Auth check - User ID: 4
+Auth passed for user: 4
+7:15:47 PM [express] GET /api/farms/owned/4 304 in 198ms :: [{"id":7,"ownerId":4,"name":"Shoreland P…
+7:15:47 PM [express] GET /api/messages/unread-count 304 in 399ms :: {"count":0}
+Searching for: { query: undefined, category: undefined }
+Search result count: 12
+7:15:47 PM [express] GET /api/produce 304 in 203ms :: [{"id":12,"name":"Frontend Test Carrots","desc…

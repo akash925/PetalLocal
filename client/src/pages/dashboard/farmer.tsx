@@ -406,6 +406,12 @@ export default function FarmerDashboard() {
                           type="submit"
                           disabled={createProduceMutation.isPending}
                           className="bg-green-500 hover:bg-green-600"
+                          onClick={(e) => {
+                            console.log("Create Produce Item button clicked");
+                            console.log("Form values:", form.getValues());
+                            console.log("Form state:", form.formState);
+                            console.log("Farms available:", farms);
+                          }}
                         >
                           {createProduceMutation.isPending ? "Creating..." : "Create Produce Item"}
                         </Button>
