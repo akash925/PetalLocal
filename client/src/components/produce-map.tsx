@@ -78,20 +78,24 @@ export function ProduceMap({ produce, onProduceSelect, className = "" }: Produce
       }
     });
 
-    // Default center (US center)
-    let centerLat = 39.8283;
-    let centerLng = -98.5795;
-    let zoom = 4;
+    // Default center (California center)
+    let centerLat = 36.7783;
+    let centerLng = -119.4179;
+    let zoom = 6;
 
-    // If we have farms with coordinates, center on them
-    if (produceByFarm.size > 0) {
-      const farms = Array.from(produceByFarm.values()).map(entry => entry.farm);
+    // Store farm locations for fallback if geolocation fails
+    const farms = Array.from(produceByFarm.values()).map(entry => entry.farm);
+    let farmCenterLat = centerLat;
+    let farmCenterLng = centerLng;
+    let farmZoom = zoom;
+    
+    if (farms.length > 0) {
       const avgLat = farms.reduce((sum, f) => sum + parseFloat(f.latitude!), 0) / farms.length;
       const avgLng = farms.reduce((sum, f) => sum + parseFloat(f.longitude!), 0) / farms.length;
       if (!isNaN(avgLat) && !isNaN(avgLng)) {
-        centerLat = avgLat;
-        centerLng = avgLng;
-        zoom = 10;
+        farmCenterLat = avgLat;
+        farmCenterLng = avgLng;
+        farmZoom = 10;
       }
     }
 
@@ -153,26 +157,30 @@ export function ProduceMap({ produce, onProduceSelect, className = "" }: Produce
       });
     });
 
-    // Add user location and center on it if available
+    // Try to get user location and center map on it
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((position) => {
         const userLat = position.coords.latitude;
         const userLng = position.coords.longitude;
         
-        // Center map on user location if no farms
-        if (produceByFarm.size === 0) {
-          map.setView([userLat, userLng], 12);
-        }
+        // Always center on user location when available
+        map.setView([userLat, userLng], 12);
         
+        // Add user location marker
         L.circleMarker([userLat, userLng], {
           color: '#3b82f6',
           fillColor: '#3b82f6',
-          fillOpacity: 0.7,
-          radius: 6,
-          weight: 2
-        }).addTo(map).bindPopup('Your Location');
-      }, () => {
-        // Geolocation failed, ignore
+          fillOpacity: 0.8,
+          radius: 8,
+          weight: 3
+        }).addTo(map).bindPopup('📍 Your Location');
+      }, (error) => {
+        console.log('Geolocation not available or denied, using fallback center');
+        // If geolocation fails, center on farms if available
+        if (farms.length > 0) {
+          map.setView([farmCenterLat, farmCenterLng], farmZoom);
+        }
+        // Otherwise keep the default California center
       });
     }
 

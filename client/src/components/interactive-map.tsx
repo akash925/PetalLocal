@@ -48,10 +48,10 @@ export function InteractiveMap({ farms, onFarmSelect, className = "" }: MapProps
       mapInstanceRef.current.remove();
     }
 
-    // Default center (US center)
-    let centerLat = 39.8283;
-    let centerLng = -98.5795;
-    let zoom = 4;
+    // Default center (California center)
+    let centerLat = 36.7783;
+    let centerLng = -119.4179;
+    let zoom = 6;
 
     // Helper function to validate coordinates
     const isValidCoordinate = (lat: any, lng: any): boolean => {
@@ -67,15 +67,8 @@ export function InteractiveMap({ farms, onFarmSelect, className = "" }: MapProps
     // Filter farms with valid coordinates
     const farmsWithCoords = farms.filter(f => isValidCoordinate(f.latitude, f.longitude));
     
-    if (farmsWithCoords.length > 0) {
-      const avgLat = farmsWithCoords.reduce((sum, f) => sum + parseFloat(f.latitude!), 0) / farmsWithCoords.length;
-      const avgLng = farmsWithCoords.reduce((sum, f) => sum + parseFloat(f.longitude!), 0) / farmsWithCoords.length;
-      if (!isNaN(avgLat) && !isNaN(avgLng)) {
-        centerLat = avgLat;
-        centerLng = avgLng;
-        zoom = 10;
-      }
-    }
+    // Only use farm coordinates for initial center if geolocation will be attempted
+    // The geolocation callback will handle centering on user location or farms
 
     // Create map
     const map = L.map(mapRef.current).setView([centerLat, centerLng], zoom);
@@ -119,26 +112,33 @@ export function InteractiveMap({ farms, onFarmSelect, className = "" }: MapProps
       });
     });
 
-    // Add user location and center map on it if available
+    // Try to get user location and center map on it
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((position) => {
         const userLat = position.coords.latitude;
         const userLng = position.coords.longitude;
         
-        // Center map on user location if no farms with coordinates
-        if (farmsWithCoords.length === 0) {
-          map.setView([userLat, userLng], 12);
-        }
+        // Always center on user location when available
+        map.setView([userLat, userLng], 12);
         
+        // Add user location marker
         L.circleMarker([userLat, userLng], {
           color: '#3b82f6',
           fillColor: '#3b82f6',
-          fillOpacity: 0.7,
-          radius: 6,
-          weight: 2
-        }).addTo(map).bindPopup('Your Location');
-      }, () => {
-        // Geolocation failed, ignore
+          fillOpacity: 0.8,
+          radius: 8,
+          weight: 3
+        }).addTo(map).bindPopup('📍 Your Location');
+      }, (error) => {
+        console.log('Geolocation not available or denied, using default center');
+        // If farms exist and geolocation fails, center on farms
+        if (farmsWithCoords.length > 0) {
+          const avgLat = farmsWithCoords.reduce((sum, f) => sum + parseFloat(f.latitude!), 0) / farmsWithCoords.length;
+          const avgLng = farmsWithCoords.reduce((sum, f) => sum + parseFloat(f.longitude!), 0) / farmsWithCoords.length;
+          if (!isNaN(avgLat) && !isNaN(avgLng)) {
+            map.setView([avgLat, avgLng], 10);
+          }
+        }
       });
     }
 

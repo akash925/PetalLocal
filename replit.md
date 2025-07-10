@@ -108,14 +108,15 @@ RESTful API endpoints organized by domain:
 - **Start command**: Production starts with `npm run start`
 
 ## Recent Changes
-- July 10, 2025: Interactive map integration and cart persistence fixes completed
+- July 10, 2025: Interactive map integration and user location centering completed
   - ✅ Integrated free OpenStreetMap API with Leaflet for interactive farm locations
   - ✅ Real-time map with organic/conventional farm color coding and legend
-  - ✅ Map shows user location, farm markers with popups, and distance display
+  - ✅ Maps prioritize user's geolocation, fallback to California center when denied
   - ✅ Fixed cart persistence bug - cart now clears properly when logged out
   - ✅ Auth-aware cart management prevents items showing for non-authenticated users
-  - ✅ Enhanced map view with professional layout and farm information cards
-  - ✅ Previous fixes: ZIP code validation, price input, scroll-to-top, farmer onboarding
+  - ✅ Enhanced produce map showing farms with available items and pricing
+  - ✅ Robust coordinate validation prevents map crashes from invalid data
+  - ✅ Both farm and produce maps fully functional with user location centering
   - Platform now features authentic interactive mapping with real farm data
 
 - June 24, 2025: Complete FarmDirect marketplace built and deployed
