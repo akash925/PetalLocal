@@ -36,16 +36,23 @@ interface AuthenticatedRequest extends Request {
 }
 
 const requireAuth = (req: any, res: any, next: any) => {
+  console.log("Auth check - Session:", req.session);
+  console.log("Auth check - User ID:", req.session?.userId);
   if (!req.session?.userId) {
+    console.log("Auth failed - No userId in session");
     return res.status(401).json({ message: "Unauthorized" });
   }
+  console.log("Auth passed for user:", req.session.userId);
   next();
 };
 
 const requireRole = (role: string) => (req: any, res: any, next: any) => {
+  console.log(`Role check for '${role}' - User role:`, req.session?.userRole);
   if (!req.session?.userId || req.session?.userRole !== role) {
+    console.log(`Role check failed - Required: ${role}, Got: ${req.session?.userRole}`);
     return res.status(403).json({ message: "Forbidden" });
   }
+  console.log(`Role check passed for '${role}'`);
   next();
 };
 
