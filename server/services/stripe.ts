@@ -1,65 +1,80 @@
+import Stripe from 'stripe';
+
 interface PaymentResult {
   success: boolean;
+  clientSecret?: string;
   paymentIntentId?: string;
   error?: string;
 }
 
 class StripeService {
-  private apiKey: string;
+  private stripe: Stripe | null = null;
   private isEnabled: boolean;
 
   constructor() {
-    this.apiKey = process.env.STRIPE_SECRET_KEY || "";
-    this.isEnabled = !!this.apiKey;
+    const apiKey = process.env.STRIPE_SECRET_KEY;
+    this.isEnabled = !!apiKey;
+    
+    if (this.isEnabled && apiKey) {
+      this.stripe = new Stripe(apiKey, {
+        apiVersion: '2023-10-16',
+      });
+    }
   }
 
   async createPaymentIntent(amount: number, orderId: number): Promise<PaymentResult> {
-    if (!this.isEnabled) {
-      console.info("[MOCK STRIPE] Would create payment intent for order", orderId, "amount:", amount);
-      return {
-        success: true,
-        paymentIntentId: `pi_mock_${orderId}_${Date.now()}`,
-      };
+    if (!this.isEnabled || !this.stripe) {
+      console.log('[STRIPE] Service disabled - no API key');
+      return { success: false, error: 'Payment processing unavailable' };
     }
 
     try {
-      // In a real implementation, you would use the Stripe SDK here
-      // const stripe = new Stripe(this.apiKey);
-      // const paymentIntent = await stripe.paymentIntents.create({
-      //   amount: Math.round(amount * 100), // Convert to cents
-      //   currency: 'usd',
-      //   metadata: { orderId: orderId.toString() }
-      // });
+      console.log(`[STRIPE] Creating payment intent for order ${orderId} amount: ${amount}`);
       
-      console.info("[STRIPE] Creating payment intent for order", orderId, "amount:", amount);
+      const paymentIntent = await this.stripe.paymentIntents.create({
+        amount: Math.round(amount * 100), // Convert to cents
+        currency: 'usd',
+        metadata: {
+          orderId: orderId.toString(),
+        },
+        automatic_payment_methods: {
+          enabled: true,
+        },
+      });
       
       return {
         success: true,
-        paymentIntentId: `pi_real_${orderId}_${Date.now()}`,
+        clientSecret: paymentIntent.client_secret!,
+        paymentIntentId: paymentIntent.id,
       };
     } catch (error) {
-      console.error("[STRIPE] Payment intent creation failed:", error);
+      console.error('[STRIPE] Payment intent creation failed:', error);
       return {
         success: false,
-        error: "Payment processing failed",
+        error: error instanceof Error ? error.message : 'Payment processing failed',
       };
     }
   }
 
   async confirmPayment(paymentIntentId: string): Promise<PaymentResult> {
-    if (!this.isEnabled) {
-      console.info("[MOCK STRIPE] Would confirm payment intent", paymentIntentId);
-      return { success: true };
+    if (!this.isEnabled || !this.stripe) {
+      return { success: false, error: 'Payment processing unavailable' };
     }
 
     try {
-      console.info("[STRIPE] Confirming payment intent", paymentIntentId);
-      return { success: true };
+      console.log(`[STRIPE] Confirming payment: ${paymentIntentId}`);
+      
+      const paymentIntent = await this.stripe.paymentIntents.retrieve(paymentIntentId);
+      
+      return {
+        success: paymentIntent.status === 'succeeded',
+        paymentIntentId: paymentIntent.id,
+      };
     } catch (error) {
-      console.error("[STRIPE] Payment confirmation failed:", error);
+      console.error('[STRIPE] Payment confirmation failed:', error);
       return {
         success: false,
-        error: "Payment confirmation failed",
+        error: error instanceof Error ? error.message : 'Payment confirmation failed',
       };
     }
   }

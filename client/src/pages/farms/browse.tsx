@@ -4,12 +4,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FarmCard } from "@/components/farm-card";
+import { FarmMap } from "@/components/farm-map";
 import { Search, Filter, Grid, Map } from "lucide-react";
 
 export default function BrowseFarms() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("all");
   const [viewMode, setViewMode] = useState("grid"); // "grid" or "map"
+  const [selectedFarm, setSelectedFarm] = useState(null);
 
   const { data: farms = [], isLoading } = useQuery({
     queryKey: ["/api/farms", searchQuery, selectedFilter],
@@ -117,32 +119,11 @@ export default function BrowseFarms() {
               ))}
             </div>
           ) : (
-            <div className="h-96 bg-gray-100 rounded-lg flex items-center justify-center relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-green-100 to-blue-100 rounded-lg"></div>
-              <div className="relative z-10 text-center">
-                <Map className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">Farm Map View</h3>
-                <p className="text-gray-600 mb-4">Interactive map showing {farms.length} local farms</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md mx-auto">
-                  {farms.slice(0, 4).map((farm: any) => (
-                    <div key={farm.id} className="bg-white p-3 rounded-lg shadow-sm border">
-                      <h4 className="font-medium text-sm text-gray-900">{farm.name}</h4>
-                      <p className="text-xs text-gray-600">{farm.city}, {farm.state}</p>
-                      {farm.isOrganic && (
-                        <span className="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded mt-1">
-                          Organic
-                        </span>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                {farms.length > 4 && (
-                  <p className="text-sm text-gray-500 mt-2">
-                    +{farms.length - 4} more farms
-                  </p>
-                )}
-              </div>
-            </div>
+            <FarmMap 
+              farms={farms} 
+              selectedFarm={selectedFarm}
+              onFarmSelect={setSelectedFarm}
+            />
           )
         ) : (
           <div className="text-center py-12">
