@@ -88,8 +88,7 @@ export default function Checkout() {
   const { toast } = useToast();
   const [clientSecret, setClientSecret] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [platformFee, setPlatformFee] = useState("0");
-  const [farmerAmount, setFarmerAmount] = useState("0");
+  // Remove platform fee display from customer checkout
   const [customerInfo, setCustomerInfo] = useState({
     firstName: "",
     lastName: "",
@@ -122,8 +121,7 @@ export default function Checkout() {
         
         const data = await response.json();
         setClientSecret(data.clientSecret);
-        setPlatformFee(data.platformFee || "0");
-        setFarmerAmount(data.farmerAmount || total.toString());
+        // Platform fee is handled server-side, not shown to customer
       } catch (error) {
         toast({
           title: "Error",
@@ -214,12 +212,8 @@ export default function Checkout() {
                     <span>${total.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between items-center text-sm text-gray-600">
-                    <span>Platform fee (10%)</span>
-                    <span>${platformFee}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm text-green-600">
-                    <span>Farmer receives</span>
-                    <span>${farmerAmount}</span>
+                    <span>Delivery</span>
+                    <span>Free</span>
                   </div>
                   <div className="flex justify-between items-center border-t pt-2">
                     <span className="text-lg font-semibold">Total</span>

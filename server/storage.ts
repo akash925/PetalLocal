@@ -22,7 +22,7 @@ import {
   type InsertMessage,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, or, like, desc, asc } from "drizzle-orm";
+import { eq, and, or, like, desc, asc, ilike } from "drizzle-orm";
 
 export interface IStorage {
   // User operations
@@ -146,21 +146,33 @@ export class DatabaseStorage implements IStorage {
   }
 
   async searchProduceItems(query?: string, category?: string): Promise<ProduceItem[]> {
-    let whereClause = eq(produceItems.isActive, true);
+    console.log('Searching for:', { query, category });
     
-    if (query) {
-      whereClause = and(whereClause, like(produceItems.name, `%${query}%`)) || whereClause;
+    let conditions = [eq(produceItems.isActive, true)];
+    
+    if (query && query.trim()) {
+      const searchTerm = `%${query.toLowerCase()}%`;
+      conditions.push(
+        or(
+          ilike(produceItems.name, searchTerm),
+          ilike(produceItems.description, searchTerm),
+          ilike(produceItems.variety, searchTerm)
+        )
+      );
     }
     
-    if (category) {
-      whereClause = and(whereClause, eq(produceItems.category, category)) || whereClause;
+    if (category && category !== 'all') {
+      conditions.push(eq(produceItems.category, category));
     }
 
-    return await db
+    const result = await db
       .select()
       .from(produceItems)
-      .where(whereClause)
+      .where(conditions.length > 1 ? and(...conditions) : conditions[0])
       .orderBy(desc(produceItems.createdAt));
+    
+    console.log('Search result count:', result.length);
+    return result;
   }
 
   async createProduceItem(item: InsertProduceItem): Promise<ProduceItem> {
