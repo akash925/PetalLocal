@@ -494,6 +494,47 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                         )}
                       />
 
+                      <FormField
+                        control={form.control}
+                        name="imageUrl"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Product Image</FormLabel>
+                            <FormControl>
+                              <div className="space-y-2">
+                                <Input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      // Create a URL for the image
+                                      const imageUrl = URL.createObjectURL(file);
+                                      field.onChange(imageUrl);
+                                      toast({
+                                        title: "Image uploaded",
+                                        description: "Your product image has been added successfully",
+                                      });
+                                    }
+                                  }}
+                                  className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                                />
+                                {field.value && (
+                                  <div className="mt-2">
+                                    <img
+                                      src={field.value}
+                                      alt="Product preview"
+                                      className="w-20 h-20 object-cover rounded-md border"
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <FormField
                           control={form.control}
@@ -850,6 +891,47 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                           
                           <FormField
                             control={form.control}
+                            name="imageUrl"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Product Image</FormLabel>
+                                <FormControl>
+                                  <div className="space-y-2">
+                                    <Input
+                                      type="file"
+                                      accept="image/*"
+                                      onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                          // Create a URL for the image
+                                          const imageUrl = URL.createObjectURL(file);
+                                          field.onChange(imageUrl);
+                                          toast({
+                                            title: "Image uploaded",
+                                            description: "Your product image has been added successfully",
+                                          });
+                                        }
+                                      }}
+                                      className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                                    />
+                                    {field.value && (
+                                      <div className="mt-2">
+                                        <img
+                                          src={field.value}
+                                          alt="Product preview"
+                                          className="w-20 h-20 object-cover rounded-md border"
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
                             name="category"
                             render={({ field }) => (
                               <FormItem>
@@ -1095,6 +1177,47 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                                     rows={4}
                                     {...field} 
                                   />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={farmForm.control}
+                            name="imageUrl"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Farm Image</FormLabel>
+                                <FormControl>
+                                  <div className="space-y-2">
+                                    <Input
+                                      type="file"
+                                      accept="image/*"
+                                      onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                          // Create a URL for the image
+                                          const imageUrl = URL.createObjectURL(file);
+                                          field.onChange(imageUrl);
+                                          toast({
+                                            title: "Farm image uploaded",
+                                            description: "Your farm image has been added successfully",
+                                          });
+                                        }
+                                      }}
+                                      className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                                    />
+                                    {field.value && (
+                                      <div className="mt-2">
+                                        <img
+                                          src={field.value}
+                                          alt="Farm preview"
+                                          className="w-32 h-20 object-cover rounded-md border"
+                                        />
+                                      </div>
+                                    )}
+                                  </div>
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
