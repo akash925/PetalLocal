@@ -737,9 +737,14 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                         <Button 
                           variant="ghost" 
                           size="sm"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            console.log("Edit button clicked for item:", item.id);
+                            console.log("Item data:", item);
+                            
                             // Populate form with existing data
-                            form.reset({
+                            const formData = {
                               name: item.name || "",
                               description: item.description || "",
                               category: item.category || "",
@@ -751,8 +756,12 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                               isSeasonal: item.isSeasonal || false,
                               isHeirloom: item.isHeirloom || false,
                               imageUrl: item.imageUrl || "",
-                            });
+                            };
+                            
+                            console.log("Form data to populate:", formData);
+                            form.reset(formData);
                             setEditingItem(item.id);
+                            console.log("EditingItem set to:", item.id);
                           }}
                         >
                           <Edit className="w-4 h-4" />
@@ -878,7 +887,7 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
               {editingItem && (
                 <Card className="border-2 border-blue-200">
                   <CardHeader>
-                    <CardTitle className="text-blue-600">Edit Produce Item</CardTitle>
+                    <CardTitle className="text-blue-600">Edit Produce Item (ID: {editingItem})</CardTitle>
                     <CardDescription>Update the details of your produce item</CardDescription>
                   </CardHeader>
                   <CardContent>
