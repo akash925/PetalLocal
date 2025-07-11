@@ -220,6 +220,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/produce/:id", requireAuth, requireRole("farmer"), async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const userId = req.session?.userId;
+      
+      // Check if produce item exists and belongs to user's farm
+      const produceItem = await storage.getProduceItem(id);
+      if (!produceItem) {
+        return res.status(404).json({ message: "Produce item not found" });
+      }
+      
+      const farm = await storage.getFarm(produceItem.farmId);
+      if (!farm || farm.ownerId !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      const { quantityAvailable, ...itemData } = req.body;
+      const updatedItem = await storage.updateProduceItem(id, itemData);
+      
+      // Update inventory if quantityAvailable is provided
+      if (quantityAvailable !== undefined) {
+        await storage.updateInventory(id, {
+          produceItemId: id,
+          quantityAvailable: parseInt(quantityAvailable) || 0,
+        });
+      }
+      
+      res.json(updatedItem);
+    } catch (error) {
+      console.error("Update produce error:", error);
+      if (error instanceof Error) {
+        res.status(500).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: "Failed to update produce item" });
+      }
+    }
+  });
+
+  app.delete("/api/produce/:id", requireAuth, requireRole("farmer"), async (req: any, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const userId = req.session?.userId;
+      
+      // Check if produce item exists and belongs to user's farm
+      const produceItem = await storage.getProduceItem(id);
+      if (!produceItem) {
+        return res.status(404).json({ message: "Produce item not found" });
+      }
+      
+      const farm = await storage.getFarm(produceItem.farmId);
+      if (!farm || farm.ownerId !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+      
+      await storage.deleteProduceItem(id);
+      res.json({ message: "Produce item deleted successfully" });
+    } catch (error) {
+      console.error("Delete produce error:", error);
+      if (error instanceof Error) {
+        res.status(500).json({ message: error.message });
+      } else {
+        res.status(500).json({ message: "Failed to delete produce item" });
+      }
+    }
+  });
+
   // Farm routes
   app.get("/api/farms", async (req, res) => {
     try {

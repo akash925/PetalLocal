@@ -757,7 +757,29 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                         >
                           <Edit className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="text-red-500">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="text-red-500 hover:bg-red-50"
+                          onClick={async () => {
+                            if (window.confirm('Are you sure you want to delete this produce item?')) {
+                              try {
+                                await apiRequest("DELETE", `/api/produce/${item.id}`);
+                                toast({
+                                  title: "Item deleted",
+                                  description: "The produce item has been deleted successfully",
+                                });
+                                queryClient.invalidateQueries({ queryKey: ["/api/produce", user?.id] });
+                              } catch (error: any) {
+                                toast({
+                                  title: "Error",
+                                  description: error.message || "Failed to delete produce item",
+                                  variant: "destructive",
+                                });
+                              }
+                            }
+                          }}
+                        >
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
