@@ -71,9 +71,16 @@ export default function FarmerDashboard() {
       const allProduce = await response.json();
       // Filter to only show produce from farmer's farms
       const farmIds = farms.map(f => f.id);
-      return allProduce.filter(item => farmIds.includes(item.farmId));
+      const filteredProduce = allProduce.filter(item => farmIds.includes(item.farmId));
+      // Remove duplicates by ID
+      const uniqueProduce = filteredProduce.filter((item, index, self) => 
+        index === self.findIndex(p => p.id === item.id)
+      );
+      return uniqueProduce;
     },
     enabled: !!user && farms.length > 0,
+    staleTime: 30000, // Cache for 30 seconds
+    cacheTime: 300000, // Keep in cache for 5 minutes
   });
 
   const form = useForm({
@@ -762,6 +769,14 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                             form.reset(formData);
                             setEditingItem(item.id);
                             console.log("EditingItem set to:", item.id);
+                            
+                            // Scroll to edit form after a brief delay
+                            setTimeout(() => {
+                              const editForm = document.querySelector('[data-edit-form="true"]');
+                              if (editForm) {
+                                editForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                              }
+                            }, 100);
                           }}
                         >
                           <Edit className="w-4 h-4" />
@@ -885,7 +900,7 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
               
               {/* Edit Item Form */}
               {editingItem && (
-                <Card className="border-2 border-blue-200">
+                <Card className="border-2 border-blue-200" data-edit-form="true">
                   <CardHeader>
                     <CardTitle className="text-blue-600">Edit Produce Item (ID: {editingItem})</CardTitle>
                     <CardDescription>Update the details of your produce item</CardDescription>
