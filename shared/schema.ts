@@ -37,10 +37,13 @@ export const farms = pgTable("farms", {
   imageUrl: text("image_url"),
   website: text("website"),
   phoneNumber: varchar("phone_number", { length: 20 }),
+  instagramHandle: varchar("instagram_handle", { length: 100 }),
   isOrganic: boolean("is_organic").default(false),
   pickupAvailable: boolean("pickup_available").default(true),
   deliveryAvailable: boolean("delivery_available").default(false),
   farmToursAvailable: varchar("farm_tours_available", { length: 50 }).default("no"), // "no", "yes", "by_appointment"
+  rating: decimal("rating", { precision: 3, scale: 2 }).default("0.00"),
+  reviewCount: integer("review_count").default(0),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -113,6 +116,19 @@ export const messages = pgTable("messages", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Reviews table for farm ratings
+export const reviews = pgTable("reviews", {
+  id: serial("id").primaryKey(),
+  farmId: integer("farm_id").references(() => farms.id).notNull(),
+  buyerId: integer("buyer_id").references(() => users.id).notNull(),
+  rating: integer("rating").notNull(), // 1-5 star rating
+  comment: text("comment"),
+  orderId: integer("order_id").references(() => orders.id), // Optional: link to specific order
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Sessions table for authentication
 export const sessions = pgTable(
   "sessions",
@@ -130,11 +146,13 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   orders: many(orders),
   sentMessages: many(messages, { relationName: "sentMessages" }),
   receivedMessages: many(messages, { relationName: "receivedMessages" }),
+  reviews: many(reviews),
 }));
 
 export const farmsRelations = relations(farms, ({ one, many }) => ({
   owner: one(users, { fields: [farms.ownerId], references: [users.id] }),
   produceItems: many(produceItems),
+  reviews: many(reviews),
 }));
 
 export const produceItemsRelations = relations(produceItems, ({ one, many }) => ({
@@ -170,6 +188,12 @@ export const messagesRelations = relations(messages, ({ one }) => ({
   }),
 }));
 
+export const reviewsRelations = relations(reviews, ({ one }) => ({
+  farm: one(farms, { fields: [reviews.farmId], references: [farms.id] }),
+  buyer: one(users, { fields: [reviews.buyerId], references: [users.id] }),
+  order: one(orders, { fields: [reviews.orderId], references: [orders.id] }),
+}));
+
 // Insert schemas
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
@@ -190,6 +214,7 @@ export const insertFarmSchema = createInsertSchema(farms).omit({
   state: z.string().optional(),
   phoneNumber: z.string().optional(),
   website: z.string().optional(),
+  instagramHandle: z.string().optional(),
   ownerId: z.number().optional(),
   pickupAvailable: z.boolean().optional(),
   deliveryAvailable: z.boolean().optional(),
@@ -223,6 +248,12 @@ export const insertMessageSchema = createInsertSchema(messages).omit({
   updatedAt: true,
 });
 
+export const insertReviewSchema = createInsertSchema(reviews).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -238,3 +269,5 @@ export type OrderItem = typeof orderItems.$inferSelect;
 export type InsertOrderItem = z.infer<typeof insertOrderItemSchema>;
 export type Message = typeof messages.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
+export type Review = typeof reviews.$inferSelect;
+export type InsertReview = z.infer<typeof insertReviewSchema>;
