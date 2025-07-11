@@ -750,6 +750,7 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                               isOrganic: item.isOrganic || false,
                               isSeasonal: item.isSeasonal || false,
                               isHeirloom: item.isHeirloom || false,
+                              imageUrl: item.imageUrl || "",
                             });
                             setEditingItem(item.id);
                           }}
@@ -1575,12 +1576,22 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
             )}
 
             {isEditingFarm && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Edit Farm Profile</CardTitle>
-                  <CardDescription>
-                    Update your farm information and services
-                  </CardDescription>
+              <Card className="border-2 border-blue-200 bg-blue-50">
+                <CardHeader className="bg-blue-100 rounded-t-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-blue-800 flex items-center gap-2">
+                        <Edit className="w-5 h-5" />
+                        Editing Farm Profile
+                      </CardTitle>
+                      <CardDescription className="text-blue-600">
+                        Update your farm information and services
+                      </CardDescription>
+                    </div>
+                    <Badge variant="outline" className="bg-blue-200 text-blue-800 border-blue-300">
+                      Edit Mode
+                    </Badge>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <Form {...farmForm}>
@@ -1629,6 +1640,47 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                                   className="min-h-[100px]"
                                   {...field}
                                 />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={farmForm.control}
+                          name="imageUrl"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Farm Image</FormLabel>
+                              <FormControl>
+                                <div className="space-y-2">
+                                  <Input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        // Create a URL for the image
+                                        const imageUrl = URL.createObjectURL(file);
+                                        field.onChange(imageUrl);
+                                        toast({
+                                          title: "Farm image uploaded",
+                                          description: "Your farm image has been added successfully",
+                                        });
+                                      }
+                                    }}
+                                    className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                                  />
+                                  {field.value && (
+                                    <div className="mt-2">
+                                      <img
+                                        src={field.value}
+                                        alt="Farm preview"
+                                        className="w-32 h-20 object-cover rounded-md border"
+                                      />
+                                    </div>
+                                  )}
+                                </div>
                               </FormControl>
                               <FormMessage />
                             </FormItem>
