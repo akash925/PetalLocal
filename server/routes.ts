@@ -848,6 +848,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Unauthorized" });
       }
       
+      // Check if user is trying to review their own farm
+      const farm = await storage.getFarm(req.body.farmId);
+      if (!farm) {
+        return res.status(404).json({ error: "Farm not found" });
+      }
+      
+      if (farm.ownerId === userId) {
+        return res.status(400).json({ error: "You cannot review your own farm" });
+      }
+      
       const reviewData = {
         ...req.body,
         buyerId: userId,

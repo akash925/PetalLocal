@@ -62,7 +62,7 @@ export function ReviewList({ farmId }: ReviewListProps) {
                 </div>
                 <div>
                   <div className="font-medium text-gray-900">
-                    {review.buyer?.firstName ? `${review.buyer.firstName} ${review.buyer.lastName}` : "Anonymous"}
+                    {review.buyer?.firstName ? `${review.buyer.firstName} ${review.buyer.lastName}` : "Anonymous Buyer"}
                   </div>
                   <div className="text-sm text-gray-500">
                     {format(new Date(review.createdAt), "MMM d, yyyy")}

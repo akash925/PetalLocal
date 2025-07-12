@@ -108,6 +108,18 @@ RESTful API endpoints organized by domain:
 - **Start command**: Production starts with `npm run start`
 
 ## Recent Changes
+- July 11, 2025: Instagram integration and comprehensive review system implemented
+  - ✅ Added Instagram handle field to farm profiles with proper form validation
+  - ✅ Instagram links display with social media icons and proper URL formatting
+  - ✅ Built complete review system with 5-star ratings and written comments
+  - ✅ Review form prevents farmers from rating their own farms
+  - ✅ Review list shows customer feedback with reviewer names and dates
+  - ✅ Enhanced farm profiles with buyer rating functionality
+  - ✅ Edit Farm button now smoothly scrolls to form section
+  - ✅ Proper error handling for review submission and authentication
+  - ✅ Created useAuth hook for consistent authentication state management
+  - Platform now features authentic customer reviews and social media integration
+
 - July 10, 2025: Interactive map integration and user location centering completed
   - ✅ Integrated free OpenStreetMap API with Leaflet for interactive farm locations
   - ✅ Real-time map with organic/conventional farm color coding and legend

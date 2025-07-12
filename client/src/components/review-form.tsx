@@ -39,9 +39,31 @@ export function ReviewForm({ farmId, farmName, onReviewSubmitted }: ReviewFormPr
       onReviewSubmitted?.();
     },
     onError: (error: any) => {
+      console.error("Review submission error:", error);
+      let errorMessage = "Failed to submit review";
+      
+      if (error.message) {
+        if (error.message.includes("cannot review your own farm")) {
+          errorMessage = "You cannot review your own farm";
+        } else if (error.message.includes("500")) {
+          // Parse the error from the response
+          const match = error.message.match(/500:\s*({.*})/);
+          if (match) {
+            try {
+              const errorData = JSON.parse(match[1]);
+              errorMessage = errorData.error || errorMessage;
+            } catch (e) {
+              console.error("Error parsing error response:", e);
+            }
+          }
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: "Error",
-        description: error.message || "Failed to submit review",
+        description: errorMessage,
         variant: "destructive",
       });
     },

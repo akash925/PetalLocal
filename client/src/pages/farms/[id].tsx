@@ -10,9 +10,11 @@ import { ReviewForm } from "@/components/review-form";
 import { ReviewList } from "@/components/review-list";
 import { MapPin, Phone, Globe, Mail, ArrowLeft, Star } from "lucide-react";
 import { Link } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function FarmDetail() {
   const { id } = useParams();
+  const { user } = useAuth();
 
   const { data: farmData, isLoading, error } = useQuery({
     queryKey: [`/api/farms/${id}`],
@@ -165,7 +167,23 @@ export default function FarmDetail() {
               </div>
               
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <ReviewForm farmId={parseInt(id)} farmName={farmData.name} />
+                {user && farmData.ownerId !== user.id ? (
+                  <ReviewForm farmId={parseInt(id)} farmName={farmData.name} />
+                ) : (
+                  <Card>
+                    <CardContent className="p-8 text-center">
+                      <Star className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                        {farmData.ownerId === user?.id ? "Your Farm" : "Sign in to Review"}
+                      </h3>
+                      <p className="text-gray-600">
+                        {farmData.ownerId === user?.id 
+                          ? "You cannot review your own farm." 
+                          : "Sign in to leave a review for this farm."}
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
                 <ReviewList farmId={parseInt(id)} />
               </div>
             </div>

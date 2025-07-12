@@ -1583,7 +1583,16 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                             <Button 
                               variant="outline" 
                               className="flex-1"
-                              onClick={handleEditFarm}
+                              onClick={() => {
+                                handleEditFarm();
+                                // Scroll to edit form
+                                setTimeout(() => {
+                                  const editSection = document.getElementById('edit-farm-form');
+                                  if (editSection) {
+                                    editSection.scrollIntoView({ behavior: 'smooth' });
+                                  }
+                                }, 100);
+                              }}
                             >
                               <Edit className="w-4 h-4 mr-2" />
                               Edit Farm
@@ -1654,7 +1663,7 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
             )}
 
             {isEditingFarm && (
-              <Card className="border-2 border-blue-200 bg-blue-50">
+              <Card id="edit-farm-form" className="border-2 border-blue-200 bg-blue-50">
                 <CardHeader className="bg-blue-100 rounded-t-lg">
                   <div className="flex items-center justify-between">
                     <div>
