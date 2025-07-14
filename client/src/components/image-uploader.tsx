@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ImagePlus, Link, Upload, AlertCircle, CheckCircle2 } from "lucide-react";
+import { ImagePlus, Link, Upload, AlertCircle, CheckCircle2, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 interface ImageUploaderProps {
@@ -20,13 +20,15 @@ export function ImageUploader({
   value,
   onChange,
   label = "Image",
-  description = "Add an image URL",
+  description = "Add an image URL or drag and drop a file",
   placeholder = "Enter image URL (e.g., https://example.com/image.jpg)",
   className = "",
 }: ImageUploaderProps) {
   const [url, setUrl] = useState(value || "");
   const [isLoading, setIsLoading] = useState(false);
   const [isValid, setIsValid] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const { toast } = useToast();
 
   const validateImageUrl = async (imageUrl: string) => {
@@ -73,6 +75,78 @@ export function ImageUploader({
     if (newUrl !== value) {
       setIsValid(false);
     }
+  };
+
+  const handleFileUpload = useCallback((file: File) => {
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid file type",
+        description: "Please select an image file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) { // 10MB limit
+      toast({
+        title: "File too large",
+        description: "Please select an image smaller than 10MB",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    setUploadedFile(file);
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      setUrl(dataUrl);
+      setIsValid(true);
+      onChange(dataUrl);
+      setIsLoading(false);
+      
+      toast({
+        title: "Image uploaded",
+        description: "Image has been successfully uploaded",
+      });
+    };
+    reader.readAsDataURL(file);
+  }, [onChange, toast]);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      handleFileUpload(files[0]);
+    }
+  }, [handleFileUpload]);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      handleFileUpload(files[0]);
+    }
+  };
+
+  const clearImage = () => {
+    setUrl("");
+    setIsValid(false);
+    setUploadedFile(null);
+    onChange("");
   };
 
   const handleValidate = () => {

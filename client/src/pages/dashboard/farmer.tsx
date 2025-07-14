@@ -18,7 +18,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { insertProduceItemSchema, insertFarmSchema, insertInventorySchema } from "@shared/schema";
 import { z } from "zod";
 import { Plus, Edit, Trash2, Package, Upload, Download, Image } from "lucide-react";
-import { ImageUploader } from "@/components/image-uploader";
+import { EnhancedImageUploader } from "@/components/enhanced-image-uploader";
 import { InstagramConnect } from "@/components/instagram-connect";
 import { PhotoAnalyzer } from "@/components/photo-analyzer";
 import {
@@ -512,7 +512,7 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
-                              <ImageUploader
+                              <EnhancedImageUploader
                                 value={field.value}
                                 onChange={field.onChange}
                                 label="Product Image"

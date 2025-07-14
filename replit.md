@@ -108,6 +108,18 @@ RESTful API endpoints organized by domain:
 - **Start command**: Production starts with `npm run start`
 
 ## Recent Changes
+- July 14, 2025: Production-ready drag-and-drop image upload system implemented
+  - ✅ Increased server request body limits to 50MB to handle large image uploads
+  - ✅ Created enhanced drag-and-drop image uploader with file validation and preview
+  - ✅ Replaced basic image uploader with professional drag-and-drop component
+  - ✅ Added comprehensive file type and size validation for uploaded images
+  - ✅ Implemented proper image preview with clear removal functionality
+  - ✅ Enhanced Instagram OAuth integration with graceful fallback to manual entry
+  - ✅ Fixed "request entity too large" error preventing image uploads
+  - ✅ Added visual drag-and-drop zones with hover states and upload progress
+  - ✅ Integrated stock photo suggestions for farmers without images
+  - Platform now features professional image management with drag-and-drop capabilities
+
 - July 14, 2025: Critical production fixes and enhanced error handling completed
   - ✅ Fixed search button alignment on home page to be properly positioned
   - ✅ Removed promotional "Keep 90%" text from farmer call-to-action section
