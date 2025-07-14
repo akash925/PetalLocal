@@ -20,6 +20,7 @@ import { z } from "zod";
 import { Plus, Edit, Trash2, Package, Upload, Download, Image } from "lucide-react";
 import { ImageUploader } from "@/components/image-uploader";
 import { InstagramConnect } from "@/components/instagram-connect";
+import { PhotoAnalyzer } from "@/components/photo-analyzer";
 import {
   Dialog,
   DialogContent,
@@ -510,41 +511,44 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                         name="imageUrl"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Product Image</FormLabel>
                             <FormControl>
-                              <div className="space-y-2">
-                                <Input
-                                  type="file"
-                                  accept="image/*"
-                                  onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                      // Create a URL for the image
-                                      const imageUrl = URL.createObjectURL(file);
-                                      field.onChange(imageUrl);
-                                      toast({
-                                        title: "Image uploaded",
-                                        description: "Your product image has been added successfully",
-                                      });
-                                    }
-                                  }}
-                                  className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
-                                />
-                                {field.value && (
-                                  <div className="mt-2">
-                                    <img
-                                      src={field.value}
-                                      alt="Product preview"
-                                      className="w-20 h-20 object-cover rounded-md border"
-                                    />
-                                  </div>
-                                )}
-                              </div>
+                              <ImageUploader
+                                value={field.value}
+                                onChange={field.onChange}
+                                label="Product Image"
+                                description="Add a high-quality image of your produce"
+                                placeholder="Enter product image URL"
+                              />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
+
+                      {/* AI-Powered Plant Identification */}
+                      <div className="col-span-full">
+                        <PhotoAnalyzer
+                          mode="plant-identification"
+                          onAnalysisComplete={(analysis) => {
+                            if (analysis.plantType) {
+                              form.setValue("name", analysis.suggestions?.name || analysis.plantType);
+                            }
+                            if (analysis.category) {
+                              form.setValue("category", analysis.category);
+                            }
+                            if (analysis.variety) {
+                              form.setValue("variety", analysis.variety);
+                            }
+                            if (analysis.suggestions?.description) {
+                              form.setValue("description", analysis.suggestions.description);
+                            }
+                            toast({
+                              title: "Form auto-filled!",
+                              description: "Product information has been populated based on photo analysis",
+                            });
+                          }}
+                        />
+                      </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <FormField
@@ -849,7 +853,7 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                       
                       {editingInventory === item.id && (
                         <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 mb-3">
                             <Input
                               type="number"
                               placeholder="Quantity"
@@ -891,6 +895,23 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                             >
                               Cancel
                             </Button>
+                          </div>
+                          
+                          {/* AI-Powered Inventory Estimation */}
+                          <div className="border-t pt-3">
+                            <PhotoAnalyzer
+                              mode="inventory-estimation"
+                              onInventoryEstimate={(estimate) => {
+                                const input = document.getElementById(`inventory-${item.id}`) as HTMLInputElement;
+                                if (input && estimate.estimatedQuantity) {
+                                  input.value = estimate.estimatedQuantity.toString();
+                                }
+                                toast({
+                                  title: "Inventory estimated!",
+                                  description: `AI estimated ${estimate.estimatedQuantity} ${estimate.unit}`,
+                                });
+                              }}
+                            />
                           </div>
                         </div>
                       )}

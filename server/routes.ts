@@ -9,6 +9,7 @@ import { stripeService } from "./services/stripe";
 import { emailService } from "./services/email";
 import { calculatePlatformFee } from "./config";
 import { instagramService } from "./services/instagram";
+import { openaiService } from "./services/openai";
 
 // Extend session interface
 declare module "express-session" {
@@ -986,6 +987,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting review:", error);
       res.status(500).json({ error: "Failed to delete review" });
+    }
+  });
+
+  // OpenAI Photo Analysis Routes
+  app.post("/api/analyze-plant", requireAuth, async (req: any, res) => {
+    try {
+      const { image } = req.body;
+      
+      if (!image) {
+        return res.status(400).json({ error: "Image data is required" });
+      }
+      
+      const analysis = await openaiService.analyzePlantPhoto(image);
+      res.json(analysis);
+    } catch (error) {
+      console.error("Error analyzing plant photo:", error);
+      res.status(500).json({ error: "Failed to analyze plant photo" });
+    }
+  });
+
+  app.post("/api/estimate-inventory", requireAuth, async (req: any, res) => {
+    try {
+      const { image } = req.body;
+      
+      if (!image) {
+        return res.status(400).json({ error: "Image data is required" });
+      }
+      
+      const estimation = await openaiService.estimateInventoryFromPhoto(image);
+      res.json(estimation);
+    } catch (error) {
+      console.error("Error estimating inventory:", error);
+      res.status(500).json({ error: "Failed to estimate inventory" });
     }
   });
 
