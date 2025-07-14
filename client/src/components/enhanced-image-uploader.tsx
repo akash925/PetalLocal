@@ -29,9 +29,52 @@ export function EnhancedImageUploader({
   const [isValid, setIsValid] = useState(!!value);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [compressionStats, setCompressionStats] = useState<{
+    originalSize: number;
+    compressedSize: number;
+    compressionRatio: number;
+  } | null>(null);
   const { toast } = useToast();
 
-  const handleFileUpload = useCallback((file: File) => {
+  const compressImage = (file: File, quality: number = 0.8): Promise<{ dataUrl: string; compressedSize: number }> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Calculate new dimensions (max 1200px width/height)
+        const maxSize = 1200;
+        let { width, height } = img;
+        
+        if (width > maxSize || height > maxSize) {
+          if (width > height) {
+            height = (height * maxSize) / width;
+            width = maxSize;
+          } else {
+            width = (width * maxSize) / height;
+            height = maxSize;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Draw and compress
+        ctx?.drawImage(img, 0, 0, width, height);
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+        
+        // Calculate compressed size (rough estimate)
+        const compressedSize = Math.round((compressedDataUrl.length * 3) / 4);
+        
+        resolve({ dataUrl: compressedDataUrl, compressedSize });
+      };
+      
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  const handleFileUpload = useCallback(async (file: File) => {
     if (!file.type.startsWith('image/')) {
       toast({
         title: "Invalid file type",
@@ -41,10 +84,10 @@ export function EnhancedImageUploader({
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) { // 10MB limit
+    if (file.size > 5 * 1024 * 1024) { // 5MB limit before compression
       toast({
         title: "File too large",
-        description: "Please select an image smaller than 10MB",
+        description: "Please select an image smaller than 5MB",
         variant: "destructive",
       });
       return;
@@ -53,20 +96,33 @@ export function EnhancedImageUploader({
     setIsLoading(true);
     setUploadedFile(file);
     
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const dataUrl = e.target?.result as string;
+    try {
+      const { dataUrl, compressedSize } = await compressImage(file);
       setUrl(dataUrl);
       setIsValid(true);
       onChange(dataUrl);
-      setIsLoading(false);
+      
+      // Calculate compression stats
+      const compressionRatio = ((file.size - compressedSize) / file.size) * 100;
+      setCompressionStats({
+        originalSize: file.size,
+        compressedSize,
+        compressionRatio: Math.max(0, compressionRatio),
+      });
       
       toast({
-        title: "Image uploaded",
-        description: "Image has been successfully uploaded",
+        title: "Image uploaded and compressed",
+        description: `Optimized by ${Math.round(compressionRatio)}% • ${formatFileSize(file.size)} → ${formatFileSize(compressedSize)}`,
       });
-    };
-    reader.readAsDataURL(file);
+    } catch (error) {
+      toast({
+        title: "Upload failed",
+        description: "Failed to process image. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   }, [onChange, toast]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -100,7 +156,14 @@ export function EnhancedImageUploader({
     setUrl("");
     setIsValid(false);
     setUploadedFile(null);
+    setCompressionStats(null);
     onChange("");
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
   const validateImageUrl = async (imageUrl: string) => {
@@ -176,7 +239,7 @@ export function EnhancedImageUploader({
         >
           <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">Upload a photo</h3>
-          <p className="text-gray-600 mb-4">Drag and drop or click to select an image</p>
+          <p className="text-gray-600 mb-4">Drag and drop or click to select an image (max 5MB, auto-compressed)</p>
           
           <input
             type="file"
@@ -245,6 +308,12 @@ export function EnhancedImageUploader({
                 File: {uploadedFile.name}
               </Badge>
             )}
+            {compressionStats && (
+              <Badge variant="outline" className="bg-green-50 text-green-700">
+                Compressed {Math.round(compressionStats.compressionRatio)}% 
+                ({formatFileSize(compressionStats.originalSize)} → {formatFileSize(compressionStats.compressedSize)})
+              </Badge>
+            )}
           </div>
         )}
 
@@ -274,7 +343,7 @@ export function EnhancedImageUploader({
             <CardContent className="pt-6">
               <div className="text-center text-sm text-gray-600">
                 <ImagePlus className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                <p>Need free stock photos? Try:</p>
+                <p>Need free stock photos? Try these sources:</p>
                 <div className="flex justify-center gap-4 mt-2">
                   <Button
                     variant="link"

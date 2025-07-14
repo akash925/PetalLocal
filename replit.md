@@ -109,16 +109,17 @@ RESTful API endpoints organized by domain:
 
 ## Recent Changes
 - July 14, 2025: Production-ready drag-and-drop image upload system implemented
-  - ✅ Increased server request body limits to 50MB to handle large image uploads
+  - ✅ Implemented automatic image compression to reduce file sizes and improve performance
   - ✅ Created enhanced drag-and-drop image uploader with file validation and preview
   - ✅ Replaced basic image uploader with professional drag-and-drop component
   - ✅ Added comprehensive file type and size validation for uploaded images
   - ✅ Implemented proper image preview with clear removal functionality
   - ✅ Enhanced Instagram OAuth integration with graceful fallback to manual entry
-  - ✅ Fixed "request entity too large" error preventing image uploads
+  - ✅ Fixed "request entity too large" error with intelligent compression
   - ✅ Added visual drag-and-drop zones with hover states and upload progress
   - ✅ Integrated stock photo suggestions for farmers without images
-  - Platform now features professional image management with drag-and-drop capabilities
+  - ✅ Set moderate server limits (10MB) with client-side compression for efficiency
+  - Platform now features professional image management with automatic optimization
 
 - July 14, 2025: Critical production fixes and enhanced error handling completed
   - ✅ Fixed search button alignment on home page to be properly positioned
