@@ -46,11 +46,8 @@ export default function Cart() {
 
   const handleCheckout = () => {
     if (!isAuthenticated) {
-      toast({
-        title: "Please sign in",
-        description: "You need to be signed in to place an order.",
-        variant: "destructive",
-      });
+      // Redirect to login with return URL to checkout
+      window.location.href = '/auth/login?redirect=/checkout';
       return;
     }
     
@@ -185,22 +182,24 @@ export default function Cart() {
                   <span>${total.toFixed(2)}</span>
                 </div>
 
+                {!isAuthenticated && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
+                    <p className="text-sm text-blue-800 mb-2">
+                      Sign in to complete your order
+                    </p>
+                    <p className="text-xs text-blue-600">
+                      New to FarmDirect? Create an account at checkout
+                    </p>
+                  </div>
+                )}
+
                 <Button
                   className="w-full bg-green-500 hover:bg-green-600"
                   size="lg"
                   onClick={handleCheckout}
                 >
-                  Proceed to Checkout
+                  {!isAuthenticated ? "Sign In & Checkout" : "Proceed to Checkout"}
                 </Button>
-
-                {!isAuthenticated && (
-                  <p className="text-sm text-gray-600 text-center">
-                    <Link href="/auth/login" className="text-green-600 hover:text-green-700">
-                      Sign in
-                    </Link>{" "}
-                    to complete your order
-                  </p>
-                )}
 
                 <Button
                   variant="outline"

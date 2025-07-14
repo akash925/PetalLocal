@@ -21,6 +21,10 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function Login() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  
+  // Get redirect URL from query params
+  const urlParams = new URLSearchParams(window.location.search);
+  const redirectUrl = urlParams.get('redirect') || '/';
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -41,7 +45,7 @@ export default function Login() {
         title: "Welcome back!",
         description: "You have been successfully logged in.",
       });
-      setLocation("/");
+      setLocation(redirectUrl);
     },
     onError: (error) => {
       toast({

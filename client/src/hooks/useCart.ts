@@ -33,21 +33,8 @@ export function useCart() {
     };
   }, []);
 
-  // Check auth status and clear cart if logged out
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const response = await fetch('/api/auth/user');
-        if (response.status === 401) {
-          setItems([]);
-        }
-      } catch (error) {
-        setItems([]);
-      }
-    };
-    
-    checkAuth();
-  }, []);
+  // Keep cart items even when not authenticated to allow guest shopping
+  // Cart will persist until user explicitly logs out or clears it
 
   // Save cart to localStorage whenever items change
   useEffect(() => {

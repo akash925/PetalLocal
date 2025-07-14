@@ -1023,6 +1023,60 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Instagram OAuth Routes
+  app.get("/api/auth/instagram", requireAuth, async (req: any, res) => {
+    try {
+      const authUrl = instagramService.getAuthUrl();
+      res.json({ authUrl });
+    } catch (error) {
+      console.error("Error getting Instagram auth URL:", error);
+      res.status(500).json({ error: "Instagram authentication not configured" });
+    }
+  });
+
+  app.get("/api/auth/instagram/callback", requireAuth, async (req: any, res) => {
+    try {
+      const { code } = req.query;
+      
+      if (!code) {
+        return res.status(400).json({ error: "Authorization code is required" });
+      }
+      
+      const accessToken = await instagramService.exchangeCodeForToken(code as string);
+      
+      if (!accessToken) {
+        return res.status(400).json({ error: "Failed to get access token" });
+      }
+      
+      const profile = await instagramService.getUserProfile(accessToken);
+      
+      if (!profile.success) {
+        return res.status(400).json({ error: profile.error || "Failed to get profile" });
+      }
+      
+      res.json({ profile: profile.profile });
+    } catch (error) {
+      console.error("Error in Instagram callback:", error);
+      res.status(500).json({ error: "Failed to process Instagram callback" });
+    }
+  });
+
+  app.post("/api/validate-instagram-handle", async (req, res) => {
+    try {
+      const { handle } = req.body;
+      
+      if (!handle) {
+        return res.status(400).json({ error: "Instagram handle is required" });
+      }
+      
+      const isValid = await instagramService.validateHandle(handle);
+      res.json({ isValid });
+    } catch (error) {
+      console.error("Error validating Instagram handle:", error);
+      res.status(500).json({ error: "Failed to validate Instagram handle" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
