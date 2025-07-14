@@ -108,6 +108,18 @@ RESTful API endpoints organized by domain:
 - **Start command**: Production starts with `npm run start`
 
 ## Recent Changes
+- July 14, 2025: Apple Pay integration for immediate payments implemented
+  - ✅ Enhanced Stripe payment service with Apple Pay and Google Pay support
+  - ✅ Added ExpressCheckoutElement to main checkout page with priority positioning
+  - ✅ Created ApplePayButton component for immediate single-item purchases
+  - ✅ Integrated Apple Pay buttons directly into produce cards for instant buying
+  - ✅ Configured payment intents to optimize for digital wallet payments
+  - ✅ Added express checkout section with clear separation from traditional card payment
+  - ✅ Implemented comprehensive error handling for Apple Pay transactions
+  - ✅ Enhanced Stripe appearance with brand-consistent green theming
+  - ✅ Added proper loading states and payment confirmation flow
+  - Platform now supports instant Apple Pay and Google Pay purchases alongside traditional payments
+
 - July 14, 2025: Production-ready drag-and-drop image upload system implemented
   - ✅ Implemented automatic image compression to reduce file sizes and improve performance
   - ✅ Created enhanced drag-and-drop image uploader with file validation and preview

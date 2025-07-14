@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, CreditCard, MapPin, Phone, User } from "lucide-react";
 import { Link } from "wouter";
 import { loadStripe } from "@stripe/stripe-js";
-import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import { Elements, PaymentElement, useStripe, useElements, ExpressCheckoutElement } from "@stripe/react-stripe-js";
 import { apiRequest } from "@/lib/queryClient";
 
 // Initialize Stripe
@@ -60,25 +60,86 @@ function CheckoutForm({ clientSecret, onSuccess }: CheckoutFormProps) {
     }
   };
 
+  const handleExpressCheckout = async (event: any) => {
+    const { error } = await stripe!.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: `${window.location.origin}/order-confirmation`,
+      },
+    });
+
+    if (error) {
+      toast({
+        title: "Payment Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Payment Successful!",
+        description: "Your order has been placed successfully.",
+      });
+      onSuccess();
+    }
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="space-y-6">
+      {/* Apple Pay and Express Checkout */}
       <div className="bg-gray-50 p-4 rounded-lg">
         <h3 className="font-medium mb-3 flex items-center">
-          <CreditCard className="w-5 h-5 mr-2" />
-          Payment Information
+          <span className="text-lg mr-2">📱</span>
+          Express Checkout
         </h3>
-        <PaymentElement />
+        <ExpressCheckoutElement
+          onConfirm={handleExpressCheckout}
+          options={{
+            buttonType: {
+              applePay: 'pay',
+              googlePay: 'pay',
+            },
+            layout: {
+              maxColumns: 1,
+              maxRows: 1,
+            },
+            paymentMethods: {
+              applePay: 'always',
+              googlePay: 'always',
+            },
+          }}
+        />
       </div>
-      
-      <Button
-        type="submit"
-        disabled={!stripe || isProcessing}
-        className="w-full bg-green-600 hover:bg-green-700"
-        size="lg"
-      >
-        {isProcessing ? "Processing..." : "Complete Purchase"}
-      </Button>
-    </form>
+
+      {/* Separator */}
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-300" />
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="px-2 bg-gray-50 text-gray-500">or pay with card</span>
+        </div>
+      </div>
+
+      {/* Traditional Card Payment */}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <h3 className="font-medium mb-3 flex items-center">
+            <CreditCard className="w-5 h-5 mr-2" />
+            Payment Information
+          </h3>
+          <PaymentElement />
+        </div>
+        
+        <Button
+          type="submit"
+          disabled={!stripe || isProcessing}
+          className="w-full bg-green-600 hover:bg-green-700"
+          size="lg"
+        >
+          {isProcessing ? "Processing..." : "Complete Purchase"}
+        </Button>
+      </form>
+    </div>
   );
 }
 
@@ -351,6 +412,12 @@ export default function Checkout() {
                       clientSecret,
                       appearance: {
                         theme: 'stripe',
+                        variables: {
+                          colorPrimary: '#16a34a',
+                          colorText: '#1f2937',
+                          colorTextSecondary: '#6b7280',
+                          fontFamily: 'system-ui, sans-serif',
+                        },
                       },
                     }}
                   >

@@ -47,7 +47,9 @@ class StripeService {
         },
         automatic_payment_methods: {
           enabled: true,
+          allow_redirects: 'never', // Optimized for Apple Pay and immediate payments
         },
+        payment_method_types: ['card', 'apple_pay', 'google_pay'], // Explicitly enable digital wallets
       });
       
       return {

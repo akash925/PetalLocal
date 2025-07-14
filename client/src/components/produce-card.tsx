@@ -6,6 +6,7 @@ import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 import { useState } from "react";
+import { ApplePayButton } from "./apple-pay-button";
 
 interface ProduceCardProps {
   id: number;
@@ -106,7 +107,7 @@ export function ProduceCard({
         
         <p className="text-sm text-gray-600 mb-2">{farmName}</p>
         
-        <div className="space-y-2">
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <span className="text-lg font-bold text-gray-900">
@@ -154,6 +155,29 @@ export function ProduceCard({
                 </Button>
               </div>
             )}
+          </div>
+          
+          {/* Apple Pay Quick Purchase */}
+          <div className="pt-2 border-t">
+            <ApplePayButton
+              item={{
+                id,
+                name,
+                price: pricePerUnit,
+                unit,
+                farmName,
+                imageUrl,
+              }}
+              quantity={showQuantitySelector ? quantity : 1}
+              onSuccess={() => {
+                toast({
+                  title: "Purchase Complete!",
+                  description: `Successfully purchased ${quantity} ${unit}${quantity > 1 ? 's' : ''} of ${name}`,
+                });
+                setQuantity(1);
+                setShowQuantitySelector(false);
+              }}
+            />
           </div>
         </div>
         
