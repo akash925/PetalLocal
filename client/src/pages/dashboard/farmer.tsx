@@ -18,9 +18,8 @@ import { apiRequest } from "@/lib/queryClient";
 import { insertProduceItemSchema, insertFarmSchema, insertInventorySchema } from "@shared/schema";
 import { z } from "zod";
 import { Plus, Edit, Trash2, Package, Upload, Download, Image } from "lucide-react";
-import { EnhancedImageUploader } from "@/components/enhanced-image-uploader";
+import { SmartImageUploader } from "@/components/smart-image-uploader";
 import { InstagramConnect } from "@/components/instagram-connect";
-import { PhotoAnalyzer } from "@/components/photo-analyzer";
 import {
   Dialog,
   DialogContent,
@@ -512,43 +511,35 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
-                              <EnhancedImageUploader
-                                value={field.value}
-                                onChange={field.onChange}
-                                label="Product Image"
-                                description="Add a high-quality image of your produce"
-                                placeholder="Enter product image URL"
+                              <SmartImageUploader
+                                onImageSelect={field.onChange}
+                                onAnalysisComplete={(analysis) => {
+                                  if (analysis.plantType) {
+                                    form.setValue("name", analysis.suggestions?.name || analysis.plantType);
+                                  }
+                                  if (analysis.category) {
+                                    form.setValue("category", analysis.category);
+                                  }
+                                  if (analysis.suggestions?.description) {
+                                    form.setValue("description", analysis.suggestions.description);
+                                  }
+                                  if (analysis.estimatedQuantity) {
+                                    form.setValue("quantityAvailable", analysis.estimatedQuantity.toString());
+                                  }
+                                  toast({
+                                    title: "Form auto-filled!",
+                                    description: "Product information has been populated based on photo analysis",
+                                  });
+                                }}
+                                existingImage={field.value}
+                                showAnalyzeButton={true}
+                                className="col-span-full"
                               />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-
-                      {/* AI-Powered Plant Identification */}
-                      <div className="col-span-full">
-                        <PhotoAnalyzer
-                          mode="plant-identification"
-                          onAnalysisComplete={(analysis) => {
-                            if (analysis.plantType) {
-                              form.setValue("name", analysis.suggestions?.name || analysis.plantType);
-                            }
-                            if (analysis.category) {
-                              form.setValue("category", analysis.category);
-                            }
-                            if (analysis.variety) {
-                              form.setValue("variety", analysis.variety);
-                            }
-                            if (analysis.suggestions?.description) {
-                              form.setValue("description", analysis.suggestions.description);
-                            }
-                            toast({
-                              title: "Form auto-filled!",
-                              description: "Product information has been populated based on photo analysis",
-                            });
-                          }}
-                        />
-                      </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <FormField
@@ -636,12 +627,10 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <EnhancedImageUploader
-                                  value={field.value}
-                                  onChange={field.onChange}
-                                  label="Product Image (Optional)"
-                                  description="Add a high-quality image of your produce"
-                                  placeholder="Enter product image URL"
+                                <SmartImageUploader
+                                  onImageSelect={field.onChange}
+                                  existingImage={field.value}
+                                  showAnalyzeButton={false}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -899,18 +888,20 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                           
                           {/* AI-Powered Inventory Estimation */}
                           <div className="border-t pt-3">
-                            <PhotoAnalyzer
-                              mode="inventory-estimation"
-                              onInventoryEstimate={(estimate) => {
+                            <SmartImageUploader
+                              onImageSelect={() => {}}
+                              onAnalysisComplete={(analysis) => {
                                 const input = document.getElementById(`inventory-${item.id}`) as HTMLInputElement;
-                                if (input && estimate.estimatedQuantity) {
-                                  input.value = estimate.estimatedQuantity.toString();
+                                if (input && analysis.estimatedQuantity) {
+                                  input.value = analysis.estimatedQuantity.toString();
                                 }
                                 toast({
                                   title: "Inventory estimated!",
-                                  description: `AI estimated ${estimate.estimatedQuantity} ${estimate.unit}`,
+                                  description: `AI estimated ${analysis.estimatedQuantity} ${analysis.unit}`,
                                 });
                               }}
+                              showAnalyzeButton={true}
+                              className="max-w-md"
                             />
                           </div>
                         </div>
@@ -964,12 +955,10 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                             render={({ field }) => (
                               <FormItem>
                                 <FormControl>
-                                  <EnhancedImageUploader
-                                    value={field.value}
-                                    onChange={field.onChange}
-                                    label="Product Image"
-                                    description="Add a high-quality image of your produce"
-                                    placeholder="Enter product image URL"
+                                  <SmartImageUploader
+                                    onImageSelect={field.onChange}
+                                    existingImage={field.value}
+                                    showAnalyzeButton={false}
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -1236,12 +1225,10 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                             render={({ field }) => (
                               <FormItem>
                                 <FormControl>
-                                  <EnhancedImageUploader
-                                    value={field.value}
-                                    onChange={field.onChange}
-                                    label="Farm Image"
-                                    description="Add a high-quality image of your farm"
-                                    placeholder="Enter farm image URL"
+                                  <SmartImageUploader
+                                    onImageSelect={field.onChange}
+                                    existingImage={field.value}
+                                    showAnalyzeButton={false}
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -1715,12 +1702,10 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <EnhancedImageUploader
-                                  value={field.value}
-                                  onChange={field.onChange}
-                                  label="Farm Image"
-                                  description="Add a high-quality image of your farm"
-                                  placeholder="Enter farm image URL"
+                                <SmartImageUploader
+                                  onImageSelect={field.onChange}
+                                  existingImage={field.value}
+                                  showAnalyzeButton={false}
                                 />
                               </FormControl>
                               <FormMessage />
