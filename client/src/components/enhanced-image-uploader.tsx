@@ -37,40 +37,64 @@ export function EnhancedImageUploader({
   const { toast } = useToast();
 
   const compressImage = (file: File, quality: number = 0.8): Promise<{ dataUrl: string; compressedSize: number }> => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       const img = new Image();
       
-      img.onload = () => {
-        // Calculate new dimensions (max 1200px width/height)
-        const maxSize = 1200;
-        let { width, height } = img;
-        
-        if (width > maxSize || height > maxSize) {
-          if (width > height) {
-            height = (height * maxSize) / width;
-            width = maxSize;
-          } else {
-            width = (width * maxSize) / height;
-            height = maxSize;
-          }
-        }
-        
-        canvas.width = width;
-        canvas.height = height;
-        
-        // Draw and compress
-        ctx?.drawImage(img, 0, 0, width, height);
-        const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
-        
-        // Calculate compressed size (rough estimate)
-        const compressedSize = Math.round((compressedDataUrl.length * 3) / 4);
-        
-        resolve({ dataUrl: compressedDataUrl, compressedSize });
+      // Create object URL
+      const objectUrl = URL.createObjectURL(file);
+      
+      const cleanup = () => {
+        URL.revokeObjectURL(objectUrl);
       };
       
-      img.src = URL.createObjectURL(file);
+      // Set up error handler
+      img.onerror = () => {
+        cleanup();
+        reject(new Error('Failed to load image'));
+      };
+      
+      // Set up load handler
+      img.onload = () => {
+        cleanup();
+        try {
+          // Calculate new dimensions (max 1200px width/height)
+          const maxSize = 1200;
+          let { width, height } = img;
+          
+          if (width > maxSize || height > maxSize) {
+            if (width > height) {
+              height = (height * maxSize) / width;
+              width = maxSize;
+            } else {
+              width = (width * maxSize) / height;
+              height = maxSize;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          // Draw and compress
+          if (!ctx) {
+            throw new Error('Could not get canvas context');
+          }
+          
+          ctx.drawImage(img, 0, 0, width, height);
+          const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+          
+          // Calculate compressed size (rough estimate)
+          const compressedSize = Math.round((compressedDataUrl.length * 3) / 4);
+          
+          resolve({ dataUrl: compressedDataUrl, compressedSize });
+        } catch (error) {
+          reject(error);
+        }
+      };
+      
+      // Start loading the image
+      img.src = objectUrl;
     });
   };
 
@@ -115,9 +139,10 @@ export function EnhancedImageUploader({
         description: `Optimized by ${Math.round(compressionRatio)}% • ${formatFileSize(file.size)} → ${formatFileSize(compressedSize)}`,
       });
     } catch (error) {
+      console.error('Image compression error:', error);
       toast({
         title: "Upload failed",
-        description: "Failed to process image. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to process image. Please try again.",
         variant: "destructive",
       });
     } finally {
