@@ -57,13 +57,13 @@ export default function Home() {
                       window.location.href = `/produce?search=${encodeURIComponent(searchQuery)}`;
                     }
                   }}
-                  className="w-full pl-12 pr-24 py-4 text-lg rounded-xl border-0 shadow-lg"
+                  className="w-full pl-12 pr-20 py-4 text-lg rounded-xl border-0 shadow-lg"
                 />
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center">
                   <Search className="w-6 h-6 text-gray-400" />
                 </div>
                 <Link href={`/produce?search=${encodeURIComponent(searchQuery)}`}>
-                  <Button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-medium">
+                  <Button className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium">
                     Search
                   </Button>
                 </Link>
