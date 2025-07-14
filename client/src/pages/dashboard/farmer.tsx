@@ -636,7 +636,7 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <ImageUploader
+                                <EnhancedImageUploader
                                   value={field.value}
                                   onChange={field.onChange}
                                   label="Product Image (Optional)"
@@ -964,7 +964,7 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                             render={({ field }) => (
                               <FormItem>
                                 <FormControl>
-                                  <ImageUploader
+                                  <EnhancedImageUploader
                                     value={field.value}
                                     onChange={field.onChange}
                                     label="Product Image"
@@ -1235,36 +1235,14 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                             name="imageUrl"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Farm Image</FormLabel>
                                 <FormControl>
-                                  <div className="space-y-2">
-                                    <Input
-                                      type="file"
-                                      accept="image/*"
-                                      onChange={(e) => {
-                                        const file = e.target.files?.[0];
-                                        if (file) {
-                                          // Create a URL for the image
-                                          const imageUrl = URL.createObjectURL(file);
-                                          field.onChange(imageUrl);
-                                          toast({
-                                            title: "Farm image uploaded",
-                                            description: "Your farm image has been added successfully",
-                                          });
-                                        }
-                                      }}
-                                      className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
-                                    />
-                                    {field.value && (
-                                      <div className="mt-2">
-                                        <img
-                                          src={field.value}
-                                          alt="Farm preview"
-                                          className="w-32 h-20 object-cover rounded-md border"
-                                        />
-                                      </div>
-                                    )}
-                                  </div>
+                                  <EnhancedImageUploader
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    label="Farm Image"
+                                    description="Add a high-quality image of your farm"
+                                    placeholder="Enter farm image URL"
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -1737,7 +1715,7 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <ImageUploader
+                                <EnhancedImageUploader
                                   value={field.value}
                                   onChange={field.onChange}
                                   label="Farm Image"
