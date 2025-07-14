@@ -26,6 +26,7 @@ import {
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, like, desc, asc, ilike } from "drizzle-orm";
+import { addDistanceToProduceItems } from "./utils/distance";
 
 export interface IStorage {
   // User operations
@@ -180,6 +181,9 @@ export class DatabaseStorage implements IStorage {
       .from(farms)
       .leftJoin(users, eq(farms.ownerId, users.id))
       .orderBy(desc(farms.createdAt));
+      
+    // Add distance calculations to all results
+    return addDistanceToProduceItems(result);
   }
 
   // Produce operations
@@ -274,7 +278,16 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(produceItems.createdAt));
     
     console.log('Search result count:', result.length);
-    return result;
+    
+    // Deduplicate results by ID to prevent duplicate keys in frontend
+    const uniqueResults = result.filter((item, index, self) => 
+      index === self.findIndex(t => t.id === item.id)
+    );
+    
+    console.log('Unique result count:', uniqueResults.length);
+    
+    // Add distance calculations to all results
+    return addDistanceToProduceItems(uniqueResults);
   }
 
   async createProduceItem(item: InsertProduceItem): Promise<ProduceItem> {

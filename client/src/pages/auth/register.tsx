@@ -32,9 +32,10 @@ export default function Register() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
-  // Check for role parameter in URL
+  // Check for role parameter and redirect URL in URL
   const urlParams = new URLSearchParams(window.location.search);
   const roleParam = urlParams.get('role');
+  const redirectUrl = urlParams.get('redirect') || '/';
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -63,7 +64,7 @@ export default function Register() {
         title: "Welcome to FarmDirect!",
         description: "Your account has been created successfully.",
       });
-      setLocation("/");
+      setLocation(redirectUrl);
     },
     onError: (error) => {
       toast({

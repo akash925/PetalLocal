@@ -119,12 +119,12 @@ export default function FarmDetail() {
                       category={item.category}
                       pricePerUnit={parseFloat(item.pricePerUnit)}
                       unit={item.unit}
-                      imageUrl={item.imageUrl}
+                      imageUrl={item.imageUrl?.startsWith('blob:') ? null : item.imageUrl}
                       isOrganic={item.isOrganic}
                       isSeasonal={item.isSeasonal}
                       isHeirloom={item.isHeirloom}
                       farmName={farmData.name}
-                      distance={2.5} // This would be calculated based on user location
+                      distance={farmData.distance || 2.5}
                     />
                   ))}
                 </div>

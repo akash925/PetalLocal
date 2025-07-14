@@ -37,6 +37,13 @@ export default function BrowseProduce() {
       if (!response.ok) throw new Error("Failed to fetch produce");
       return response.json();
     },
+    select: (data: any[]) => {
+      // Deduplicate by ID in case backend still returns duplicates
+      const uniqueItems = data.filter((item, index, self) => 
+        index === self.findIndex(t => t.id === item.id)
+      );
+      return uniqueItems;
+    },
   });
 
   const categories = [
@@ -127,12 +134,12 @@ export default function BrowseProduce() {
                   category={item.category}
                   pricePerUnit={parseFloat(item.pricePerUnit)}
                   unit={item.unit}
-                  imageUrl={item.imageUrl}
+                  imageUrl={item.imageUrl?.startsWith('blob:') ? null : item.imageUrl}
                   isOrganic={item.isOrganic}
                   isSeasonal={item.isSeasonal}
                   isHeirloom={item.isHeirloom}
-                  farmName="Local Farm" // This would come from joined farm data
-                  distance={Math.random() * 5 + 1} // This would be calculated based on user location
+                  farmName={item.farm?.name || "Local Farm"}
+                  distance={item.farm?.distance || 3.2}
                 />
               ))}
             </div>

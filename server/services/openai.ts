@@ -101,6 +101,15 @@ Focus on accuracy and provide detailed observations.`
       };
     } catch (error: any) {
       console.error("OpenAI plant analysis error:", error);
+      
+      // Handle quota exceeded error gracefully
+      if (error.status === 429) {
+        return {
+          success: false,
+          error: "OpenAI usage quota exceeded. Please check your billing settings or try again later.",
+        };
+      }
+      
       return {
         success: false,
         error: `Failed to analyze plant photo: ${error.message}`,

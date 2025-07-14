@@ -12,7 +12,13 @@ export default function Home() {
 
   const { data: featuredProduce = [] } = useQuery({
     queryKey: ["/api/produce"],
-    select: (data: any[]) => data.slice(0, 8), // Get first 8 items
+    select: (data: any[]) => {
+      // Deduplicate by ID and get first 8 items
+      const uniqueItems = data.filter((item, index, self) => 
+        index === self.findIndex(t => t.id === item.id)
+      );
+      return uniqueItems.slice(0, 8);
+    },
   });
 
   const categories = [
@@ -51,13 +57,13 @@ export default function Home() {
                       window.location.href = `/produce?search=${encodeURIComponent(searchQuery)}`;
                     }
                   }}
-                  className="w-full pl-12 pr-4 py-4 text-lg rounded-xl border-0 shadow-lg"
+                  className="w-full pl-12 pr-24 py-4 text-lg rounded-xl border-0 shadow-lg"
                 />
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center">
                   <Search className="w-6 h-6 text-gray-400" />
                 </div>
                 <Link href={`/produce?search=${encodeURIComponent(searchQuery)}`}>
-                  <Button className="absolute inset-y-0 right-2 bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-medium">
+                  <Button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-medium">
                     Search
                   </Button>
                 </Link>
@@ -72,7 +78,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl font-bold text-gray-900 text-center mb-8">Browse by Category</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {categories.map((category, index) => (
+            {categories.map((category) => (
               <Link key={category.name} href={`/produce?category=${category.name.toLowerCase()}`}>
                 <div className="group cursor-pointer">
                   <div className="aspect-square rounded-xl overflow-hidden bg-gray-100 mb-3 shadow-sm group-hover:shadow-md transition-shadow duration-200 flex items-center justify-center">
@@ -105,18 +111,18 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {featuredProduce.map((item: any) => (
               <ProduceCard
-                key={item.id}
+                key={`featured-${item.id}`}
                 id={item.id}
                 name={item.name}
                 category={item.category}
                 pricePerUnit={parseFloat(item.pricePerUnit)}
                 unit={item.unit}
-                imageUrl={item.imageUrl}
+                imageUrl={item.imageUrl?.startsWith('blob:') ? null : item.imageUrl}
                 isOrganic={item.isOrganic}
                 isSeasonal={item.isSeasonal}
                 isHeirloom={item.isHeirloom}
-                farmName="Local Farm" // This would come from farm data
-                distance={2.5} // This would be calculated
+                farmName={item.farm?.name || "Local Farm"}
+                distance={item.farm?.distance || 2.5}
               />
             ))}
           </div>
@@ -175,7 +181,7 @@ export default function Home() {
           </h2>
           <p className="text-xl text-green-100 mb-8">
             Join our community and start selling your fresh produce directly to local customers. 
-            Keep 90% of every sale and build lasting relationships with your community.
+            Build lasting relationships with your community.
           </p>
           <Link href="/sell">
             <Button size="lg" className="bg-white text-green-600 hover:bg-gray-100 px-8 py-3 text-lg">

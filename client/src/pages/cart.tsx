@@ -46,8 +46,8 @@ export default function Cart() {
 
   const handleCheckout = () => {
     if (!isAuthenticated) {
-      // Redirect to login with return URL to checkout
-      window.location.href = '/auth/login?redirect=/checkout';
+      // Redirect to signup with return URL to checkout
+      window.location.href = '/auth/register?redirect=/checkout';
       return;
     }
     
