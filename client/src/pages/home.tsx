@@ -72,7 +72,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-2xl font-bold text-gray-900 text-center mb-8">Browse by Category</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {categories.map((category) => (
+            {categories.map((category, index) => (
               <Link key={category.name} href={`/produce?category=${category.name.toLowerCase()}`}>
                 <div className="group cursor-pointer">
                   <div className="aspect-square rounded-xl overflow-hidden bg-gray-100 mb-3 shadow-sm group-hover:shadow-md transition-shadow duration-200 flex items-center justify-center">

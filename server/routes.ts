@@ -8,6 +8,7 @@ import connectPg from "connect-pg-simple";
 import { stripeService } from "./services/stripe";
 import { emailService } from "./services/email";
 import { calculatePlatformFee } from "./config";
+import { instagramService } from "./services/instagram";
 
 // Extend session interface
 declare module "express-session" {
@@ -551,16 +552,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid amount" });
       }
 
+      // Validate items
+      if (!items || items.length === 0) {
+        return res.status(400).json({ message: "No items provided" });
+      }
+
+      // Create order first to get orderId
+      const orderData = {
+        buyerId: req.session.userId,
+        totalAmount: amount,
+        status: "pending",
+        paymentStatus: "pending",
+        items: items.map((item: any) => ({
+          produceItemId: item.id,
+          quantity: item.quantity,
+          pricePerUnit: item.price,
+        })),
+      };
+
+      const order = await storage.createOrder(orderData);
+
       // Calculate platform fee using configurable rate
       const { platformFee, farmerAmount } = calculatePlatformFee(amount);
 
-      console.log(`[PAYMENT] Total: $${amount}, Platform Fee: $${platformFee.toFixed(2)}, Farmer Gets: $${farmerAmount.toFixed(2)}`);
+      console.log(`[PAYMENT] Order ${order.id} - Total: $${amount}, Platform Fee: $${platformFee.toFixed(2)}, Farmer Gets: $${farmerAmount.toFixed(2)}`);
 
-      const paymentResult = await stripeService.createPaymentIntent(amount, 0);
+      const paymentResult = await stripeService.createPaymentIntent(amount, order.id);
       
       if (paymentResult.success) {
         res.json({ 
           clientSecret: paymentResult.clientSecret,
+          orderId: order.id,
           platformFee: platformFee.toFixed(2),
           farmerAmount: farmerAmount.toFixed(2)
         });
@@ -741,6 +763,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Get admin analytics error:", error);
       res.status(500).json({ message: "Failed to get analytics" });
+    }
+  });
+
+  // Instagram OAuth routes
+  app.get("/api/auth/instagram", requireAuth, async (req: any, res) => {
+    try {
+      const authUrl = instagramService.getAuthUrl();
+      res.json({ authUrl });
+    } catch (error) {
+      console.error("Instagram auth URL error:", error);
+      res.status(500).json({ message: "Instagram authentication not available" });
+    }
+  });
+
+  app.post("/api/auth/instagram/callback", requireAuth, async (req: any, res) => {
+    try {
+      const { code } = req.body;
+      
+      if (!code) {
+        return res.status(400).json({ message: "Authorization code required" });
+      }
+
+      const accessToken = await instagramService.exchangeCodeForToken(code);
+      
+      if (!accessToken) {
+        return res.status(400).json({ message: "Failed to exchange code for token" });
+      }
+
+      const profileResult = await instagramService.getUserProfile(accessToken);
+      
+      if (!profileResult.success) {
+        return res.status(400).json({ message: profileResult.error });
+      }
+
+      // Update user's Instagram handle in their farm profile
+      const farms = await storage.getFarmsByOwner(req.session.userId);
+      if (farms.length > 0) {
+        await storage.updateFarm(farms[0].id, {
+          instagramHandle: profileResult.profile!.username,
+        });
+      }
+
+      res.json({ 
+        success: true, 
+        instagramHandle: profileResult.profile!.username,
+        profile: profileResult.profile
+      });
+    } catch (error) {
+      console.error("Instagram callback error:", error);
+      res.status(500).json({ message: "Failed to process Instagram authentication" });
     }
   });
 

@@ -18,6 +18,8 @@ import { apiRequest } from "@/lib/queryClient";
 import { insertProduceItemSchema, insertFarmSchema, insertInventorySchema } from "@shared/schema";
 import { z } from "zod";
 import { Plus, Edit, Trash2, Package, Upload, Download, Image } from "lucide-react";
+import { ImageUploader } from "@/components/image-uploader";
+import { InstagramConnect } from "@/components/instagram-connect";
 import {
   Dialog,
   DialogContent,
@@ -626,20 +628,17 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
 
                         <FormField
                           control={form.control}
-                          name="imageFile"
+                          name="imageUrl"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Product Image (Optional)</FormLabel>
                               <FormControl>
-                                <div className="flex items-center gap-2">
-                                  <Input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(e) => field.onChange(e.target.files?.[0])}
-                                    className="flex-1"
-                                  />
-                                  <Image className="w-4 h-4 text-gray-400" />
-                                </div>
+                                <ImageUploader
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  label="Product Image (Optional)"
+                                  description="Add a high-quality image of your produce"
+                                  placeholder="Enter product image URL"
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -943,36 +942,14 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                             name="imageUrl"
                             render={({ field }) => (
                               <FormItem>
-                                <FormLabel>Product Image</FormLabel>
                                 <FormControl>
-                                  <div className="space-y-2">
-                                    <Input
-                                      type="file"
-                                      accept="image/*"
-                                      onChange={(e) => {
-                                        const file = e.target.files?.[0];
-                                        if (file) {
-                                          // Create a URL for the image
-                                          const imageUrl = URL.createObjectURL(file);
-                                          field.onChange(imageUrl);
-                                          toast({
-                                            title: "Image uploaded",
-                                            description: "Your product image has been added successfully",
-                                          });
-                                        }
-                                      }}
-                                      className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
-                                    />
-                                    {field.value && (
-                                      <div className="mt-2">
-                                        <img
-                                          src={field.value}
-                                          alt="Product preview"
-                                          className="w-20 h-20 object-cover rounded-md border"
-                                        />
-                                      </div>
-                                    )}
-                                  </div>
+                                  <ImageUploader
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    label="Product Image"
+                                    description="Add a high-quality image of your produce"
+                                    placeholder="Enter product image URL"
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -1738,36 +1715,14 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                           name="imageUrl"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Farm Image</FormLabel>
                               <FormControl>
-                                <div className="space-y-2">
-                                  <Input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(e) => {
-                                      const file = e.target.files?.[0];
-                                      if (file) {
-                                        // Create a URL for the image
-                                        const imageUrl = URL.createObjectURL(file);
-                                        field.onChange(imageUrl);
-                                        toast({
-                                          title: "Farm image uploaded",
-                                          description: "Your farm image has been added successfully",
-                                        });
-                                      }
-                                    }}
-                                    className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
-                                  />
-                                  {field.value && (
-                                    <div className="mt-2">
-                                      <img
-                                        src={field.value}
-                                        alt="Farm preview"
-                                        className="w-32 h-20 object-cover rounded-md border"
-                                      />
-                                    </div>
-                                  )}
-                                </div>
+                                <ImageUploader
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  label="Farm Image"
+                                  description="Add a high-quality image of your farm"
+                                  placeholder="Enter farm image URL"
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -1870,6 +1825,40 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                               </div>
                             </FormItem>
                           )}
+                        />
+                      </div>
+
+                      {/* Instagram Integration */}
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-medium">Social Media</h3>
+                        
+                        <FormField
+                          control={farmForm.control}
+                          name="instagramHandle"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Instagram Handle</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="@yourfarm" 
+                                  {...field} 
+                                  value={field.value || ''}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <InstagramConnect 
+                          currentHandle={farmForm.getValues('instagramHandle')}
+                          onSuccess={(handle) => {
+                            farmForm.setValue('instagramHandle', handle);
+                            toast({
+                              title: "Instagram connected!",
+                              description: `Successfully connected to @${handle}`,
+                            });
+                          }}
                         />
                       </div>
 
