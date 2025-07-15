@@ -78,7 +78,7 @@ export default function ProduceDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Image Section */}
           <div className="space-y-4">
-            <div className="aspect-square rounded-xl overflow-hidden bg-gray-100">
+            <div className="aspect-[4/3] max-h-96 rounded-xl overflow-hidden bg-gray-100">
               {produceItem.imageUrl ? (
                 <img
                   src={produceItem.imageUrl}
@@ -86,8 +86,13 @@ export default function ProduceDetail() {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                  <span className="text-gray-400 text-lg">No image available</span>
+                <div className="w-full h-full bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="w-16 h-16 mx-auto mb-4 bg-green-200 rounded-full flex items-center justify-center">
+                      <span className="text-green-600 text-2xl">🥕</span>
+                    </div>
+                    <span className="text-green-600 font-medium">{produceItem.name}</span>
+                  </div>
                 </div>
               )}
             </div>

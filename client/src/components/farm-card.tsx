@@ -36,8 +36,13 @@ export function FarmCard({
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-full h-full bg-gray-300 flex items-center justify-center">
-            <span className="text-gray-500">No image</span>
+          <div className="w-full h-full bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-12 h-12 mx-auto mb-2 bg-green-200 rounded-full flex items-center justify-center">
+                <span className="text-green-600 text-xl">🏡</span>
+              </div>
+              <span className="text-green-600 text-sm font-medium">{name}</span>
+            </div>
           </div>
         )}
       </div>

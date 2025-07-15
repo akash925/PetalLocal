@@ -805,6 +805,26 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                       </div>
                     </div>
                     
+                    {/* Image Section */}
+                    <div className="mb-3">
+                      {item.imageUrl ? (
+                        <img
+                          src={item.imageUrl}
+                          alt={item.name}
+                          className="w-full h-32 object-cover rounded-lg"
+                        />
+                      ) : (
+                        <div className="w-full h-32 bg-gradient-to-br from-green-50 to-green-100 rounded-lg flex items-center justify-center">
+                          <div className="text-center">
+                            <div className="w-8 h-8 mx-auto mb-1 bg-green-200 rounded-full flex items-center justify-center">
+                              <span className="text-green-600 text-sm">🥕</span>
+                            </div>
+                            <span className="text-green-600 text-xs font-medium">No image</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    
                     <div className="space-y-2">
                       <Badge variant="outline">{item.category}</Badge>
                       <p className="text-sm text-gray-600 line-clamp-2">

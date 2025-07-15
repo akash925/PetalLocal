@@ -84,8 +84,13 @@ export function ProduceCard({
             className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200"
           />
         ) : (
-          <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
-            <span className="text-gray-400">No image</span>
+          <div className="w-full h-48 bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-12 h-12 mx-auto mb-2 bg-green-200 rounded-full flex items-center justify-center">
+                <span className="text-green-600 text-xl">🥕</span>
+              </div>
+              <span className="text-green-600 text-sm font-medium">{name}</span>
+            </div>
           </div>
         )}
       </div>
