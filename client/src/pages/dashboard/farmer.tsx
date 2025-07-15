@@ -119,6 +119,7 @@ export default function FarmerDashboard() {
       phoneNumber: "",
       website: "",
       instagramHandle: "",
+      imageUrl: "",
       isOrganic: false,
       pickupAvailable: true,
       deliveryAvailable: false,
@@ -305,6 +306,7 @@ export default function FarmerDashboard() {
         phoneNumber: farm.phoneNumber || "",
         website: farm.website || "",
         instagramHandle: farm.instagramHandle || "",
+        imageUrl: farm.imageUrl || "",
         isOrganic: farm.isOrganic || false,
         pickupAvailable: farm.pickupAvailable || true,
         deliveryAvailable: farm.deliveryAvailable || false,
@@ -1276,7 +1278,23 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                               variant="outline"
                               onClick={() => {
                                 setIsCreatingFarm(false);
-                                farmForm.reset();
+                                farmForm.reset({
+                                  name: "",
+                                  description: "",
+                                  address: "",
+                                  city: "",
+                                  state: "",
+                                  zipCode: "",
+                                  phoneNumber: "",
+                                  website: "",
+                                  instagramHandle: "",
+                                  imageUrl: "",
+                                  isOrganic: false,
+                                  pickupAvailable: true,
+                                  deliveryAvailable: false,
+                                  farmToursAvailable: "no",
+                                  ownerId: user?.id,
+                                });
                               }}
                             >
                               Cancel
@@ -1772,7 +1790,23 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                           variant="outline"
                           onClick={() => {
                             setIsEditingFarm(false);
-                            farmForm.reset();
+                            farmForm.reset({
+                              name: "",
+                              description: "",
+                              address: "",
+                              city: "",
+                              state: "",
+                              zipCode: "",
+                              phoneNumber: "",
+                              website: "",
+                              instagramHandle: "",
+                              imageUrl: "",
+                              isOrganic: false,
+                              pickupAvailable: true,
+                              deliveryAvailable: false,
+                              farmToursAvailable: "no",
+                              ownerId: user?.id,
+                            });
                           }}
                         >
                           Cancel

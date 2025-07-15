@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -51,6 +51,14 @@ export function ProduceEditModal({
       imageUrl: produceItem?.imageUrl || "",
     },
   });
+
+  // Update imageUrl state when produceItem changes
+  useEffect(() => {
+    if (produceItem?.imageUrl) {
+      setImageUrl(produceItem.imageUrl);
+      form.setValue("imageUrl", produceItem.imageUrl);
+    }
+  }, [produceItem, form]);
 
   const handleImageSelect = (newImageUrl: string) => {
     console.log("Modal: Image selected:", newImageUrl);
