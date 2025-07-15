@@ -24,7 +24,7 @@ import {
   type Review,
   type InsertReview,
 } from "@shared/schema";
-import { db } from "./db";
+import { db } from "./database/connection";
 import { eq, and, or, like, desc, asc, ilike } from "drizzle-orm";
 import { addDistanceToProduceItems } from "./utils/distance";
 

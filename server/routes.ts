@@ -11,6 +11,23 @@ import { calculatePlatformFee } from "./config";
 import { instagramService } from "./services/instagram";
 import { openaiService } from "./services/openai";
 import { logger } from "./services/logger";
+import { 
+  authLimiter, 
+  apiLimiter, 
+  uploadLimiter, 
+  securityHeaders,
+  sanitizeInput,
+  validateRequest,
+  errorHandler,
+  validateSessionSecurity,
+  emailSchema,
+  passwordSchema,
+  nameSchema
+} from "./middleware/security";
+import { z } from "zod";
+import mongoSanitize from "express-mongo-sanitize";
+import { healthCheckEndpoint, livenessProbe, readinessProbe } from "./middleware/healthcheck";
+import { environmentValidator } from "./utils/environment";
 
 // Extend session interface
 declare module "express-session" {
@@ -72,80 +89,162 @@ const requireRole = (role: string) => (req: any, res: any, next: any) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Session middleware
+  // Validate environment configuration first
+  environmentValidator.validate();
+  environmentValidator.validateSecuritySettings();
+  
+  // Validate session security before starting
+  validateSessionSecurity();
+  
+  // Apply security middleware
+  app.use(securityHeaders);
+  app.use(mongoSanitize()); // Prevent NoSQL injection
+  app.use(sanitizeInput);
+  app.use(apiLimiter); // Apply general rate limiting
+  
+  // Session middleware with secure configuration
   app.use(session({
     store: sessionStore,
-    secret: process.env.SESSION_SECRET || "fallback-secret-key",
+    secret: process.env.SESSION_SECRET!,
     resave: false,
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       maxAge: sessionTtl,
+      sameSite: "strict",
     },
   }));
 
-  // Auth routes
-  app.post("/api/auth/register", async (req, res) => {
-    try {
-      const userData = insertUserSchema.parse(req.body);
-      
-      // Check if user exists
-      const existingUser = await storage.getUserByEmail(userData.email);
-      if (existingUser) {
-        return res.status(400).json({ message: "User already exists" });
-      }
+  // Health check and monitoring endpoints
+  app.get('/health', healthCheckEndpoint);
+  app.get('/health/live', livenessProbe);
+  app.get('/health/ready', readinessProbe);
 
-      // Hash password
-      const hashedPassword = await bcrypt.hash(userData.password, 10);
-      
-      // Create user
-      const user = await storage.createUser({
-        ...userData,
-        password: hashedPassword,
-      });
-
-      // Set session
-      req.session.userId = user.id;
-      req.session.userRole = user.role;
-
-      res.json({ user: { ...user, password: undefined } });
-    } catch (error) {
-      console.error("Registration error:", error);
-      res.status(500).json({ message: "Registration failed" });
-    }
+  // Auth routes with security
+  const registerSchema = z.object({
+    email: emailSchema,
+    password: passwordSchema,
+    firstName: nameSchema,
+    lastName: nameSchema,
+    role: z.enum(['farmer', 'buyer', 'admin']).default('buyer'),
   });
 
-  app.post("/api/auth/login", async (req, res) => {
-    try {
-      const { email, password } = req.body;
-      
-      const user = await storage.getUserByEmail(email);
-      if (!user) {
-        return res.status(401).json({ message: "Invalid credentials" });
+  app.post("/api/auth/register", 
+    authLimiter,
+    validateRequest(registerSchema),
+    async (req, res) => {
+      try {
+        const userData = req.body;
+        
+        // Check if user exists
+        const existingUser = await storage.getUserByEmail(userData.email);
+        if (existingUser) {
+          logger.warn('auth', 'Registration attempt with existing email', {
+            email: userData.email,
+            ip: req.ip,
+          });
+          return res.status(400).json({ error: "User already exists" });
+        }
+
+        // Hash password with secure rounds
+        const hashedPassword = await bcrypt.hash(userData.password, 12);
+        
+        // Create user
+        const user = await storage.createUser({
+          ...userData,
+          password: hashedPassword,
+        });
+
+        // Set session
+        req.session.userId = user.id;
+        req.session.userRole = user.role;
+
+        logger.info('auth', 'User registered successfully', {
+          userId: user.id,
+          email: user.email,
+          role: user.role,
+        });
+
+        res.json({ user: { ...user, password: undefined } });
+      } catch (error) {
+        logger.error('auth', 'Registration error', {
+          error: error.message,
+          ip: req.ip,
+        });
+        res.status(500).json({ error: "Registration failed" });
       }
-
-      const isValidPassword = await bcrypt.compare(password, user.password);
-      if (!isValidPassword) {
-        return res.status(401).json({ message: "Invalid credentials" });
-      }
-
-      // Set session
-      req.session.userId = user.id;
-      req.session.userRole = user.role;
-
-      res.json({ user: { ...user, password: undefined } });
-    } catch (error) {
-      console.error("Login error:", error);
-      res.status(500).json({ message: "Login failed" });
     }
+  );
+
+  const loginSchema = z.object({
+    email: emailSchema,
+    password: z.string().min(1).max(128),
   });
+
+  app.post("/api/auth/login", 
+    authLimiter,
+    validateRequest(loginSchema),
+    async (req, res) => {
+      try {
+        const { email, password } = req.body;
+        
+        const user = await storage.getUserByEmail(email);
+        if (!user) {
+          logger.warn('auth', 'Login attempt with non-existent email', {
+            email,
+            ip: req.ip,
+          });
+          return res.status(401).json({ error: "Invalid credentials" });
+        }
+
+        const isValidPassword = await bcrypt.compare(password, user.password);
+        if (!isValidPassword) {
+          logger.warn('auth', 'Login attempt with invalid password', {
+            email,
+            userId: user.id,
+            ip: req.ip,
+          });
+          return res.status(401).json({ error: "Invalid credentials" });
+        }
+
+        // Set session
+        req.session.userId = user.id;
+        req.session.userRole = user.role;
+
+        logger.info('auth', 'User logged in successfully', {
+          userId: user.id,
+          email: user.email,
+          role: user.role,
+        });
+
+        res.json({ user: { ...user, password: undefined } });
+      } catch (error) {
+        logger.error('auth', 'Login error', {
+          error: error.message,
+          ip: req.ip,
+        });
+        res.status(500).json({ error: "Login failed" });
+      }
+    }
+  );
 
   app.post("/api/auth/logout", (req, res) => {
+    const userId = req.session?.userId;
+    
     req.session.destroy((err) => {
       if (err) {
-        return res.status(500).json({ message: "Logout failed" });
+        logger.error('auth', 'Logout error', {
+          error: err.message,
+          userId,
+        });
+        return res.status(500).json({ error: "Logout failed" });
       }
+      
+      logger.info('auth', 'User logged out successfully', {
+        userId,
+      });
+      
       res.json({ message: "Logged out successfully" });
     });
   });
@@ -558,7 +657,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
   // Guest checkout route - creates account and payment intent
-  app.post("/api/guest-checkout", async (req: any, res) => {
+  const guestCheckoutSchema = z.object({
+    amount: z.number().min(0.01).max(10000),
+    items: z.array(z.object({
+      id: z.number(),
+      name: z.string(),
+      quantity: z.number().min(1).max(100),
+      price: z.number().min(0.01),
+    })).min(1),
+    guestInfo: z.object({
+      email: emailSchema,
+      firstName: nameSchema,
+      lastName: nameSchema,
+    }),
+  });
+
+  app.post("/api/guest-checkout", 
+    uploadLimiter,
+    validateRequest(guestCheckoutSchema),
+    async (req: any, res) => {
     try {
       const { amount, items = [], guestInfo } = req.body;
       
@@ -1451,6 +1568,9 @@ FarmDirect - Fresh. Local. Direct.
       res.status(500).json({ error: "Failed to validate Instagram handle" });
     }
   });
+
+  // Add error handling middleware (must be last)
+  app.use(errorHandler);
 
   const httpServer = createServer(app);
   return httpServer;
