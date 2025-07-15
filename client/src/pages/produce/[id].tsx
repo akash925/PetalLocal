@@ -155,6 +155,7 @@ export default function ProduceDetail() {
                     size="sm"
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                     className="rounded-r-none"
+                    disabled={quantity <= 1}
                   >
                     -
                   </Button>
@@ -164,19 +165,33 @@ export default function ProduceDetail() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setQuantity(quantity + 1)}
+                    onClick={() => setQuantity(Math.min(availableQuantity, quantity + 1))}
                     className="rounded-l-none"
+                    disabled={quantity >= availableQuantity}
                   >
                     +
                   </Button>
+                </div>
+                
+                <div className="text-sm text-gray-600">
+                  {availableQuantity > 0 ? (
+                    <span>
+                      {availableQuantity} {produceItem.unit}{availableQuantity > 1 ? 's' : ''} available
+                    </span>
+                  ) : (
+                    <span className="text-red-600">Out of stock</span>
+                  )}
                 </div>
                 
                 <Button
                   size="lg"
                   className="flex-1 bg-green-500 hover:bg-green-600"
                   onClick={handleAddToCart}
+                  disabled={availableQuantity === 0 || quantity > availableQuantity}
                 >
-                  Add to Cart - ${(parseFloat(produceItem.pricePerUnit) * quantity).toFixed(2)}
+                  {availableQuantity === 0 ? 'Out of Stock' : 
+                   quantity > availableQuantity ? 'Quantity Not Available' :
+                   `Add to Cart - $${(parseFloat(produceItem.pricePerUnit) * quantity).toFixed(2)}`}
                 </Button>
               </div>
 
@@ -185,24 +200,32 @@ export default function ProduceDetail() {
                 <div className="mb-2">
                   <span className="text-sm font-medium text-gray-700">Express Checkout</span>
                 </div>
-                <SmartPaymentButton
-                  item={{
-                    id: produceItem.id,
-                    name: produceItem.name,
-                    price: parseFloat(produceItem.pricePerUnit),
-                    unit: produceItem.unit,
-                    farmName: produceItem.farm?.name || "Local Farm",
-                    imageUrl: produceItem.imageUrl,
-                  }}
-                  quantity={quantity}
-                  onSuccess={() => {
-                    toast({
-                      title: "Purchase Complete!",
-                      description: `Successfully purchased ${quantity} ${produceItem.unit}${quantity > 1 ? 's' : ''} of ${produceItem.name}`,
-                    });
-                    setQuantity(1);
-                  }}
-                />
+                {availableQuantity > 0 ? (
+                  <SmartPaymentButton
+                    item={{
+                      id: produceItem.id,
+                      name: produceItem.name,
+                      price: parseFloat(produceItem.pricePerUnit),
+                      unit: produceItem.unit,
+                      farmName: produceItem.farm?.name || "Local Farm",
+                      imageUrl: produceItem.imageUrl,
+                    }}
+                    quantity={quantity}
+                    onSuccess={() => {
+                      toast({
+                        title: "Purchase Complete!",
+                        description: `Successfully purchased ${quantity} ${produceItem.unit}${quantity > 1 ? 's' : ''} of ${produceItem.name}`,
+                      });
+                      setQuantity(1);
+                      // Refresh the page to update inventory
+                      window.location.reload();
+                    }}
+                  />
+                ) : (
+                  <div className="w-full h-12 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500">
+                    Express Checkout Unavailable - Out of Stock
+                  </div>
+                )}
               </div>
             </div>
 

@@ -544,6 +544,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
 
 
+  // Guest checkout route - creates account and payment intent
+  app.post("/api/guest-checkout", async (req: any, res) => {
+    try {
+      const { amount, items = [], guestInfo } = req.body;
+      
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ message: "Invalid amount" });
+      }
+
+      if (!items || items.length === 0) {
+        return res.status(400).json({ message: "No items provided" });
+      }
+
+      if (!guestInfo || !guestInfo.email) {
+        return res.status(400).json({ message: "Guest information required" });
+      }
+
+      // Check if user already exists
+      let user = await storage.getUserByEmail(guestInfo.email);
+      
+      if (!user) {
+        // Create new user account
+        user = await storage.createUser({
+          email: guestInfo.email,
+          firstName: guestInfo.firstName || '',
+          lastName: guestInfo.lastName || '',
+          role: 'buyer',
+          passwordHash: '', // Guest accounts don't have passwords initially
+        });
+      }
+
+      // Set up session for the user
+      req.session.userId = user.id;
+      req.session.userRole = user.role;
+      req.session.save();
+
+      // Check inventory availability
+      for (const item of items) {
+        const inventory = await storage.getInventory(item.id);
+        if (!inventory || inventory.quantityAvailable < item.quantity) {
+          return res.status(400).json({ 
+            message: `Insufficient inventory for ${item.name}. Available: ${inventory?.quantityAvailable || 0}, Requested: ${item.quantity}` 
+          });
+        }
+      }
+
+      // Create order
+      const orderData = {
+        buyerId: user.id,
+        totalAmount: amount,
+        status: "pending",
+        paymentStatus: "pending",
+        deliveryMethod: "pickup",
+        items: items.map((item: any) => ({
+          produceItemId: item.id,
+          quantity: item.quantity,
+          pricePerUnit: item.price,
+        })),
+      };
+
+      const order = await storage.createOrder(orderData);
+
+      // Reserve inventory
+      for (const item of items) {
+        const inventory = await storage.getInventory(item.id);
+        if (inventory) {
+          await storage.updateInventory(item.id, {
+            quantityAvailable: inventory.quantityAvailable - item.quantity,
+            quantityReserved: (inventory.quantityReserved || 0) + item.quantity,
+          });
+        }
+      }
+
+      const { platformFee, farmerAmount } = calculatePlatformFee(amount);
+      const paymentResult = await stripeService.createPaymentIntent(amount, order.id);
+      
+      if (paymentResult.success) {
+        res.json({ 
+          clientSecret: paymentResult.clientSecret,
+          orderId: order.id,
+          userId: user.id,
+          isNewUser: !await storage.getUserByEmail(guestInfo.email),
+          platformFee: (platformFee || 0).toFixed(2),
+          farmerAmount: (farmerAmount || 0).toFixed(2)
+        });
+      } else {
+        res.status(500).json({ message: paymentResult.error || "Failed to create payment intent" });
+      }
+    } catch (error) {
+      console.error("Guest checkout error:", error);
+      res.status(500).json({ message: "Failed to process guest checkout" });
+    }
+  });
+
   // Stripe payment routes
   app.post("/api/create-payment-intent", requireAuth, async (req: any, res) => {
     try {
@@ -556,6 +650,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Validate items
       if (!items || items.length === 0) {
         return res.status(400).json({ message: "No items provided" });
+      }
+
+      // Check inventory availability for all items
+      for (const item of items) {
+        const inventory = await storage.getInventory(item.id);
+        if (!inventory || inventory.quantityAvailable < item.quantity) {
+          return res.status(400).json({ 
+            message: `Insufficient inventory for ${item.name}. Available: ${inventory?.quantityAvailable || 0}, Requested: ${item.quantity}` 
+          });
+        }
       }
 
       // Create order first to get orderId
@@ -573,6 +677,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const order = await storage.createOrder(orderData);
+
+      // Reserve inventory for this order
+      for (const item of items) {
+        const inventory = await storage.getInventory(item.id);
+        if (inventory) {
+          await storage.updateInventory(item.id, {
+            quantityAvailable: inventory.quantityAvailable - item.quantity,
+            quantityReserved: (inventory.quantityReserved || 0) + item.quantity,
+          });
+        }
+      }
 
       // Calculate platform fee using configurable rate
       const { platformFee, farmerAmount } = calculatePlatformFee(amount);
@@ -609,6 +724,153 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Get orders error:", error);
       res.status(500).json({ message: "Failed to get orders" });
+    }
+  });
+
+  app.get("/api/orders/:id", requireAuth, async (req: any, res) => {
+    try {
+      const orderId = parseInt(req.params.id);
+      const userId = req.session?.userId;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const order = await storage.getOrder(orderId);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      // Check if user owns this order (buyers can view their own orders)
+      if (order.buyerId !== userId) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      // Get order items with produce details
+      const orderItems = await storage.getOrderItems(orderId);
+      
+      // Get buyer details
+      const buyer = await storage.getUser(order.buyerId);
+      
+      // Enrich order with detailed information
+      const enrichedOrder = {
+        ...order,
+        items: orderItems,
+        buyer: buyer
+      };
+
+      res.json(enrichedOrder);
+    } catch (error) {
+      console.error("Get order error:", error);
+      res.status(500).json({ message: "Failed to get order" });
+    }
+  });
+
+  // Send order confirmation emails
+  app.post("/api/send-order-confirmation", requireAuth, async (req: any, res) => {
+    try {
+      const { orderId, buyerEmail, farmEmails } = req.body;
+      
+      // Get full order details
+      const order = await storage.getOrder(orderId);
+      if (!order) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      const orderItems = await storage.getOrderItems(orderId);
+      const buyer = await storage.getUser(order.buyerId);
+      
+      // Calculate platform fee
+      const { platformFee, farmerAmount } = calculatePlatformFee(parseFloat(order.totalAmount.toString()));
+      
+      // Send confirmation email to buyer
+      const buyerEmailResult = await emailService.sendOrderConfirmationToBuyer({
+        buyerEmail,
+        orderId: order.id,
+        orderTotal: order.totalAmount,
+        platformFee,
+        items: orderItems,
+        buyerName: `${buyer?.firstName || ''} ${buyer?.lastName || ''}`.trim(),
+      });
+
+      // Send notification emails to farmers
+      const farmerEmailPromises = farmEmails.map(async (farmEmail: string) => {
+        if (farmEmail) {
+          return await emailService.sendOrderNotificationToFarmer({
+            farmEmail,
+            orderId: order.id,
+            orderTotal: order.totalAmount,
+            farmerAmount,
+            items: orderItems.filter(item => item.produceItem?.farm?.contactEmail === farmEmail),
+            buyerName: `${buyer?.firstName || ''} ${buyer?.lastName || ''}`.trim(),
+          });
+        }
+      });
+
+      await Promise.all(farmerEmailPromises);
+
+      res.json({ 
+        success: true, 
+        message: "Confirmation emails sent successfully",
+        buyerEmailSent: buyerEmailResult.success,
+        farmerEmailsSent: farmEmails.length
+      });
+    } catch (error) {
+      console.error("Send order confirmation error:", error);
+      res.status(500).json({ message: "Failed to send confirmation emails" });
+    }
+  });
+
+  // Generate PDF receipt
+  app.get("/api/orders/:id/receipt", requireAuth, async (req: any, res) => {
+    try {
+      const orderId = parseInt(req.params.id);
+      const userId = req.session?.userId;
+      
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const order = await storage.getOrder(orderId);
+      if (!order || order.buyerId !== userId) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      const orderItems = await storage.getOrderItems(orderId);
+      const buyer = await storage.getUser(order.buyerId);
+      const { platformFee, farmerAmount } = calculatePlatformFee(parseFloat(order.totalAmount.toString()));
+
+      // Generate receipt content (simplified HTML to text for now)
+      const receiptContent = `
+FarmDirect Order Receipt
+Order #${order.id}
+Date: ${new Date(order.createdAt).toLocaleDateString()}
+
+Customer: ${buyer?.firstName || ''} ${buyer?.lastName || ''}
+Email: ${buyer?.email || ''}
+
+Items:
+${orderItems.map(item => `- ${item.produceItem?.name || 'Item'}: ${item.quantity} x $${item.pricePerUnit} = $${item.totalPrice}`).join('\n')}
+
+Subtotal: $${order.totalAmount}
+Platform Fee (10%): $${platformFee.toFixed(2)}
+Farmer Receives: $${farmerAmount.toFixed(2)}
+Total: $${order.totalAmount}
+
+Status: ${order.status}
+Payment: ${order.paymentStatus}
+Delivery: ${order.deliveryMethod}
+
+Thank you for supporting local farmers!
+FarmDirect - Fresh. Local. Direct.
+      `;
+
+      res.setHeader('Content-Type', 'text/plain');
+      res.setHeader('Content-Disposition', `attachment; filename="order-${orderId}-receipt.txt"`);
+      res.send(receiptContent);
+    } catch (error) {
+      console.error("Generate receipt error:", error);
+      res.status(500).json({ message: "Failed to generate receipt" });
     }
   });
 

@@ -33,6 +33,15 @@ function ExpressCheckoutComponent({ item, quantity, onSuccess }: SmartPaymentBut
       return;
     }
 
+    if (quantity <= 0) {
+      toast({
+        title: "Invalid Quantity",
+        description: "Please select a quantity greater than 0",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsProcessing(true);
     
     try {
@@ -49,13 +58,27 @@ function ExpressCheckoutComponent({ item, quantity, onSuccess }: SmartPaymentBut
         }],
       });
       
+      if (!response.ok) {
+        if (response.status === 401) {
+          toast({
+            title: "Login Required",
+            description: "Please log in to complete your purchase",
+            variant: "destructive",
+          });
+          // Redirect to login
+          window.location.href = "/login";
+          return;
+        }
+        throw new Error("Payment setup failed");
+      }
+      
       const data = await response.json();
       
       // Confirm payment with express checkout
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/order-confirmation`,
+          return_url: `${window.location.origin}/order-confirmation?orderId=${data.orderId}`,
         },
       });
 
@@ -73,9 +96,10 @@ function ExpressCheckoutComponent({ item, quantity, onSuccess }: SmartPaymentBut
         onSuccess();
       }
     } catch (error) {
+      console.error("Payment error:", error);
       toast({
-        title: "Error",
-        description: "Failed to process payment. Please try again.",
+        title: "Payment Failed",
+        description: error instanceof Error ? error.message : "Please try again later.",
         variant: "destructive",
       });
     } finally {
@@ -162,6 +186,15 @@ export function SmartPaymentButton({ item, quantity, onSuccess }: SmartPaymentBu
   const initializePayment = async () => {
     if (clientSecret) return; // Already initialized
     
+    if (quantity <= 0) {
+      toast({
+        title: "Invalid Quantity",
+        description: "Please select a quantity greater than 0",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsInitializing(true);
     try {
       const total = item.price * quantity;
@@ -175,10 +208,29 @@ export function SmartPaymentButton({ item, quantity, onSuccess }: SmartPaymentBu
         }],
       });
       
+      if (!response.ok) {
+        if (response.status === 401) {
+          toast({
+            title: "Login Required",
+            description: "Please log in to complete your purchase",
+            variant: "destructive",
+          });
+          // Redirect to login
+          window.location.href = "/login";
+          return;
+        }
+        throw new Error("Payment setup failed");
+      }
+      
       const data = await response.json();
       setClientSecret(data.clientSecret);
     } catch (error) {
       console.error("Failed to initialize payment:", error);
+      toast({
+        title: "Payment Setup Failed",
+        description: error instanceof Error ? error.message : "Please try again later.",
+        variant: "destructive",
+      });
     } finally {
       setIsInitializing(false);
     }
