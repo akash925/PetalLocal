@@ -263,11 +263,13 @@ export function ProduceEditModal({
                     <CardTitle className="text-lg">Product Image</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <SmartImageUploader
-                      onImageSelect={handleImageSelect}
-                      existingImage={imageUrl}
-                      showAnalyzeButton={false}
-                    />
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <SmartImageUploader
+                        onImageSelect={handleImageSelect}
+                        existingImage={imageUrl}
+                        showAnalyzeButton={false}
+                      />
+                    </div>
                   </CardContent>
                 </Card>
 

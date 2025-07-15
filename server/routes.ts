@@ -564,6 +564,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalAmount: amount,
         status: "pending",
         paymentStatus: "pending",
+        deliveryMethod: "pickup", // Default delivery method
         items: items.map((item: any) => ({
           produceItemId: item.id,
           quantity: item.quantity,

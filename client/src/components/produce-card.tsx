@@ -60,46 +60,70 @@ export function ProduceCard({
     setShowQuantitySelector(false);
   };
 
-  const getBadgeVariant = () => {
-    if (isOrganic) return "default";
-    if (isSeasonal) return "secondary";
-    if (isHeirloom) return "outline";
-    return "default";
-  };
-
-  const getBadgeText = () => {
-    if (isOrganic) return "Organic";
-    if (isSeasonal) return "Seasonal";
-    if (isHeirloom) return "Heirloom";
-    return category;
+  const getBadges = () => {
+    const badges = [];
+    
+    // Always show category badge
+    badges.push({ text: category, variant: "outline" as const });
+    
+    // Add organic badge if organic
+    if (isOrganic) {
+      badges.push({ text: "Organic", variant: "default" as const });
+    }
+    
+    // Add seasonal badge if seasonal
+    if (isSeasonal) {
+      badges.push({ text: "Seasonal", variant: "secondary" as const });
+    }
+    
+    // Add heirloom badge if heirloom
+    if (isHeirloom) {
+      badges.push({ text: "Heirloom", variant: "outline" as const });
+    }
+    
+    return badges;
   };
 
   return (
     <Card className="group hover:shadow-md transition-shadow duration-200 overflow-hidden">
-      <div className="aspect-w-4 aspect-h-3 bg-gray-100">
-        {imageUrl ? (
-          <img
-            src={imageUrl}
-            alt={name}
-            className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200"
-          />
-        ) : (
-          <div className="w-full h-48 bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-12 h-12 mx-auto mb-2 bg-green-200 rounded-full flex items-center justify-center">
-                <span className="text-green-600 text-xl">🥕</span>
+      <Link href={`/produce/${id}`}>
+        <div className="aspect-w-4 aspect-h-3 bg-gray-100 cursor-pointer">
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={name}
+              className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200"
+            />
+          ) : (
+            <div className="w-full h-48 bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center">
+              <div className="text-center">
+                <div className="w-12 h-12 mx-auto mb-2 bg-green-200 rounded-full flex items-center justify-center">
+                  <span className="text-green-600 text-xl">🥕</span>
+                </div>
+                <span className="text-green-600 text-sm font-medium">{name}</span>
               </div>
-              <span className="text-green-600 text-sm font-medium">{name}</span>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      </Link>
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-2">
-          <Badge variant={getBadgeVariant()} className="text-xs">
-            {getBadgeText()}
-          </Badge>
-          <Button variant="ghost" size="sm" className="p-1 text-gray-400 hover:text-red-500">
+          <div className="flex flex-wrap gap-1">
+            {getBadges().map((badge, index) => (
+              <Badge key={index} variant={badge.variant} className="text-xs">
+                {badge.text}
+              </Badge>
+            ))}
+          </div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="p-1 text-gray-400 hover:text-red-500"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          >
             <Heart className="w-4 h-4" />
           </Button>
         </div>
@@ -124,7 +148,11 @@ export function ProduceCard({
               <Button
                 size="sm"
                 className="bg-green-500 hover:bg-green-600 text-white px-3 py-1"
-                onClick={() => setShowQuantitySelector(true)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowQuantitySelector(true);
+                }}
               >
                 Add to Cart
               </Button>
@@ -134,7 +162,11 @@ export function ProduceCard({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setQuantity(Math.max(1, quantity - 1));
+                    }}
                     className="h-8 w-8 p-0"
                   >
                     <Minus className="w-3 h-3" />
@@ -145,7 +177,11 @@ export function ProduceCard({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setQuantity(quantity + 1)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setQuantity(quantity + 1);
+                    }}
                     className="h-8 w-8 p-0"
                   >
                     <Plus className="w-3 h-3" />
@@ -154,7 +190,11 @@ export function ProduceCard({
                 <Button
                   size="sm"
                   className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 text-xs"
-                  onClick={handleAddToCart}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleAddToCart();
+                  }}
                 >
                   Add
                 </Button>
@@ -163,7 +203,7 @@ export function ProduceCard({
           </div>
           
           {/* Apple Pay Quick Purchase */}
-          <div className="pt-2 border-t">
+          <div className="pt-2 border-t" onClick={(e) => e.stopPropagation()}>
             <ApplePayButton
               item={{
                 id,
