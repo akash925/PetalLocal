@@ -2,10 +2,12 @@ import { useState, useEffect } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, ExpressCheckoutElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CreditCard, Smartphone } from "lucide-react";
+import { GuestCheckoutModal } from "./guest-checkout-modal";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY!);
 
@@ -131,8 +133,11 @@ function ExpressCheckoutComponent({ item, quantity, onSuccess }: SmartPaymentBut
 }
 
 export function SmartPaymentButton({ item, quantity, onSuccess }: SmartPaymentButtonProps) {
+  const { toast } = useToast();
+  const { isAuthenticated } = useAuth();
   const [clientSecret, setClientSecret] = useState("");
   const [isInitializing, setIsInitializing] = useState(false);
+  const [showGuestModal, setShowGuestModal] = useState(false);
   const [paymentCapabilities, setPaymentCapabilities] = useState({
     applePay: false,
     googlePay: false,
@@ -183,7 +188,7 @@ export function SmartPaymentButton({ item, quantity, onSuccess }: SmartPaymentBu
     checkPaymentCapabilities();
   }, []);
   
-  const initializePayment = async () => {
+  const initializePayment = async (guestInfo?: { email: string; firstName: string; lastName: string }) => {
     if (clientSecret) return; // Already initialized
     
     if (quantity <= 0) {
@@ -198,15 +203,35 @@ export function SmartPaymentButton({ item, quantity, onSuccess }: SmartPaymentBu
     setIsInitializing(true);
     try {
       const total = item.price * quantity;
-      const response = await apiRequest("POST", "/api/create-payment-intent", {
-        amount: total,
-        items: [{
-          id: item.id,
-          name: item.name,
-          quantity: quantity,
-          price: item.price,
-        }],
-      });
+      const items = [{
+        id: item.id,
+        name: item.name,
+        quantity: quantity,
+        price: item.price,
+      }];
+      
+      let response;
+      
+      if (isAuthenticated) {
+        // Use authenticated endpoint
+        response = await apiRequest("POST", "/api/create-payment-intent", {
+          amount: total,
+          items,
+        });
+      } else {
+        // Use guest checkout endpoint
+        if (!guestInfo) {
+          // Show guest modal to collect info
+          setShowGuestModal(true);
+          return;
+        }
+        
+        response = await apiRequest("POST", "/api/guest-checkout", {
+          amount: total,
+          items,
+          guestInfo,
+        });
+      }
       
       if (!response.ok) {
         if (response.status === 401) {
@@ -216,14 +241,24 @@ export function SmartPaymentButton({ item, quantity, onSuccess }: SmartPaymentBu
             variant: "destructive",
           });
           // Redirect to login
-          window.location.href = "/login";
+          window.location.href = `/auth/login?returnUrl=${encodeURIComponent(window.location.pathname)}`;
           return;
         }
-        throw new Error("Payment setup failed");
+        
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Payment setup failed");
       }
       
       const data = await response.json();
       setClientSecret(data.clientSecret);
+      
+      // Show success message for new guest users
+      if (data.isNewUser) {
+        toast({
+          title: "Account Created",
+          description: "We've created a secure account for you. Welcome to FarmDirect!",
+        });
+      }
     } catch (error) {
       console.error("Failed to initialize payment:", error);
       toast({
@@ -240,6 +275,11 @@ export function SmartPaymentButton({ item, quantity, onSuccess }: SmartPaymentBu
     if (!clientSecret) {
       initializePayment();
     }
+  };
+
+  const handleGuestCheckout = async (guestInfo: { email: string; firstName: string; lastName: string }) => {
+    setShowGuestModal(false);
+    await initializePayment(guestInfo);
   };
 
   if (isInitializing) {
@@ -299,39 +339,49 @@ export function SmartPaymentButton({ item, quantity, onSuccess }: SmartPaymentBu
 
   // Fallback to standard checkout button
   return (
-    <Card className="w-full">
-      <CardContent className="p-3">
-        <div className="text-sm text-gray-600 mb-2 text-center">
-          <CreditCard className="w-4 h-4 inline mr-1" />
-          Secure checkout with card
-        </div>
-        {clientSecret ? (
-          <Elements
-            stripe={stripePromise}
-            options={{
-              clientSecret,
-              appearance: {
-                theme: 'stripe',
-                variables: {
-                  colorPrimary: '#16a34a',
-                  borderRadius: '8px',
+    <>
+      <Card className="w-full">
+        <CardContent className="p-3">
+          <div className="text-sm text-gray-600 mb-2 text-center">
+            <CreditCard className="w-4 h-4 inline mr-1" />
+            Secure checkout with card
+          </div>
+          {clientSecret ? (
+            <Elements
+              stripe={stripePromise}
+              options={{
+                clientSecret,
+                appearance: {
+                  theme: 'stripe',
+                  variables: {
+                    colorPrimary: '#16a34a',
+                    borderRadius: '8px',
+                  },
                 },
-              },
-            }}
-          >
-            <ExpressCheckoutComponent item={item} quantity={quantity} onSuccess={onSuccess} />
-          </Elements>
-        ) : (
-          <Button
-            onClick={handleClick}
-            className="w-full bg-green-600 hover:bg-green-700 text-white"
-            size="sm"
-          >
-            <CreditCard className="w-4 h-4 mr-2" />
-            Buy Now - ${(item.price * quantity).toFixed(2)}
-          </Button>
-        )}
-      </CardContent>
-    </Card>
+              }}
+            >
+              <ExpressCheckoutComponent item={item} quantity={quantity} onSuccess={onSuccess} />
+            </Elements>
+          ) : (
+            <Button
+              onClick={handleClick}
+              className="w-full bg-green-600 hover:bg-green-700 text-white"
+              size="sm"
+            >
+              <CreditCard className="w-4 h-4 mr-2" />
+              Buy Now - ${(item.price * quantity).toFixed(2)}
+            </Button>
+          )}
+        </CardContent>
+      </Card>
+      
+      <GuestCheckoutModal
+        isOpen={showGuestModal}
+        onClose={() => setShowGuestModal(false)}
+        onSubmit={handleGuestCheckout}
+        item={item}
+        quantity={quantity}
+      />
+    </>
   );
 }
