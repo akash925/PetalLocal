@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/use-toast";
 import { MessageFarmerButton } from "@/components/message-farmer-button";
-import { ApplePayButton } from "@/components/apple-pay-button";
+import { SmartPaymentButton } from "@/components/smart-payment-button";
 import { MapPin, Calendar, Truck, Store, Heart, ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
@@ -180,12 +180,12 @@ export default function ProduceDetail() {
                 </Button>
               </div>
 
-              {/* Apple Pay Express Checkout */}
+              {/* Smart Payment Express Checkout */}
               <div className="border-t pt-4">
                 <div className="mb-2">
                   <span className="text-sm font-medium text-gray-700">Express Checkout</span>
                 </div>
-                <ApplePayButton
+                <SmartPaymentButton
                   item={{
                     id: produceItem.id,
                     name: produceItem.name,

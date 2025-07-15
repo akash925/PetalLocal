@@ -577,7 +577,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Calculate platform fee using configurable rate
       const { platformFee, farmerAmount } = calculatePlatformFee(amount);
 
-      console.log(`[PAYMENT] Order ${order.id} - Total: $${amount}, Platform Fee: $${platformFee.toFixed(2)}, Farmer Gets: $${farmerAmount.toFixed(2)}`);
+      console.log(`[PAYMENT] Order ${order.id} - Total: $${amount}, Platform Fee: $${platformFee || 0}, Farmer Gets: $${farmerAmount || 0}`);
 
       const paymentResult = await stripeService.createPaymentIntent(amount, order.id);
       
@@ -585,8 +585,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json({ 
           clientSecret: paymentResult.clientSecret,
           orderId: order.id,
-          platformFee: platformFee.toFixed(2),
-          farmerAmount: farmerAmount.toFixed(2)
+          platformFee: (platformFee || 0).toFixed(2),
+          farmerAmount: (farmerAmount || 0).toFixed(2)
         });
       } else {
         res.status(500).json({ message: paymentResult.error || "Failed to create payment intent" });

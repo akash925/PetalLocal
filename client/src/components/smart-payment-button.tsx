@@ -1,0 +1,285 @@
+import { useState, useEffect } from "react";
+import { loadStripe } from "@stripe/stripe-js";
+import { Elements, ExpressCheckoutElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { CreditCard, Smartphone } from "lucide-react";
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY!);
+
+interface SmartPaymentButtonProps {
+  item: {
+    id: number;
+    name: string;
+    price: number;
+    unit: string;
+    farmName: string;
+    imageUrl?: string;
+  };
+  quantity: number;
+  onSuccess: () => void;
+}
+
+function ExpressCheckoutComponent({ item, quantity, onSuccess }: SmartPaymentButtonProps) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const { toast } = useToast();
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleExpressCheckout = async (event: any) => {
+    if (!stripe || !elements) {
+      return;
+    }
+
+    setIsProcessing(true);
+    
+    try {
+      const total = item.price * quantity;
+      
+      // Create payment intent for immediate purchase
+      const response = await apiRequest("POST", "/api/create-payment-intent", {
+        amount: total,
+        items: [{
+          id: item.id,
+          name: item.name,
+          quantity: quantity,
+          price: item.price,
+        }],
+      });
+      
+      const data = await response.json();
+      
+      // Confirm payment with express checkout
+      const { error } = await stripe.confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: `${window.location.origin}/order-confirmation`,
+        },
+      });
+
+      if (error) {
+        toast({
+          title: "Payment Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Payment Successful!",
+          description: `Successfully purchased ${quantity} ${item.unit}${quantity > 1 ? 's' : ''} of ${item.name}`,
+        });
+        onSuccess();
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to process payment. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  return (
+    <div className="w-full">
+      <ExpressCheckoutElement
+        onConfirm={handleExpressCheckout}
+        options={{
+          buttonType: {
+            applePay: 'buy',
+            googlePay: 'buy',
+          },
+          layout: {
+            maxColumns: 1,
+            maxRows: 1,
+          },
+          paymentMethods: {
+            applePay: 'always',
+            googlePay: 'always',
+          },
+        }}
+      />
+    </div>
+  );
+}
+
+export function SmartPaymentButton({ item, quantity, onSuccess }: SmartPaymentButtonProps) {
+  const [clientSecret, setClientSecret] = useState("");
+  const [isInitializing, setIsInitializing] = useState(false);
+  const [paymentCapabilities, setPaymentCapabilities] = useState({
+    applePay: false,
+    googlePay: false,
+    canMakePayments: false,
+  });
+  
+  // Check payment capabilities on mount
+  useEffect(() => {
+    const checkPaymentCapabilities = async () => {
+      try {
+        // Check if Payment Request API is available
+        if (window.PaymentRequest) {
+          const supportedMethods = [
+            { supportedMethods: 'https://apple.com/apple-pay' },
+            { supportedMethods: 'https://google.com/pay' },
+          ];
+          
+          const details = {
+            total: { label: 'Test', amount: { currency: 'USD', value: '0.01' } },
+          };
+          
+          const request = new PaymentRequest(supportedMethods, details);
+          const canMakePayments = await request.canMakePayment();
+          
+          setPaymentCapabilities({
+            applePay: canMakePayments && /iPad|iPhone|iPod/.test(navigator.userAgent),
+            googlePay: canMakePayments && /Android/.test(navigator.userAgent),
+            canMakePayments: canMakePayments || false,
+          });
+        } else {
+          // Fallback: detect based on user agent
+          setPaymentCapabilities({
+            applePay: /iPad|iPhone|iPod/.test(navigator.userAgent),
+            googlePay: /Android/.test(navigator.userAgent),
+            canMakePayments: false,
+          });
+        }
+      } catch (error) {
+        console.log('Payment capability check failed:', error);
+        setPaymentCapabilities({
+          applePay: false,
+          googlePay: false,
+          canMakePayments: false,
+        });
+      }
+    };
+    
+    checkPaymentCapabilities();
+  }, []);
+  
+  const initializePayment = async () => {
+    if (clientSecret) return; // Already initialized
+    
+    setIsInitializing(true);
+    try {
+      const total = item.price * quantity;
+      const response = await apiRequest("POST", "/api/create-payment-intent", {
+        amount: total,
+        items: [{
+          id: item.id,
+          name: item.name,
+          quantity: quantity,
+          price: item.price,
+        }],
+      });
+      
+      const data = await response.json();
+      setClientSecret(data.clientSecret);
+    } catch (error) {
+      console.error("Failed to initialize payment:", error);
+    } finally {
+      setIsInitializing(false);
+    }
+  };
+
+  const handleClick = () => {
+    if (!clientSecret) {
+      initializePayment();
+    }
+  };
+
+  if (isInitializing) {
+    return (
+      <div className="w-full h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+        <div className="animate-spin w-4 h-4 border-2 border-gray-300 border-t-green-600 rounded-full"></div>
+      </div>
+    );
+  }
+
+  // Show express checkout if supported
+  if (paymentCapabilities.canMakePayments || paymentCapabilities.applePay || paymentCapabilities.googlePay) {
+    return (
+      <Card className="w-full">
+        <CardContent className="p-3">
+          <div className="text-sm text-gray-600 mb-2 text-center">
+            <Smartphone className="w-4 h-4 inline mr-1" />
+            {paymentCapabilities.applePay && paymentCapabilities.googlePay ? 
+              'Quick checkout with Apple Pay or Google Pay' :
+              paymentCapabilities.applePay ? 'Quick checkout with Apple Pay' :
+              'Quick checkout with Google Pay'
+            }
+          </div>
+          {clientSecret ? (
+            <Elements
+              stripe={stripePromise}
+              options={{
+                clientSecret,
+                appearance: {
+                  theme: 'stripe',
+                  variables: {
+                    colorPrimary: '#16a34a',
+                    borderRadius: '8px',
+                  },
+                },
+              }}
+            >
+              <ExpressCheckoutComponent item={item} quantity={quantity} onSuccess={onSuccess} />
+            </Elements>
+          ) : (
+            <div
+              onClick={handleClick}
+              className="w-full h-10 bg-black text-white rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-800 transition-colors"
+            >
+              <Smartphone className="w-4 h-4 mr-2" />
+              <span className="text-sm font-medium">
+                {paymentCapabilities.applePay ? 'Pay with Apple Pay' :
+                 paymentCapabilities.googlePay ? 'Pay with Google Pay' :
+                 'Quick Pay'}
+              </span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Fallback to standard checkout button
+  return (
+    <Card className="w-full">
+      <CardContent className="p-3">
+        <div className="text-sm text-gray-600 mb-2 text-center">
+          <CreditCard className="w-4 h-4 inline mr-1" />
+          Secure checkout with card
+        </div>
+        {clientSecret ? (
+          <Elements
+            stripe={stripePromise}
+            options={{
+              clientSecret,
+              appearance: {
+                theme: 'stripe',
+                variables: {
+                  colorPrimary: '#16a34a',
+                  borderRadius: '8px',
+                },
+              },
+            }}
+          >
+            <ExpressCheckoutComponent item={item} quantity={quantity} onSuccess={onSuccess} />
+          </Elements>
+        ) : (
+          <Button
+            onClick={handleClick}
+            className="w-full bg-green-600 hover:bg-green-700 text-white"
+            size="sm"
+          >
+            <CreditCard className="w-4 h-4 mr-2" />
+            Buy Now - ${(item.price * quantity).toFixed(2)}
+          </Button>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

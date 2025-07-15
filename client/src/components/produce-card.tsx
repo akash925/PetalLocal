@@ -6,7 +6,7 @@ import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 import { useState } from "react";
-import { ApplePayButton } from "./apple-pay-button";
+import { SmartPaymentButton } from "./smart-payment-button";
 
 interface ProduceCardProps {
   id: number;
@@ -202,9 +202,9 @@ export function ProduceCard({
             )}
           </div>
           
-          {/* Apple Pay Quick Purchase */}
+          {/* Smart Payment Button */}
           <div className="pt-2 border-t" onClick={(e) => e.stopPropagation()}>
-            <ApplePayButton
+            <SmartPaymentButton
               item={{
                 id,
                 name,
