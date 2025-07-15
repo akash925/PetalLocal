@@ -49,6 +49,9 @@ export function SmartImageUploader({
     if (existingImage && existingImage !== imageData) {
       console.log("SmartImageUploader: Syncing with existingImage:", existingImage);
       setImageData(existingImage);
+    } else if (!existingImage && imageData) {
+      console.log("SmartImageUploader: Clearing imageData as existingImage is empty");
+      setImageData(null);
     }
   }, [existingImage, imageData]);
 

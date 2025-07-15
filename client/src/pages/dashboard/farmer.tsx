@@ -659,7 +659,10 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                             <FormItem>
                               <FormControl>
                                 <SmartImageUploader
-                                  onImageSelect={field.onChange}
+                                  onImageSelect={(imageData) => {
+                                    console.log("Farmer Dashboard: Image selected:", imageData);
+                                    field.onChange(imageData);
+                                  }}
                                   existingImage={field.value}
                                   showAnalyzeButton={false}
                                 />

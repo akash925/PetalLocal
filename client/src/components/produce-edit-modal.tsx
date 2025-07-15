@@ -33,32 +33,51 @@ export function ProduceEditModal({
   onSubmit, 
   isLoading 
 }: ProduceEditModalProps) {
-  const [imageUrl, setImageUrl] = useState(produceItem?.imageUrl || "");
+  const [imageUrl, setImageUrl] = useState("");
 
   const form = useForm({
     resolver: zodResolver(editProduceSchema),
     defaultValues: {
-      name: produceItem?.name || "",
-      description: produceItem?.description || "",
-      category: produceItem?.category || "",
-      variety: produceItem?.variety || "",
-      unit: produceItem?.unit || "",
-      pricePerUnit: produceItem?.pricePerUnit || "0",
-      quantityAvailable: produceItem?.inventory?.quantityAvailable?.toString() || "0",
-      isOrganic: produceItem?.isOrganic || false,
-      isSeasonal: produceItem?.isSeasonal || false,
-      isHeirloom: produceItem?.isHeirloom || false,
-      imageUrl: produceItem?.imageUrl || "",
+      name: "",
+      description: "",
+      category: "",
+      variety: "",
+      unit: "",
+      pricePerUnit: "0",
+      quantityAvailable: "0",
+      isOrganic: false,
+      isSeasonal: false,
+      isHeirloom: false,
+      imageUrl: "",
     },
   });
 
-  // Update imageUrl state when produceItem changes
+  // Update form and image state when produceItem changes
   useEffect(() => {
-    if (produceItem?.imageUrl) {
-      setImageUrl(produceItem.imageUrl);
-      form.setValue("imageUrl", produceItem.imageUrl);
+    if (produceItem && isOpen) {
+      console.log("ProduceEditModal: Setting up form with produceItem:", produceItem);
+      
+      // Reset form with new data
+      form.reset({
+        name: produceItem.name || "",
+        description: produceItem.description || "",
+        category: produceItem.category || "",
+        variety: produceItem.variety || "",
+        unit: produceItem.unit || "",
+        pricePerUnit: produceItem.pricePerUnit || "0",
+        quantityAvailable: produceItem.inventory?.quantityAvailable?.toString() || "0",
+        isOrganic: produceItem.isOrganic || false,
+        isSeasonal: produceItem.isSeasonal || false,
+        isHeirloom: produceItem.isHeirloom || false,
+        imageUrl: produceItem.imageUrl || "",
+      });
+      
+      // Set image URL state
+      const currentImageUrl = produceItem.imageUrl || "";
+      console.log("ProduceEditModal: Setting imageUrl to:", currentImageUrl);
+      setImageUrl(currentImageUrl);
     }
-  }, [produceItem, form]);
+  }, [produceItem, isOpen, form]);
 
   const handleImageSelect = (newImageUrl: string) => {
     console.log("Modal: Image selected:", newImageUrl);
@@ -71,8 +90,9 @@ export function ProduceEditModal({
   const handleSubmit = (data: any) => {
     console.log("Modal: Form submitted with data:", data);
     console.log("Modal: Current imageUrl state:", imageUrl);
+    console.log("Modal: Original produceItem imageUrl:", produceItem?.imageUrl);
     
-    // Use the state value first, then form data, then existing image
+    // Use imageUrl state if available, otherwise use form data, otherwise keep existing
     const finalImageUrl = imageUrl || data.imageUrl || produceItem?.imageUrl || "";
     
     const submitData = {
