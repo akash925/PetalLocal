@@ -591,13 +591,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!user) {
         logger.info('auth', `Creating new guest account for ${guestInfo.email}`);
-        // Create new user account
+        // Create new user account with temporary password
+        const temporaryPassword = Math.random().toString(36).slice(-8);
+        const hashedPassword = await bcrypt.hash(temporaryPassword, 10);
+        
         user = await storage.createUser({
           email: guestInfo.email,
           firstName: guestInfo.firstName || '',
           lastName: guestInfo.lastName || '',
           role: 'buyer',
-          passwordHash: '', // Guest accounts don't have passwords initially
+          password: hashedPassword,
         });
         logger.guestAccountCreated(guestInfo.email, user.id);
       } else {
@@ -622,18 +625,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create order
       const orderData = {
         buyerId: user.id,
-        totalAmount: amount,
+        totalAmount: amount.toString(),
         status: "pending",
         paymentStatus: "pending",
         deliveryMethod: "pickup",
-        items: items.map((item: any) => ({
-          produceItemId: item.id,
-          quantity: item.quantity,
-          pricePerUnit: item.price,
-        })),
       };
 
       const order = await storage.createOrder(orderData);
+
+      // Create order items
+      for (const item of items) {
+        await storage.createOrderItem({
+          orderId: order.id,
+          produceItemId: item.id,
+          quantity: item.quantity,
+          pricePerUnit: item.price.toString(),
+          totalPrice: (item.quantity * item.price).toString(),
+        });
+      }
 
       // Reserve inventory
       for (const item of items) {
@@ -667,9 +676,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       logger.error('checkout', 'Guest checkout processing failed', {
         error: error instanceof Error ? error.message : 'Unknown error',
-        guestEmail: guestInfo?.email,
-        amount,
-        itemCount: items?.length || 0,
+        guestEmail: req.body.guestInfo?.email,
+        amount: req.body.amount,
+        itemCount: req.body.items?.length || 0,
       });
       res.status(500).json({ message: "Failed to process guest checkout" });
     }
