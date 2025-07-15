@@ -19,6 +19,7 @@ import { insertProduceItemSchema, insertFarmSchema, insertInventorySchema } from
 import { z } from "zod";
 import { Plus, Edit, Trash2, Package, Upload, Download, Image } from "lucide-react";
 import { SmartImageUploader } from "@/components/smart-image-uploader";
+import { ProduceEditModal } from "@/components/produce-edit-modal";
 import { InstagramConnect } from "@/components/instagram-connect";
 import {
   Dialog,
@@ -41,6 +42,8 @@ export default function FarmerDashboard() {
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [editingInventory, setEditingInventory] = useState<number | null>(null);
   const [editingItem, setEditingItem] = useState<number | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedProduceItem, setSelectedProduceItem] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Check URL parameters for tab routing
@@ -211,6 +214,8 @@ export default function FarmerDashboard() {
       queryClient.invalidateQueries({ queryKey: ["/api/produce"] });
       queryClient.invalidateQueries({ queryKey: ["/api/produce", user?.id] });
       setEditingItem(null);
+      setEditModalOpen(false);
+      setSelectedProduceItem(null);
       form.reset();
     },
     onError: (error) => {
@@ -221,6 +226,30 @@ export default function FarmerDashboard() {
       });
     },
   });
+
+  const handleModalEdit = (data: any) => {
+    console.log("Modal edit submission:", data);
+    const farmId = farms.length > 0 ? farms[0].id : null;
+    if (!farmId) {
+      toast({
+        title: "Error",
+        description: "Farm not found",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    const editData = {
+      ...data,
+      farmId: farmId,
+      quantityAvailable: data.quantityAvailable || "0",
+    };
+    
+    editProduceMutation.mutate({
+      id: selectedProduceItem.id,
+      data: editData
+    });
+  };
 
   const onSubmit = (data: any) => {
     console.log("Form submitted with data:", data);
@@ -742,35 +771,8 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                             e.preventDefault();
                             e.stopPropagation();
                             console.log("Edit button clicked for item:", item.id);
-                            console.log("Item data:", item);
-                            
-                            // Populate form with existing data
-                            const formData = {
-                              name: item.name || "",
-                              description: item.description || "",
-                              category: item.category || "",
-                              variety: item.variety || "",
-                              unit: item.unit || "",
-                              pricePerUnit: item.pricePerUnit || "0",
-                              quantityAvailable: item.inventory?.quantityAvailable?.toString() || "0",
-                              isOrganic: item.isOrganic || false,
-                              isSeasonal: item.isSeasonal || false,
-                              isHeirloom: item.isHeirloom || false,
-                              imageUrl: item.imageUrl || "",
-                            };
-                            
-                            console.log("Form data to populate:", formData);
-                            form.reset(formData);
-                            setEditingItem(item.id);
-                            console.log("EditingItem set to:", item.id);
-                            
-                            // Scroll to edit form after a brief delay
-                            setTimeout(() => {
-                              const editForm = document.querySelector('[data-edit-form="true"]');
-                              if (editForm) {
-                                editForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                              }
-                            }, 100);
+                            setSelectedProduceItem(item);
+                            setEditModalOpen(true);
                           }}
                         >
                           <Edit className="w-4 h-4" />
@@ -911,190 +913,7 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                 </Card>
               ))}
               
-              {/* Edit Item Form */}
-              {editingItem && (
-                <Card className="border-2 border-blue-200" data-edit-form="true">
-                  <CardHeader>
-                    <CardTitle className="text-blue-600">Edit Produce Item (ID: {editingItem})</CardTitle>
-                    <CardDescription>Update the details of your produce item</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Form {...form}>
-                      <form onSubmit={form.handleSubmit((data) => {
-                        console.log("Edit form submitted with data:", data);
-                        const editData = {
-                          ...data,
-                          pricePerUnit: data.pricePerUnit,
-                          farmId: farms[0]?.id,
-                          quantityAvailable: data.quantityAvailable || "0",
-                        };
-                        
-                        console.log("Edit data being sent:", editData);
-                        
-                        // Call edit mutation
-                        editProduceMutation.mutate({
-                          id: editingItem,
-                          data: editData
-                        });
-                      })} className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <FormField
-                            control={form.control}
-                            name="name"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Product Name</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="e.g., Fresh Tomatoes" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="imageUrl"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormControl>
-                                  <SmartImageUploader
-                                    onImageSelect={field.onChange}
-                                    existingImage={field.value}
-                                    showAnalyzeButton={false}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="category"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Category</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Select category" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="vegetables">Vegetables</SelectItem>
-                                    <SelectItem value="fruits">Fruits</SelectItem>
-                                    <SelectItem value="herbs">Herbs</SelectItem>
-                                    <SelectItem value="grains">Grains</SelectItem>
-                                    <SelectItem value="dairy">Dairy</SelectItem>
-                                    <SelectItem value="other">Other</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                          <FormField
-                            control={form.control}
-                            name="pricePerUnit"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Price per Unit</FormLabel>
-                                <FormControl>
-                                  <Input type="number" step="0.01" placeholder="e.g., 4.99" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="unit"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Unit</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
-                                  <FormControl>
-                                    <SelectTrigger>
-                                      <SelectValue placeholder="Select unit" />
-                                    </SelectTrigger>
-                                  </FormControl>
-                                  <SelectContent>
-                                    <SelectItem value="lb">Pound (lb)</SelectItem>
-                                    <SelectItem value="kg">Kilogram (kg)</SelectItem>
-                                    <SelectItem value="each">Each</SelectItem>
-                                    <SelectItem value="bunch">Bunch</SelectItem>
-                                    <SelectItem value="dozen">Dozen</SelectItem>
-                                    <SelectItem value="pint">Pint</SelectItem>
-                                    <SelectItem value="quart">Quart</SelectItem>
-                                    <SelectItem value="gallon">Gallon</SelectItem>
-                                    <SelectItem value="bag">Bag</SelectItem>
-                                    <SelectItem value="box">Box</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={form.control}
-                            name="quantityAvailable"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Quantity Available</FormLabel>
-                                <FormControl>
-                                  <Input type="number" placeholder="e.g., 50" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                        
-                        <FormField
-                          control={form.control}
-                          name="description"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Description</FormLabel>
-                              <FormControl>
-                                <Textarea 
-                                  placeholder="Describe your produce - growing methods, taste, best uses..."
-                                  rows={3}
-                                  {...field} 
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <div className="flex gap-2">
-                          <Button
-                            type="submit"
-                            className="bg-blue-500 hover:bg-blue-600"
-                            disabled={editProduceMutation.isPending}
-                          >
-                            {editProduceMutation.isPending ? "Updating..." : "Update Item"}
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => setEditingItem(null)}
-                          >
-                            Cancel
-                          </Button>
-                        </div>
-                      </form>
-                    </Form>
-                  </CardContent>
-                </Card>
-              )}
+
             </div>
 
             {produceItems.length === 0 && !isAddingProduce && (
@@ -1706,7 +1525,11 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                             <FormItem>
                               <FormControl>
                                 <SmartImageUploader
-                                  onImageSelect={field.onChange}
+                                  onImageSelect={(imageData) => {
+                                    console.log("Farm image selected:", imageData);
+                                    field.onChange(imageData);
+                                    farmForm.trigger("imageUrl");
+                                  }}
                                   existingImage={field.value}
                                   showAnalyzeButton={false}
                                 />
@@ -1943,6 +1766,20 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
           </TabsContent>
         </Tabs>
       </div>
+      
+      {/* Edit Modal */}
+      {selectedProduceItem && (
+        <ProduceEditModal
+          isOpen={editModalOpen}
+          onClose={() => {
+            setEditModalOpen(false);
+            setSelectedProduceItem(null);
+          }}
+          produceItem={selectedProduceItem}
+          onSubmit={handleModalEdit}
+          isLoading={editProduceMutation.isPending}
+        />
+      )}
     </div>
   );
 }
