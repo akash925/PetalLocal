@@ -10,6 +10,7 @@ import { emailService } from "./services/email";
 import { calculatePlatformFee } from "./config";
 import { instagramService } from "./services/instagram";
 import { openaiService } from "./services/openai";
+import { logger } from "./services/logger";
 
 // Extend session interface
 declare module "express-session" {
@@ -38,13 +39,25 @@ interface AuthenticatedRequest extends Request {
 }
 
 const requireAuth = (req: any, res: any, next: any) => {
-  console.log("Auth check - Session:", req.session);
-  console.log("Auth check - User ID:", req.session?.userId);
+  logger.info('auth', 'Auth check initiated', {
+    sessionId: req.session?.id,
+    userId: req.session?.userId,
+    userRole: req.session?.userRole,
+  });
+  
   if (!req.session?.userId) {
-    console.log("Auth failed - No userId in session");
+    logger.warn('auth', 'Authentication failed - No userId in session', {
+      sessionId: req.session?.id,
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent'),
+    });
     return res.status(401).json({ message: "Unauthorized" });
   }
-  console.log("Auth passed for user:", req.session.userId);
+  
+  logger.info('auth', `Authentication passed for user ${req.session.userId}`, {
+    userId: req.session.userId,
+    userRole: req.session.userRole,
+  });
   next();
 };
 
@@ -549,22 +562,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { amount, items = [], guestInfo } = req.body;
       
+      logger.checkoutStarted(undefined, guestInfo?.email, items);
+      
       if (!amount || amount <= 0) {
+        logger.error('checkout', 'Invalid amount provided in guest checkout', { amount });
         return res.status(400).json({ message: "Invalid amount" });
       }
 
       if (!items || items.length === 0) {
+        logger.error('checkout', 'No items provided in guest checkout', { itemCount: items?.length || 0 });
         return res.status(400).json({ message: "No items provided" });
       }
 
       if (!guestInfo || !guestInfo.email) {
+        logger.error('checkout', 'Guest information missing in guest checkout', { guestInfo });
         return res.status(400).json({ message: "Guest information required" });
       }
 
+      logger.info('checkout', `Processing guest checkout for ${guestInfo.email}`, {
+        amount,
+        itemCount: items.length,
+        guestEmail: guestInfo.email,
+      });
+
       // Check if user already exists
       let user = await storage.getUserByEmail(guestInfo.email);
+      let isNewUser = !user;
       
       if (!user) {
+        logger.info('auth', `Creating new guest account for ${guestInfo.email}`);
         // Create new user account
         user = await storage.createUser({
           email: guestInfo.email,
@@ -573,6 +599,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           role: 'buyer',
           passwordHash: '', // Guest accounts don't have passwords initially
         });
+        logger.guestAccountCreated(guestInfo.email, user.id);
+      } else {
+        logger.info('auth', `Existing user found for ${guestInfo.email}`, { userId: user.id });
       }
 
       // Set up session for the user
@@ -621,19 +650,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const paymentResult = await stripeService.createPaymentIntent(amount, order.id);
       
       if (paymentResult.success) {
+        logger.checkoutCompleted(order.id, user.id, amount);
+        
         res.json({ 
           clientSecret: paymentResult.clientSecret,
           orderId: order.id,
           userId: user.id,
-          isNewUser: !await storage.getUserByEmail(guestInfo.email),
+          isNewUser,
           platformFee: (platformFee || 0).toFixed(2),
           farmerAmount: (farmerAmount || 0).toFixed(2)
         });
       } else {
+        logger.paymentFailed(paymentResult.error || "Failed to create payment intent", order.id, amount, user.id);
         res.status(500).json({ message: paymentResult.error || "Failed to create payment intent" });
       }
     } catch (error) {
-      console.error("Guest checkout error:", error);
+      logger.error('checkout', 'Guest checkout processing failed', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        guestEmail: guestInfo?.email,
+        amount,
+        itemCount: items?.length || 0,
+      });
       res.status(500).json({ message: "Failed to process guest checkout" });
     }
   });
@@ -642,20 +679,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/create-payment-intent", requireAuth, async (req: any, res) => {
     try {
       const { amount, items = [] } = req.body;
+      const userId = req.session?.userId;
+      
+      logger.checkoutStarted(userId, undefined, items);
       
       if (!amount || amount <= 0) {
+        logger.error('checkout', 'Invalid amount provided in authenticated checkout', { amount, userId });
         return res.status(400).json({ message: "Invalid amount" });
       }
 
       // Validate items
       if (!items || items.length === 0) {
+        logger.error('checkout', 'No items provided in authenticated checkout', { itemCount: items?.length || 0, userId });
         return res.status(400).json({ message: "No items provided" });
       }
+
+      logger.info('checkout', `Processing authenticated checkout for user ${userId}`, {
+        amount,
+        itemCount: items.length,
+        userId,
+      });
 
       // Check inventory availability for all items
       for (const item of items) {
         const inventory = await storage.getInventory(item.id);
         if (!inventory || inventory.quantityAvailable < item.quantity) {
+          logger.error('checkout', `Insufficient inventory for item ${item.name}`, {
+            itemId: item.id,
+            itemName: item.name,
+            available: inventory?.quantityAvailable || 0,
+            requested: item.quantity,
+            userId,
+          });
           return res.status(400).json({ 
             message: `Insufficient inventory for ${item.name}. Available: ${inventory?.quantityAvailable || 0}, Requested: ${item.quantity}` 
           });
@@ -692,11 +747,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Calculate platform fee using configurable rate
       const { platformFee, farmerAmount } = calculatePlatformFee(amount);
 
-      console.log(`[PAYMENT] Order ${order.id} - Total: $${amount}, Platform Fee: $${platformFee || 0}, Farmer Gets: $${farmerAmount || 0}`);
+      logger.info('payment', `Order ${order.id} - Total: $${amount}, Platform Fee: $${platformFee || 0}, Farmer Gets: $${farmerAmount || 0}`, {
+        orderId: order.id,
+        amount,
+        platformFee,
+        farmerAmount,
+        userId,
+      });
 
       const paymentResult = await stripeService.createPaymentIntent(amount, order.id);
       
       if (paymentResult.success) {
+        logger.checkoutCompleted(order.id, userId, amount);
+        
         res.json({ 
           clientSecret: paymentResult.clientSecret,
           orderId: order.id,
@@ -704,10 +767,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
           farmerAmount: (farmerAmount || 0).toFixed(2)
         });
       } else {
+        logger.paymentFailed(paymentResult.error || "Failed to create payment intent", order.id, amount, userId);
         res.status(500).json({ message: paymentResult.error || "Failed to create payment intent" });
       }
     } catch (error) {
-      console.error("Create payment intent error:", error);
+      logger.error('checkout', 'Authenticated checkout processing failed', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        userId,
+        amount,
+        itemCount: items?.length || 0,
+      });
       res.status(500).json({ message: "Failed to create payment intent" });
     }
   });
@@ -1022,11 +1091,45 @@ FarmDirect - Fresh. Local. Direct.
 
   app.get("/api/admin/analytics", async (req: any, res) => {
     try {
-      // Return empty analytics for now - frontend calculates from other data
-      res.json({});
+      // Return checkout analytics from logger
+      const checkoutAnalytics = logger.getCheckoutAnalytics();
+      res.json(checkoutAnalytics);
     } catch (error) {
-      console.error("Get admin analytics error:", error);
+      logger.error('system', 'Failed to get admin analytics', { error: error instanceof Error ? error.message : 'Unknown error' });
       res.status(500).json({ message: "Failed to get analytics" });
+    }
+  });
+
+  // Admin logging endpoints
+  app.get("/api/admin/logs", requireAuth, requireRole("admin"), async (req: any, res) => {
+    try {
+      const { limit = 100, category, level } = req.query;
+      const logs = logger.getLogs(parseInt(limit), category, level);
+      res.json(logs);
+    } catch (error) {
+      logger.error('system', 'Failed to get admin logs', { error: error instanceof Error ? error.message : 'Unknown error' });
+      res.status(500).json({ message: "Failed to get logs" });
+    }
+  });
+
+  app.get("/api/admin/logs/payment-failures", requireAuth, requireRole("admin"), async (req: any, res) => {
+    try {
+      const { limit = 50 } = req.query;
+      const failures = logger.getPaymentFailures(parseInt(limit));
+      res.json(failures);
+    } catch (error) {
+      logger.error('system', 'Failed to get payment failure logs', { error: error instanceof Error ? error.message : 'Unknown error' });
+      res.status(500).json({ message: "Failed to get payment failure logs" });
+    }
+  });
+
+  app.get("/api/admin/logs/checkout-analytics", requireAuth, requireRole("admin"), async (req: any, res) => {
+    try {
+      const analytics = logger.getCheckoutAnalytics();
+      res.json(analytics);
+    } catch (error) {
+      logger.error('system', 'Failed to get checkout analytics', { error: error instanceof Error ? error.message : 'Unknown error' });
+      res.status(500).json({ message: "Failed to get checkout analytics" });
     }
   });
 

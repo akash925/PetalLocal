@@ -1,4 +1,5 @@
 import Stripe from 'stripe';
+import { logger } from './logger';
 
 interface PaymentResult {
   success: boolean;
@@ -26,16 +27,23 @@ class StripeService {
 
   async createPaymentIntent(amount: number, orderId: number): Promise<PaymentResult> {
     if (!this.isEnabled || !this.stripe) {
-      console.log('[STRIPE] Service disabled - no API key');
+      logger.error('payment', 'Stripe service disabled - no API key provided');
       return { success: false, error: 'Payment processing unavailable' };
     }
 
     try {
-      console.log(`[STRIPE] Creating payment intent for order ${orderId} amount: ${amount}`);
+      logger.paymentInitiated(orderId, amount);
       
       const PLATFORM_FEE_RATE = 0.10; // 10%
       const platformFee = amount * PLATFORM_FEE_RATE;
       const farmerAmount = amount - platformFee;
+      
+      logger.info('payment', `Creating Stripe payment intent for order ${orderId}`, {
+        amount,
+        platformFee,
+        farmerAmount,
+        amountInCents: Math.round(amount * 100),
+      });
       
       const paymentIntent = await this.stripe.paymentIntents.create({
         amount: Math.round(amount * 100), // Convert to cents
@@ -49,7 +57,14 @@ class StripeService {
           enabled: true,
           allow_redirects: 'never', // Optimized for Apple Pay and immediate payments
         },
-        payment_method_types: ['card', 'apple_pay', 'google_pay'], // Explicitly enable digital wallets
+        // Don't specify payment_method_types when using automatic_payment_methods
+      });
+      
+      logger.info('payment', `Payment intent created successfully: ${paymentIntent.id}`, {
+        paymentIntentId: paymentIntent.id,
+        orderId,
+        amount,
+        status: paymentIntent.status,
       });
       
       return {
@@ -60,33 +75,47 @@ class StripeService {
         farmerAmount: farmerAmount.toFixed(2),
       };
     } catch (error) {
-      console.error('[STRIPE] Payment intent creation failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Payment processing failed';
+      logger.paymentFailed(errorMessage, orderId, amount);
+      
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Payment processing failed',
+        error: errorMessage,
       };
     }
   }
 
   async confirmPayment(paymentIntentId: string): Promise<PaymentResult> {
     if (!this.isEnabled || !this.stripe) {
+      logger.error('payment', 'Stripe service disabled during payment confirmation');
       return { success: false, error: 'Payment processing unavailable' };
     }
 
     try {
-      console.log(`[STRIPE] Confirming payment: ${paymentIntentId}`);
+      logger.info('payment', `Confirming payment: ${paymentIntentId}`);
       
       const paymentIntent = await this.stripe.paymentIntents.retrieve(paymentIntentId);
+      
+      if (paymentIntent.status === 'succeeded') {
+        const orderId = paymentIntent.metadata.orderId;
+        logger.paymentSucceeded(paymentIntentId, parseInt(orderId), paymentIntent.amount / 100);
+      } else {
+        logger.warn('payment', `Payment confirmation incomplete: ${paymentIntentId}`, {
+          status: paymentIntent.status,
+        });
+      }
       
       return {
         success: paymentIntent.status === 'succeeded',
         paymentIntentId: paymentIntent.id,
       };
     } catch (error) {
-      console.error('[STRIPE] Payment confirmation failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Payment confirmation failed';
+      logger.paymentFailed(errorMessage, undefined, undefined, undefined);
+      
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Payment confirmation failed',
+        error: errorMessage,
       };
     }
   }
