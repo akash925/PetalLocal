@@ -921,12 +921,15 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                   <CardContent>
                     <Form {...form}>
                       <form onSubmit={form.handleSubmit((data) => {
+                        console.log("Edit form submitted with data:", data);
                         const editData = {
                           ...data,
                           pricePerUnit: data.pricePerUnit,
                           farmId: farms[0]?.id,
                           quantityAvailable: data.quantityAvailable || "0",
                         };
+                        
+                        console.log("Edit data being sent:", editData);
                         
                         // Call edit mutation
                         editProduceMutation.mutate({

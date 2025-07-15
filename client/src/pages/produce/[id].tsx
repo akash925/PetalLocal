@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/use-toast";
 import { MessageFarmerButton } from "@/components/message-farmer-button";
+import { ApplePayButton } from "@/components/apple-pay-button";
 import { MapPin, Calendar, Truck, Store, Heart, ArrowLeft } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
@@ -141,36 +142,63 @@ export default function ProduceDetail() {
             </div>
 
             {/* Quantity and Add to Cart */}
-            <div className="flex items-center gap-4">
-              <div className="flex items-center border rounded-lg">
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center border rounded-lg">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    className="rounded-r-none"
+                  >
+                    -
+                  </Button>
+                  <span className="px-4 py-2 min-w-[60px] text-center">
+                    {quantity}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="rounded-l-none"
+                  >
+                    +
+                  </Button>
+                </div>
+                
                 <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="rounded-r-none"
+                  size="lg"
+                  className="flex-1 bg-green-500 hover:bg-green-600"
+                  onClick={handleAddToCart}
                 >
-                  -
-                </Button>
-                <span className="px-4 py-2 min-w-[60px] text-center">
-                  {quantity}
-                </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="rounded-l-none"
-                >
-                  +
+                  Add to Cart - ${(parseFloat(produceItem.pricePerUnit) * quantity).toFixed(2)}
                 </Button>
               </div>
-              
-              <Button
-                size="lg"
-                className="flex-1 bg-green-500 hover:bg-green-600"
-                onClick={handleAddToCart}
-              >
-                Add to Cart - ${(parseFloat(produceItem.pricePerUnit) * quantity).toFixed(2)}
-              </Button>
+
+              {/* Apple Pay Express Checkout */}
+              <div className="border-t pt-4">
+                <div className="mb-2">
+                  <span className="text-sm font-medium text-gray-700">Express Checkout</span>
+                </div>
+                <ApplePayButton
+                  item={{
+                    id: produceItem.id,
+                    name: produceItem.name,
+                    price: parseFloat(produceItem.pricePerUnit),
+                    unit: produceItem.unit,
+                    farmName: produceItem.farm?.name || "Local Farm",
+                    imageUrl: produceItem.imageUrl,
+                  }}
+                  quantity={quantity}
+                  onSuccess={() => {
+                    toast({
+                      title: "Purchase Complete!",
+                      description: `Successfully purchased ${quantity} ${produceItem.unit}${quantity > 1 ? 's' : ''} of ${produceItem.name}`,
+                    });
+                    setQuantity(1);
+                  }}
+                />
+              </div>
             </div>
 
             <Separator />

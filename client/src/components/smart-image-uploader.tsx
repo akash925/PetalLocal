@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +43,14 @@ export function SmartImageUploader({
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+
+  // Sync with existingImage prop
+  useEffect(() => {
+    if (existingImage && existingImage !== imageData) {
+      console.log("SmartImageUploader: Syncing with existingImage:", existingImage);
+      setImageData(existingImage);
+    }
+  }, [existingImage, imageData]);
 
   const compressImage = useCallback((file: File, quality: number = 0.8): Promise<{ dataUrl: string; compressedSize: number }> => {
     return new Promise((resolve, reject) => {
@@ -135,6 +143,7 @@ export function SmartImageUploader({
       });
       
       setImageData(dataUrl);
+      console.log("SmartImageUploader: Calling onImageSelect with:", dataUrl);
       onImageSelect(dataUrl);
       
       toast({
@@ -232,6 +241,7 @@ export function SmartImageUploader({
   };
 
   const removeImage = () => {
+    console.log("SmartImageUploader: Removing image");
     setImageData(null);
     setAnalysisResult(null);
     setCompressionStats(null);
