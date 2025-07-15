@@ -27,39 +27,45 @@ export function FarmCard({
   state,
 }: FarmCardProps) {
   return (
-    <Card className="bg-gray-50 rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-200">
-      <div className="h-48 bg-gray-200">
-        {imageUrl ? (
-          <img
-            src={imageUrl}
-            alt={name}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center">
-            <div className="text-center">
-              <div className="w-12 h-12 mx-auto mb-2 bg-green-200 rounded-full flex items-center justify-center">
-                <span className="text-green-600 text-xl">🏡</span>
+    <Card className="bg-gray-50 rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-200 cursor-pointer">
+      <Link href={`/farms/${id}`}>
+        <div className="h-48 bg-gray-200">
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={name}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center">
+              <div className="text-center">
+                <div className="w-12 h-12 mx-auto mb-2 bg-green-200 rounded-full flex items-center justify-center">
+                  <span className="text-green-600 text-xl">🏡</span>
+                </div>
+                <span className="text-green-600 text-sm font-medium">{name}</span>
               </div>
-              <span className="text-green-600 text-sm font-medium">{name}</span>
+            </div>
+          )}
+        </div>
+      </Link>
+      <CardContent className="p-6">
+        <Link href={`/farms/${id}`}>
+          <div className="flex items-center mb-3">
+            <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
+              <span className="text-sm font-medium text-gray-600">
+                {name.charAt(0)}
+              </span>
+            </div>
+            <div className="ml-3">
+              <h3 className="font-semibold text-gray-900 hover:text-green-600 transition-colors">
+                {name}
+              </h3>
+              {ownerName && (
+                <p className="text-sm text-gray-600">{ownerName}</p>
+              )}
             </div>
           </div>
-        )}
-      </div>
-      <CardContent className="p-6">
-        <div className="flex items-center mb-3">
-          <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center">
-            <span className="text-sm font-medium text-gray-600">
-              {name.charAt(0)}
-            </span>
-          </div>
-          <div className="ml-3">
-            <h3 className="font-semibold text-gray-900">{name}</h3>
-            {ownerName && (
-              <p className="text-sm text-gray-600">{ownerName}</p>
-            )}
-          </div>
-        </div>
+        </Link>
         
         {isOrganic && (
           <Badge className="mb-3 bg-green-100 text-green-800">
@@ -68,9 +74,11 @@ export function FarmCard({
         )}
         
         {description && (
-          <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-            {description}
-          </p>
+          <Link href={`/farms/${id}`}>
+            <p className="text-gray-600 text-sm mb-4 line-clamp-3 hover:text-gray-800 transition-colors">
+              {description}
+            </p>
+          </Link>
         )}
         
         <div className="flex items-center justify-between">
