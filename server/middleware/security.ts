@@ -89,9 +89,38 @@ export const securityHeaders = helmet({
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:", "blob:"],
-      scriptSrc: ["'self'", "'unsafe-inline'"],
-      connectSrc: ["'self'", "https://api.stripe.com"],
-      frameSrc: ["'self'", "https://js.stripe.com"],
+      scriptSrc: [
+        "'self'", 
+        "'unsafe-inline'", 
+        "https://js.stripe.com",
+        "https://checkout.stripe.com",
+        "'unsafe-eval'", // Required for development environment
+        "'wasm-unsafe-eval'" // Required for Stripe.js
+      ],
+      connectSrc: [
+        "'self'", 
+        "https://api.stripe.com",
+        "https://checkout.stripe.com",
+        "https://payments.stripe.com",
+        "https://maps.stripe.com",
+        "wss://ws.stripe.com",
+        "ws://localhost:*", // For Vite HMR
+        "wss://localhost:*", // For Vite HMR
+        "https://vitejs.dev"
+      ],
+      frameSrc: [
+        "'self'", 
+        "https://js.stripe.com",
+        "https://checkout.stripe.com",
+        "https://payments.stripe.com"
+      ],
+      childSrc: [
+        "'self'", 
+        "https://js.stripe.com",
+        "https://checkout.stripe.com"
+      ],
+      formAction: ["'self'", "https://checkout.stripe.com"],
+      frameAncestors: ["'self'"],
     },
   },
   crossOriginEmbedderPolicy: false,

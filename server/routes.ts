@@ -38,14 +38,8 @@ declare module "express-session" {
 }
 
 // Session configuration
-const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
-const pgStore = connectPg(session);
-const sessionStore = new pgStore({
-  conString: process.env.DATABASE_URL,
-  createTableIfMissing: false,
-  ttl: sessionTtl,
-  tableName: "sessions",
-});
+import { createSessionStore, getSessionConfig } from './auth/session-store';
+const sessionStore = createSessionStore();
 
 // Authentication middleware
 interface AuthenticatedRequest extends Request {
@@ -55,38 +49,8 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
-const requireAuth = (req: any, res: any, next: any) => {
-  logger.info('auth', 'Auth check initiated', {
-    sessionId: req.session?.id,
-    userId: req.session?.userId,
-    userRole: req.session?.userRole,
-  });
-  
-  if (!req.session?.userId) {
-    logger.warn('auth', 'Authentication failed - No userId in session', {
-      sessionId: req.session?.id,
-      ipAddress: req.ip,
-      userAgent: req.get('User-Agent'),
-    });
-    return res.status(401).json({ message: "Unauthorized" });
-  }
-  
-  logger.info('auth', `Authentication passed for user ${req.session.userId}`, {
-    userId: req.session.userId,
-    userRole: req.session.userRole,
-  });
-  next();
-};
-
-const requireRole = (role: string) => (req: any, res: any, next: any) => {
-  console.log(`Role check for '${role}' - User role:`, req.session?.userRole);
-  if (!req.session?.userId || req.session?.userRole !== role) {
-    console.log(`Role check failed - Required: ${role}, Got: ${req.session?.userRole}`);
-    return res.status(403).json({ message: "Forbidden" });
-  }
-  console.log(`Role check passed for '${role}'`);
-  next();
-};
+// Import improved authentication middleware
+import { requireAuth, requireRole, requireAnyRole, optionalAuth } from './auth/auth-middleware';
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Validate environment configuration first
@@ -96,6 +60,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Validate session security before starting
   validateSessionSecurity();
   
+  // Configure trust proxy for rate limiting
+  app.set('trust proxy', 1);
+  
   // Apply security middleware
   app.use(securityHeaders);
   app.use(mongoSanitize()); // Prevent NoSQL injection
@@ -103,18 +70,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(apiLimiter); // Apply general rate limiting
   
   // Session middleware with secure configuration
-  app.use(session({
-    store: sessionStore,
-    secret: process.env.SESSION_SECRET!,
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      maxAge: sessionTtl,
-      sameSite: "strict",
-    },
-  }));
+  app.use(session(getSessionConfig(sessionStore)));
 
   // Health check and monitoring endpoints
   app.get('/health', healthCheckEndpoint);
@@ -801,8 +757,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Stripe payment routes
-  app.post("/api/create-payment-intent", requireAuth, async (req: any, res) => {
+  // Stripe payment routes (public endpoint for guest checkout)
+  app.post("/api/create-payment-intent", optionalAuth, async (req: any, res) => {
     try {
       const { amount, items = [] } = req.body;
       const userId = req.session?.userId;
