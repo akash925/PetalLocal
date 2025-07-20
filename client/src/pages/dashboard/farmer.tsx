@@ -18,7 +18,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { insertProduceItemSchema, insertFarmSchema, insertInventorySchema } from "@shared/schema";
 import { z } from "zod";
 import { Plus, Edit, Trash2, Package, Upload, Download, Image } from "lucide-react";
-import { SmartImageUploader } from "@/components/smart-image-uploader";
+import { SmartPhotoUploader } from "@/components/smart-photo-uploader";
 import { ProduceEditModal } from "@/components/produce-edit-modal";
 import { InstagramConnect } from "@/components/instagram-connect";
 import {
@@ -542,28 +542,36 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                         render={({ field }) => (
                           <FormItem>
                             <FormControl>
-                              <SmartImageUploader
+                              <SmartPhotoUploader
                                 onImageSelect={field.onChange}
                                 onAnalysisComplete={(analysis) => {
-                                  if (analysis.plantType) {
-                                    form.setValue("name", analysis.suggestions?.name || analysis.plantType);
+                                  if (analysis.success) {
+                                    // Auto-fill form with AI analysis results
+                                    if (analysis.plantType) {
+                                      form.setValue("name", analysis.suggestions?.name || analysis.plantType);
+                                    }
+                                    if (analysis.category) {
+                                      form.setValue("category", analysis.category);
+                                    }
+                                    if (analysis.suggestions?.description) {
+                                      form.setValue("description", analysis.suggestions.description);
+                                    }
+                                    if (analysis.estimatedYield?.quantity) {
+                                      form.setValue("quantityAvailable", analysis.estimatedYield.quantity.toString());
+                                    }
+                                    if (analysis.estimatedYield?.unit) {
+                                      form.setValue("unit", analysis.estimatedYield.unit);
+                                    }
+                                    if (analysis.variety) {
+                                      form.setValue("variety", analysis.variety);
+                                    }
+                                    
+                                    toast({
+                                      title: "Smart Analysis Complete!",
+                                      description: `Identified ${analysis.plantType} with ${analysis.estimatedYield?.quantity || 'estimated'} ${analysis.estimatedYield?.unit || 'units'} predicted yield`,
+                                    });
                                   }
-                                  if (analysis.category) {
-                                    form.setValue("category", analysis.category);
-                                  }
-                                  if (analysis.suggestions?.description) {
-                                    form.setValue("description", analysis.suggestions.description);
-                                  }
-                                  if (analysis.estimatedQuantity) {
-                                    form.setValue("quantityAvailable", analysis.estimatedQuantity.toString());
-                                  }
-                                  toast({
-                                    title: "Form auto-filled!",
-                                    description: "Product information has been populated based on photo analysis",
-                                  });
                                 }}
-                                existingImage={field.value}
-                                showAnalyzeButton={true}
                                 className="col-span-full"
                               />
                             </FormControl>

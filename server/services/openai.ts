@@ -5,14 +5,24 @@ interface PlantAnalysisResult {
   plantType?: string;
   variety?: string;
   category?: string;
-  estimatedQuantity?: number;
+  growthStage?: string;
+  estimatedYield?: {
+    quantity: number;
+    unit: string;
+    confidence: number;
+  };
+  maturitySeason?: {
+    season: string;
+    months: string[];
+    timeToMaturity: string;
+  };
   condition?: string;
   confidence?: number;
   suggestions?: {
     name?: string;
     description?: string;
     priceRange?: string;
-    harvestTips?: string;
+    inventoryTips?: string;
   };
   error?: string;
 }
@@ -56,24 +66,33 @@ class OpenAIService {
         messages: [
           {
             role: "system",
-            content: `You are an expert agricultural AI assistant specializing in plant and produce identification. Analyze the provided image and identify the plant/produce with high accuracy. 
+            content: `You are an expert agricultural AI assistant specializing in plant and produce identification with predictive harvest capabilities. Analyze the provided image and identify the plant/produce with high accuracy, focusing on growth stage analysis and yield predictions.
 
 Return your analysis in JSON format with these fields:
 - plantType: The main type of plant/produce (e.g., "tomato", "apple", "lettuce")
 - variety: Specific variety if identifiable (e.g., "cherry tomato", "honeycrisp apple")
-- category: One of: vegetables, fruits, herbs, grains, dairy, other
-- condition: Current condition (e.g., "ripe", "fresh", "needs harvesting")
+- category: One of: vegetables, fruits, herbs, grains, nuts, other
+- growthStage: Current growth stage (e.g., "seedling", "flowering", "fruiting", "mature", "harvest ready")
+- condition: Current condition (e.g., "healthy", "ripe", "needs water", "pest damage")
 - confidence: Confidence level 0-1
-- suggestions: Object with name, description, priceRange, harvestTips
+- estimatedYield: Object with quantity (number), unit (string), confidence (0-1)
+- maturitySeason: Object with season (string), months (array), timeToMaturity (string)
+- suggestions: Object with name, description, priceRange, inventoryTips
 
-Focus on accuracy and provide detailed observations.`
+For growth stage analysis:
+- Identify if plant is in early growth (seedling, vegetative), reproductive (flowering, fruiting), or harvest stages
+- Estimate potential yield based on plant size, health, and fruit/vegetable count visible
+- Predict seasonal maturity timing and harvest windows
+- Provide inventory management suggestions for farmers
+
+Focus on practical farming insights and accurate yield predictions.`
           },
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: "Please analyze this plant/produce image and provide detailed identification information."
+                text: "Please analyze this plant image for identification, growth stage assessment, and yield prediction. Focus on helping farmers plan their inventory and harvest timing."
               },
               {
                 type: "image_url",
@@ -85,7 +104,7 @@ Focus on accuracy and provide detailed observations.`
           },
         ],
         response_format: { type: "json_object" },
-        max_tokens: 1000,
+        max_tokens: 1500,
       });
 
       const result = JSON.parse(response.choices[0].message.content || "{}");
