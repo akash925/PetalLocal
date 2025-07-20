@@ -379,6 +379,11 @@ export function SmartPaymentButton({ item, quantity, onSuccess }: SmartPaymentBu
         isOpen={showGuestModal}
         onClose={() => setShowGuestModal(false)}
         onSubmit={handleGuestCheckout}
+        onSignIn={() => {
+          // After successful sign in, redirect to checkout
+          setShowGuestModal(false);
+          window.location.href = '/checkout';
+        }}
         item={item}
         quantity={quantity}
       />

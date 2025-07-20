@@ -8,17 +8,23 @@ const PgSession = connectPgSimple(session);
 export function createSessionStore(): connectPgSimple.PGStore {
   logger.info('session', 'Creating PostgreSQL session store');
   
+  // Use existing session table from schema
   return new PgSession({
     pool: pool,
-    tableName: 'session',
-    createTableIfMissing: true,
+    tableName: 'sessions', // Use the table name from our schema
+    createTableIfMissing: false, // Don't create table - use existing schema
     ttl: 7 * 24 * 60 * 60, // 7 days in seconds
     schemaName: 'public',
     errorLog: (error: Error) => {
-      logger.error('session', 'Session store error', {
-        error: error.message,
-        stack: error.stack,
-      });
+      // Only log serious errors, ignore table/index creation conflicts
+      if (!error.message.includes('already exists') && 
+          !error.message.includes('relation') && 
+          !error.message.includes('IDX_session_expire')) {
+        logger.error('session', 'Session store error', {
+          error: error.message,
+          stack: error.stack,
+        });
+      }
     },
   });
 }

@@ -106,13 +106,17 @@ export const securityHeaders = helmet({
         "wss://ws.stripe.com",
         "ws://localhost:*", // For Vite HMR
         "wss://localhost:*", // For Vite HMR
-        "https://vitejs.dev"
+        "https://vitejs.dev",
+        "https://apple.com",
+        "https://*.apple.com"
       ],
       frameSrc: [
         "'self'", 
         "https://js.stripe.com",
         "https://checkout.stripe.com",
-        "https://payments.stripe.com"
+        "https://payments.stripe.com",
+        "https://apple.com",
+        "https://*.apple.com"
       ],
       childSrc: [
         "'self'", 

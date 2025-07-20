@@ -5,12 +5,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Mail, User, CreditCard, Lock } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Mail, User, CreditCard, Lock, LogIn, UserPlus } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { apiRequest } from '@/lib/queryClient';
 
 interface GuestCheckoutModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (guestInfo: GuestInfo) => void;
+  onSignIn?: () => void; // Callback for successful sign in
   item: {
     id: number;
     name: string;
@@ -28,13 +32,19 @@ interface GuestInfo {
   lastName: string;
 }
 
-export function GuestCheckoutModal({ isOpen, onClose, onSubmit, item, quantity }: GuestCheckoutModalProps) {
+export function GuestCheckoutModal({ isOpen, onClose, onSubmit, onSignIn, item, quantity }: GuestCheckoutModalProps) {
   const [guestInfo, setGuestInfo] = useState<GuestInfo>({
     email: '',
     firstName: '',
     lastName: '',
   });
+  const [signInInfo, setSignInInfo] = useState({
+    email: '',
+    password: '',
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSigningIn, setIsSigningIn] = useState(false);
+  const { toast } = useToast();
 
   const total = item.price * quantity;
 
@@ -57,6 +67,59 @@ export function GuestCheckoutModal({ isOpen, onClose, onSubmit, item, quantity }
     setGuestInfo(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleSignInInputChange = (field: 'email' | 'password', value: string) => {
+    setSignInInfo(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!signInInfo.email || !signInInfo.password) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter both email and password.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSigningIn(true);
+    try {
+      const response = await apiRequest("POST", "/api/auth/login", {
+        email: signInInfo.email,
+        password: signInInfo.password,
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Welcome back!",
+          description: "Successfully signed in. Continuing with your purchase...",
+        });
+        
+        // Close modal and proceed with authenticated checkout
+        onClose();
+        if (onSignIn) {
+          onSignIn();
+        }
+      } else {
+        const error = await response.json();
+        toast({
+          title: "Sign In Failed",
+          description: error.message || "Invalid email or password.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to sign in. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSigningIn(false);
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
@@ -66,11 +129,11 @@ export function GuestCheckoutModal({ isOpen, onClose, onSubmit, item, quantity }
             Quick Checkout
           </DialogTitle>
           <DialogDescription>
-            Complete your purchase in seconds. We'll create an account for you automatically.
+            Complete your purchase quickly - sign in to your account or checkout as a guest.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Order Summary */}
           <Card>
             <CardContent className="p-4">
@@ -96,8 +159,21 @@ export function GuestCheckoutModal({ isOpen, onClose, onSubmit, item, quantity }
             </CardContent>
           </Card>
 
-          {/* Guest Information Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Tabbed Interface */}
+          <Tabs defaultValue="guest" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="guest" className="flex items-center gap-2">
+                <UserPlus className="w-4 h-4" />
+                Guest Checkout
+              </TabsTrigger>
+              <TabsTrigger value="signin" className="flex items-center gap-2">
+                <LogIn className="w-4 h-4" />
+                Sign In
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="guest">
+              <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-4">
               <div>
                 <Label htmlFor="email" className="flex items-center gap-2">
@@ -161,15 +237,78 @@ export function GuestCheckoutModal({ isOpen, onClose, onSubmit, item, quantity }
               >
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting || !guestInfo.email || !guestInfo.firstName || !guestInfo.lastName}
-                className="flex-1 bg-green-600 hover:bg-green-700"
-              >
-                {isSubmitting ? 'Processing...' : `Proceed to Payment`}
-              </Button>
-            </div>
-          </form>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting || !guestInfo.email || !guestInfo.firstName || !guestInfo.lastName}
+                    className="flex-1 bg-green-600 hover:bg-green-700"
+                  >
+                    {isSubmitting ? 'Processing...' : 'Proceed to Payment'}
+                  </Button>
+                </div>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="signin">
+              <form onSubmit={handleSignIn} className="space-y-4">
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="signin-email" className="flex items-center gap-2">
+                      <Mail className="w-4 h-4" />
+                      Email Address
+                    </Label>
+                    <Input
+                      id="signin-email"
+                      type="email"
+                      value={signInInfo.email}
+                      onChange={(e) => handleSignInInputChange('email', e.target.value)}
+                      placeholder="your@email.com"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="signin-password" className="flex items-center gap-2">
+                      <Lock className="w-4 h-4" />
+                      Password
+                    </Label>
+                    <Input
+                      id="signin-password"
+                      type="password"
+                      value={signInInfo.password}
+                      onChange={(e) => handleSignInInputChange('password', e.target.value)}
+                      placeholder="Enter your password"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="bg-blue-50 p-3 rounded-lg">
+                  <p className="text-sm text-blue-600">
+                    Sign in to your existing account to complete your purchase with saved information.
+                  </p>
+                </div>
+
+                <div className="flex gap-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onClose}
+                    disabled={isSigningIn}
+                    className="flex-1"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isSigningIn || !signInInfo.email || !signInInfo.password}
+                    className="flex-1 bg-green-600 hover:bg-green-700"
+                  >
+                    {isSigningIn ? "Signing In..." : "Sign In & Continue"}
+                  </Button>
+                </div>
+              </form>
+            </TabsContent>
+          </Tabs>
         </div>
       </DialogContent>
     </Dialog>
