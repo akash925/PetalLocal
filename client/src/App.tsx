@@ -21,6 +21,7 @@ import AdminDashboard from "@/pages/dashboard/admin";
 import Messages from "@/pages/messages";
 import Checkout from "@/pages/checkout";
 import OrderConfirmation from "@/pages/order-confirmation";
+import Sell from "@/pages/sell";
 import SellProduce from "@/pages/sell-produce";
 import NotFound from "@/pages/not-found";
 
@@ -50,7 +51,8 @@ function Router() {
           <Route path="/dashboard/farmer" component={FarmerDashboard} />
           <Route path="/dashboard/admin" component={AdminDashboard} />
           <Route path="/messages" component={Messages} />
-          <Route path="/sell" component={SellProduce} />
+          <Route path="/sell" component={Sell} />
+          <Route path="/sell-produce" component={SellProduce} />
           <Route component={NotFound} />
         </Switch>
       </main>

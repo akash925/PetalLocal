@@ -666,13 +666,11 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <SmartImageUploader
+                                <SmartPhotoUploader
                                   onImageSelect={(imageData) => {
                                     console.log("Farmer Dashboard: Image selected:", imageData);
                                     field.onChange(imageData);
                                   }}
-                                  existingImage={field.value}
-                                  showAnalyzeButton={false}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -1573,7 +1571,7 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                           render={({ field }) => (
                             <FormItem>
                               <FormControl>
-                                <SmartImageUploader
+                                <SmartPhotoUploader
                                   onImageSelect={(imageData) => {
                                     console.log("Farm image selected:", imageData);
                                     field.onChange(imageData);
