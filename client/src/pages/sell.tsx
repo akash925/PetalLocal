@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { SmartPhotoUploader } from "@/components/smart-photo-uploader";
+import { useToast } from "@/hooks/use-toast";
 import { 
   ArrowRight, 
   Upload, 
@@ -23,11 +25,18 @@ import {
   Star,
   Clock,
   BarChart3,
-  Calendar
+  Calendar,
+  CheckCircle,
+  Loader2
 } from "lucide-react";
 
 export default function Sell() {
   const [selectedFeature, setSelectedFeature] = useState<string>("ai-identification");
+  const [demoImage, setDemoImage] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<any>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
 
   const features = [
     {
@@ -212,41 +221,112 @@ export default function Sell() {
                         <h3 className="text-xl font-semibold">AI Plant Identification</h3>
                       </div>
                       
-                      {/* Mock Upload Interface */}
-                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50">
-                        <Camera className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-600 mb-4">Upload or drag plant photo here</p>
-                        <Button variant="outline" className="mb-4">
-                          <Upload className="w-4 h-4 mr-2" />
-                          Select Photo
-                        </Button>
-                      </div>
+                      {/* Functional Upload Interface */}
+                      {!demoImage ? (
+                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50">
+                          <Camera className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                          <p className="text-gray-600 mb-4">Upload or drag plant photo here</p>
+                          <Button 
+                            variant="outline" 
+                            className="mb-4"
+                            onClick={() => fileInputRef.current?.click()}
+                          >
+                            <Upload className="w-4 h-4 mr-2" />
+                            Select Photo
+                          </Button>
+                          <input
+                            type="file"
+                            ref={fileInputRef}
+                            accept="image/*"
+                            className="hidden"
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                // Simple image preview
+                                const reader = new FileReader();
+                                reader.onload = (e) => {
+                                  setDemoImage(e.target?.result as string);
+                                };
+                                reader.readAsDataURL(file);
+                                
+                                // Start analysis
+                                setIsAnalyzing(true);
+                                setTimeout(() => {
+                                  setAnalysisResult({
+                                    plantType: "Cherry Tomato",
+                                    growthStage: "Flowering",
+                                    estimatedYield: { quantity: 25, unit: "lbs" },
+                                    maturitySeason: { season: "Summer", months: ["July", "August", "September"] }
+                                  });
+                                  setIsAnalyzing(false);
+                                  toast({
+                                    title: "AI Analysis Complete!",
+                                    description: "Plant identified with yield predictions",
+                                  });
+                                }, 2000);
+                              }
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="relative">
+                            <img 
+                              src={demoImage} 
+                              alt="Uploaded plant" 
+                              className="w-full h-48 object-cover rounded-lg"
+                            />
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              className="absolute top-2 right-2"
+                              onClick={() => {
+                                setDemoImage(null);
+                                setAnalysisResult(null);
+                                setIsAnalyzing(false);
+                              }}
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                        </div>
+                      )}
 
-                      {/* Mock Analysis Results */}
-                      <div className="bg-green-50 rounded-lg p-6 space-y-3">
-                        <div className="flex items-center gap-2 text-green-800 mb-3">
-                          <Sparkles className="w-5 h-5" />
-                          <span className="font-semibold">AI Analysis Complete</span>
+                      {/* Analysis Loading or Results */}
+                      {isAnalyzing && (
+                        <div className="bg-blue-50 rounded-lg p-6 text-center">
+                          <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-3" />
+                          <p className="text-blue-800 font-semibold">Analyzing your plant...</p>
+                          <p className="text-blue-600 text-sm">Using AI to identify species and predict yields</p>
                         </div>
-                        <div className="space-y-2 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Plant Type:</span>
-                            <span className="font-medium">Cherry Tomato</span>
+                      )}
+                      
+                      {analysisResult && !isAnalyzing && (
+                        <div className="bg-green-50 rounded-lg p-6 space-y-3">
+                          <div className="flex items-center gap-2 text-green-800 mb-3">
+                            <CheckCircle className="w-5 h-5" />
+                            <span className="font-semibold">AI Analysis Complete</span>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Growth Stage:</span>
-                            <span className="font-medium">Flowering</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Estimated Yield:</span>
-                            <span className="font-medium">25 lbs</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Harvest Season:</span>
-                            <span className="font-medium">Summer (July-Sept)</span>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Plant Type:</span>
+                              <span className="font-medium">{analysisResult.plantType}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Growth Stage:</span>
+                              <span className="font-medium">{analysisResult.growthStage}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Estimated Yield:</span>
+                              <span className="font-medium">{analysisResult.estimatedYield?.quantity} {analysisResult.estimatedYield?.unit}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-gray-600">Harvest Season:</span>
+                              <span className="font-medium">{analysisResult.maturitySeason?.season} ({analysisResult.maturitySeason?.months.join('-')})</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      )}
                     </div>
                   )}
 

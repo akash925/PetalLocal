@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { processImage, formatFileSize } from "@/lib/image-utils";
 import { 
   Upload, 
   Camera, 
@@ -111,45 +112,85 @@ export function SmartPhotoUploader({
     });
   }, []);
 
+  const validateImage = useCallback((file: File): Promise<boolean> => {
+    return new Promise((resolve, reject) => {
+      // Check file size (max 50MB)
+      if (file.size > 50 * 1024 * 1024) {
+        reject(new Error('File size too large (max 50MB)'));
+        return;
+      }
+
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        reject(new Error('Please select a valid image file'));
+        return;
+      }
+
+      // Validate image by loading it
+      const img = new Image();
+      const objectUrl = URL.createObjectURL(file);
+      
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
+        
+        // Check dimensions (minimum 100x100, maximum 8000x8000)
+        if (img.width < 100 || img.height < 100) {
+          reject(new Error('Image too small (minimum 100x100 pixels)'));
+          return;
+        }
+        
+        if (img.width > 8000 || img.height > 8000) {
+          reject(new Error('Image too large (maximum 8000x8000 pixels)'));
+          return;
+        }
+        
+        resolve(true);
+      };
+      
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error('Invalid or corrupted image file'));
+      };
+      
+      img.src = objectUrl;
+    });
+  }, []);
+
   const handleFileSelect = useCallback(async (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      toast({
-        title: "Invalid file type",
-        description: "Please select an image file.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (file.size > 10 * 1024 * 1024) {
-      toast({
-        title: "File too large",
-        description: "Please select an image smaller than 10MB.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setIsUploading(true);
+    
     try {
-      const compressedImageUrl = await compressImage(file);
-      setSelectedImage(compressedImageUrl);
-      onImageSelect(compressedImageUrl);
+      // Process image with validation and compression
+      const result = await processImage(file, {
+        maxSize: 1200,
+        quality: 0.8
+      });
+      
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+      
+      setSelectedImage(result.dataUrl!);
+      onImageSelect(result.dataUrl!);
+      
+      const originalSizeText = formatFileSize(result.compression!.originalSize);
+      const compressedSizeText = formatFileSize(result.compression!.compressedSize);
       
       toast({
-        title: "Image uploaded",
-        description: "Image ready for analysis!",
+        title: "Image uploaded successfully!",
+        description: `${originalSizeText} → ${compressedSizeText} (${result.compression!.compressionRatio}% smaller) • Ready for AI analysis`,
       });
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Image upload error:", error);
       toast({
         title: "Upload failed",
-        description: "Failed to process image. Please try again.",
+        description: error.message || "Failed to process image. Please try again.",
         variant: "destructive",
       });
     } finally {
       setIsUploading(false);
     }
-  }, [compressImage, onImageSelect, toast]);
+  }, [onImageSelect, toast]);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
