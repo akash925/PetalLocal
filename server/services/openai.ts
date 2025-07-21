@@ -121,17 +121,31 @@ Focus on practical farming insights and accurate yield predictions.`
     } catch (error: any) {
       console.error("OpenAI plant analysis error:", error);
       
-      // Handle quota exceeded error gracefully
-      if (error.status === 429) {
+      // Handle specific OpenAI error types
+      if (error.status === 429 || error.message?.includes("quota")) {
         return {
           success: false,
           error: "OpenAI usage quota exceeded. Please check your billing settings or try again later.",
         };
       }
       
+      if (error.status === 401 || error.message?.includes("invalid_api_key")) {
+        return {
+          success: false,
+          error: "OpenAI API key is invalid. Please check your configuration.",
+        };
+      }
+      
+      if (error.status === 400 || error.message?.includes("invalid_request")) {
+        return {
+          success: false,
+          error: "Invalid image format. Please upload a clear photo of your plant or produce.",
+        };
+      }
+      
       return {
         success: false,
-        error: `Failed to analyze plant photo: ${error.message}`,
+        error: "Failed to analyze plant image. Please try again.",
       };
     }
   }
@@ -199,9 +213,32 @@ Be conservative but realistic in estimates.`
       };
     } catch (error: any) {
       console.error("OpenAI inventory estimation error:", error);
+      
+      // Handle specific OpenAI error types
+      if (error.status === 429 || error.message?.includes("quota")) {
+        return {
+          success: false,
+          error: "OpenAI usage quota exceeded. Please check your billing settings or try again later.",
+        };
+      }
+      
+      if (error.status === 401 || error.message?.includes("invalid_api_key")) {
+        return {
+          success: false,
+          error: "OpenAI API key is invalid. Please check your configuration.",
+        };
+      }
+      
+      if (error.status === 400 || error.message?.includes("invalid_request")) {
+        return {
+          success: false,
+          error: "Invalid image format. Please upload a clear photo of your produce.",
+        };
+      }
+      
       return {
         success: false,
-        error: `Failed to estimate inventory: ${error.message}`,
+        error: "Failed to estimate inventory. Please try again.",
       };
     }
   }

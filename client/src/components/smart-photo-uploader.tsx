@@ -116,9 +116,10 @@ export function SmartPhotoUploader({
         }
       } catch (error) {
         console.error("AI Analysis error:", error);
+        const errorMessage = error instanceof Error ? error.message : "Unable to analyze image";
         toast({
-          title: "Analysis failed",
-          description: "Unable to analyze image. Please try again.",
+          title: "Analysis failed", 
+          description: errorMessage.includes("401") ? "Please log in to use AI plant analysis" : "Unable to analyze image. Please try again.",
           variant: "destructive",
         });
       } finally {
