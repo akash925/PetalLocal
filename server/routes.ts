@@ -863,6 +863,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Plant Analysis route
+  app.post("/api/analyze-plant", requireAuth, async (req: any, res) => {
+    try {
+      const { image } = req.body;
+      
+      if (!image || typeof image !== 'string') {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Base64 image data is required" 
+        });
+      }
+
+      const analysisResult = await openaiService.analyzePlantPhoto(image);
+      
+      logger.info('ai', 'Plant analysis completed', {
+        userId: req.session?.userId,
+        success: analysisResult.success,
+        plantType: analysisResult.plantType,
+      });
+
+      res.json(analysisResult);
+    } catch (error) {
+      logger.error('ai', 'Plant analysis error', {
+        error: error.message,
+        userId: req.session?.userId,
+      });
+      
+      res.status(500).json({
+        success: false,
+        error: "Plant analysis failed. Please try again.",
+      });
+    }
+  });
+
   // Order routes
   app.get("/api/orders", requireAuth, async (req: any, res) => {
     try {

@@ -139,7 +139,8 @@ export default function BrowseProduce() {
                   isSeasonal={item.isSeasonal}
                   isHeirloom={item.isHeirloom}
                   farmName={item.farm?.name || "Local Farm"}
-                  distance={item.farm?.distance || 3.2}
+                  farmLatitude={item.farm?.latitude}
+                  farmLongitude={item.farm?.longitude}
                 />
               ))}
             </div>

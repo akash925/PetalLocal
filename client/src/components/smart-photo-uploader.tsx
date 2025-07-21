@@ -6,7 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { processImage, formatFileSize } from "@/lib/image-utils";
+import { compressImage, validateImageFile, formatFileSize } from "@/lib/image-utils";
 import { 
   Upload, 
   Camera, 
@@ -71,428 +71,320 @@ export function SmartPhotoUploader({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  const compressImage = useCallback((file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
-      
-      const objectUrl = URL.createObjectURL(file);
-      
-      img.onload = () => {
-        URL.revokeObjectURL(objectUrl);
-        
-        // Calculate new dimensions (max 1200px)
-        const maxSize = 1200;
-        let { width, height } = img;
-        
-        if (width > maxSize || height > maxSize) {
-          if (width > height) {
-            height = (height * maxSize) / width;
-            width = maxSize;
-          } else {
-            width = (width * maxSize) / height;
-            height = maxSize;
-          }
-        }
-        
-        canvas.width = width;
-        canvas.height = height;
-        
-        ctx?.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', 0.8));
-      };
-      
-      img.onerror = () => {
-        URL.revokeObjectURL(objectUrl);
-        reject(new Error('Failed to load image'));
-      };
-      
-      img.src = objectUrl;
-    });
-  }, []);
-
-  const validateImage = useCallback((file: File): Promise<boolean> => {
-    return new Promise((resolve, reject) => {
-      // Check file size (max 50MB)
-      if (file.size > 50 * 1024 * 1024) {
-        reject(new Error('File size too large (max 50MB)'));
-        return;
-      }
-
-      // Check file type
-      if (!file.type.startsWith('image/')) {
-        reject(new Error('Please select a valid image file'));
-        return;
-      }
-
-      // Validate image by loading it
-      const img = new Image();
-      const objectUrl = URL.createObjectURL(file);
-      
-      img.onload = () => {
-        URL.revokeObjectURL(objectUrl);
-        
-        // Check dimensions (minimum 100x100, maximum 8000x8000)
-        if (img.width < 100 || img.height < 100) {
-          reject(new Error('Image too small (minimum 100x100 pixels)'));
-          return;
-        }
-        
-        if (img.width > 8000 || img.height > 8000) {
-          reject(new Error('Image too large (maximum 8000x8000 pixels)'));
-          return;
-        }
-        
-        resolve(true);
-      };
-      
-      img.onerror = () => {
-        URL.revokeObjectURL(objectUrl);
-        reject(new Error('Invalid or corrupted image file'));
-      };
-      
-      img.src = objectUrl;
-    });
-  }, []);
-
-  const handleFileSelect = useCallback(async (file: File) => {
+  const handleImageUpload = useCallback(async (file: File) => {
     setIsUploading(true);
-    
     try {
-      // Process image with validation and compression
-      const result = await processImage(file, {
-        maxSize: 1200,
-        quality: 0.8
-      });
-      
-      if (!result.success) {
-        throw new Error(result.error);
+      // Validate and compress image
+      const validation = validateImageFile(file);
+      if (!validation.isValid) {
+        throw new Error(validation.error || 'Invalid image file');
       }
-      
-      setSelectedImage(result.dataUrl!);
-      onImageSelect(result.dataUrl!);
-      
-      const originalSizeText = formatFileSize(result.compression!.originalSize);
-      const compressedSizeText = formatFileSize(result.compression!.compressedSize);
-      
+
+      const result = await compressImage(file, 1200, 0.8);
+      if (!result.isValid) {
+        throw new Error(result.error || 'Compression failed');
+      }
+
       toast({
-        title: "Image uploaded successfully!",
-        description: `${originalSizeText} → ${compressedSizeText} (${result.compression!.compressionRatio}% smaller) • Ready for AI analysis`,
-      });
-    } catch (error: any) {
-      console.error("Image upload error:", error);
-      toast({
-        title: "Upload failed",
-        description: error.message || "Failed to process image. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUploading(false);
-    }
-  }, [onImageSelect, toast]);
-
-  const handleDrag = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
-  }, []);
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      handleFileSelect(e.dataTransfer.files[0]);
-    }
-  }, [handleFileSelect]);
-
-  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      handleFileSelect(e.target.files[0]);
-    }
-  }, [handleFileSelect]);
-
-  const analyzeImage = useCallback(async () => {
-    if (!selectedImage) return;
-
-    setIsAnalyzing(true);
-    try {
-      // Convert data URL to base64
-      const base64Image = selectedImage.split(',')[1];
-      
-      const response = await apiRequest("POST", "/api/analyze-plant", {
-        image: base64Image,
+        title: "Image processed",
+        description: `Reduced size by ${result.compressionRatio.toFixed(1)}%`,
       });
 
-      if (response.success) {
-        setAnalysis(response);
-        setShowAnalysis(true);
-        onAnalysisComplete?.(response);
+      setSelectedImage(result.compressedImage);
+      onImageSelect(result.compressedImage);
+
+      // Start AI analysis
+      setIsAnalyzing(true);
+      try {
+        const base64Image = result.compressedImage.split(',')[1];
+        const response = await apiRequest("POST", "/api/analyze-plant", {
+          image: base64Image,
+        });
         
-        toast({
-          title: "Analysis complete!",
-          description: `Identified: ${response.plantType || 'Unknown plant'}`,
-        });
-      } else {
-        throw new Error(response.error || 'Analysis failed');
-      }
-    } catch (error: any) {
-      console.error("Plant analysis error:", error);
-      
-      // Handle quota exceeded gracefully
-      if (error.message.includes('quota') || error.message.includes('rate limit')) {
-        toast({
-          title: "Analysis temporarily unavailable",
-          description: "AI analysis quota reached. Please try again later.",
-          variant: "destructive",
-        });
-      } else {
+        const analysisData = await response.json();
+        
+        setAnalysis(analysisData);
+        if (onAnalysisComplete) {
+          onAnalysisComplete(analysisData);
+        }
+
+        if (analysisData.success) {
+          toast({
+            title: "AI Analysis Complete",
+            description: `Identified: ${analysisData.plantType || 'Unknown plant'}`,
+          });
+        }
+      } catch (error) {
+        console.error("AI Analysis error:", error);
         toast({
           title: "Analysis failed",
           description: "Unable to analyze image. Please try again.",
           variant: "destructive",
         });
+      } finally {
+        setIsAnalyzing(false);
       }
+    } catch (error) {
+      console.error("Image upload error:", error);
+      toast({
+        title: "Upload failed",
+        description: error instanceof Error ? error.message : "Please try again.",
+        variant: "destructive",
+      });
     } finally {
-      setIsAnalyzing(false);
+      setIsUploading(false);
     }
-  }, [selectedImage, onAnalysisComplete, toast]);
+  }, [onImageSelect, onAnalysisComplete, toast]);
+
+  const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      handleImageUpload(file);
+    }
+  }, [handleImageUpload]);
+
+  const handleDrop = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    setDragActive(false);
+    
+    const file = event.dataTransfer.files?.[0];
+    if (file) {
+      handleImageUpload(file);
+    }
+  }, [handleImageUpload]);
+
+  const handleDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    setDragActive(true);
+  }, []);
+
+  const handleDragLeave = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    setDragActive(false);
+  }, []);
+
+  const removeImage = useCallback(() => {
+    setSelectedImage(null);
+    setAnalysis(null);
+    setShowAnalysis(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }, []);
 
   return (
     <div className={`space-y-4 ${className}`}>
-      {/* Simple Upload Area */}
+      {/* Upload Area */}
       {!selectedImage ? (
-        <Card 
-          className={`border-2 border-dashed transition-all cursor-pointer hover:border-green-400 ${
-            dragActive ? 'border-green-500 bg-green-50' : 'border-gray-300'
-          }`}
-          onDragEnter={handleDrag}
-          onDragLeave={handleDrag}
-          onDragOver={handleDrag}
-          onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <CardContent className="flex flex-col items-center justify-center py-8 px-6">
-            <div className="flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
-              {isUploading ? (
-                <Loader2 className="w-8 h-8 text-green-600 animate-spin" />
-              ) : (
-                <Upload className="w-8 h-8 text-green-600" />
-              )}
+        <Card className={`border-2 border-dashed transition-colors ${
+          dragActive ? 'border-green-500 bg-green-50' : 'border-gray-300'
+        }`}>
+          <CardContent className="p-6">
+            <div
+              className="text-center cursor-pointer"
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <div className="flex flex-col items-center space-y-4">
+                <div className="p-4 bg-green-100 rounded-full">
+                  {isUploading ? (
+                    <Loader2 className="w-8 h-8 text-green-600 animate-spin" />
+                  ) : (
+                    <Camera className="w-8 h-8 text-green-600" />
+                  )}
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    Upload Plant Photo
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    Drag and drop or click to select an image for AI analysis
+                  </p>
+                  <Button disabled={isUploading} className="bg-green-600 hover:bg-green-700">
+                    <Upload className="w-4 h-4 mr-2" />
+                    {isUploading ? 'Processing...' : 'Select Photo'}
+                  </Button>
+                </div>
+              </div>
             </div>
             
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              Upload a photo
-            </h3>
-            
-            <p className="text-sm text-gray-600 text-center mb-4">
-              Drag and drop or click to select an image<br />
-              (max 10MB, auto-compressed)
-            </p>
-            
-            <div className="flex flex-wrap gap-2 justify-center">
-              <Badge variant="outline" className="text-xs">
-                <Camera className="w-3 h-3 mr-1" />
-                Fresh produce
-              </Badge>
-              <Badge variant="outline" className="text-xs">
-                <TreePine className="w-3 h-3 mr-1" />
-                Growing plants
-              </Badge>
-            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
           </CardContent>
         </Card>
       ) : (
-        /* Image Preview & Analysis */
+        /* Image Preview and Analysis */
         <Card>
-          <CardContent className="p-4 space-y-4">
-            {/* Image Preview */}
-            <div className="relative">
-              <img 
-                src={selectedImage} 
-                alt="Uploaded plant" 
-                className="w-full h-48 object-cover rounded-lg"
-              />
-              <Button
-                size="sm"
-                variant="destructive"
-                className="absolute top-2 right-2"
-                onClick={() => {
-                  setSelectedImage(null);
-                  setAnalysis(null);
-                  setShowAnalysis(false);
-                }}
-              >
-                Remove
-              </Button>
-            </div>
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              {/* Image Preview */}
+              <div className="relative">
+                <img
+                  src={selectedImage}
+                  alt="Uploaded plant"
+                  className="w-full h-64 object-cover rounded-lg"
+                />
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="absolute top-2 right-2"
+                  onClick={removeImage}
+                >
+                  Remove
+                </Button>
+              </div>
 
-            {/* Privacy Toggle */}
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Photo visibility:</span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsPublic(!isPublic)}
-                className="flex items-center gap-2"
-              >
-                {isPublic ? (
-                  <>
-                    <Eye className="w-4 h-4" />
-                    Public
-                  </>
-                ) : (
-                  <>
-                    <EyeOff className="w-4 h-4" />
-                    Private
-                  </>
-                )}
-              </Button>
-            </div>
-
-            <Separator />
-
-            {/* Analyze Button */}
-            {!showAnalysis && (
-              <Button
-                onClick={analyzeImage}
-                disabled={isAnalyzing}
-                className="w-full bg-green-600 hover:bg-green-700"
-              >
-                {isAnalyzing ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Analyzing with AI...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="w-4 h-4 mr-2" />
-                    Identify plant & predict harvest
-                  </>
-                )}
-              </Button>
-            )}
-
-            {/* Analysis Results */}
-            {showAnalysis && analysis && analysis.success && (
-              <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                  <h4 className="font-semibold text-green-800">AI Analysis Complete</h4>
+              {/* Privacy Toggle */}
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center space-x-2">
+                  {isPublic ? (
+                    <Eye className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <EyeOff className="w-4 h-4 text-gray-500" />
+                  )}
+                  <span className="text-sm font-medium">
+                    {isPublic ? 'Public photo' : 'Private photo'}
+                  </span>
                 </div>
-
-                {/* Plant Identification */}
-                <div className="bg-green-50 p-4 rounded-lg space-y-3">
-                  <div>
-                    <h5 className="font-medium text-gray-900">Plant Identification</h5>
-                    <p className="text-sm text-gray-700">
-                      {analysis.plantType} {analysis.variety && `(${analysis.variety})`}
-                    </p>
-                    {analysis.category && (
-                      <Badge variant="secondary" className="mt-1">
-                        {analysis.category}
-                      </Badge>
-                    )}
-                  </div>
-
-                  {/* Growth Stage & Condition */}
-                  {analysis.growthStage && (
-                    <div>
-                      <h5 className="font-medium text-gray-900">Growth Stage</h5>
-                      <p className="text-sm text-gray-700">{analysis.growthStage}</p>
-                      {analysis.condition && (
-                        <p className="text-xs text-gray-600">Condition: {analysis.condition}</p>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Yield Prediction */}
-                  {analysis.estimatedYield && (
-                    <div className="flex items-start gap-2">
-                      <BarChart3 className="w-4 h-4 text-blue-600 mt-0.5" />
-                      <div>
-                        <h5 className="font-medium text-gray-900">Estimated Yield</h5>
-                        <p className="text-sm text-gray-700">
-                          {analysis.estimatedYield.quantity} {analysis.estimatedYield.unit}
-                        </p>
-                        <p className="text-xs text-gray-600">
-                          Confidence: {Math.round(analysis.estimatedYield.confidence * 100)}%
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Maturity Season */}
-                  {analysis.maturitySeason && (
-                    <div className="flex items-start gap-2">
-                      <Calendar className="w-4 h-4 text-orange-600 mt-0.5" />
-                      <div>
-                        <h5 className="font-medium text-gray-900">Harvest Season</h5>
-                        <p className="text-sm text-gray-700">{analysis.maturitySeason.season}</p>
-                        <p className="text-xs text-gray-600">
-                          {analysis.maturitySeason.timeToMaturity}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Suggestions */}
-                {analysis.suggestions && (
-                  <Alert>
-                    <Sparkles className="h-4 w-4" />
-                    <AlertDescription>
-                      <strong>AI Suggestions:</strong> {analysis.suggestions.inventoryTips || analysis.suggestions.name}
-                    </AlertDescription>
-                  </Alert>
-                )}
-
-                {/* Confidence */}
-                {analysis.confidence && (
-                  <div className="text-xs text-gray-500">
-                    Analysis confidence: {Math.round(analysis.confidence * 100)}%
-                  </div>
-                )}
-
-                {/* Re-analyze Option */}
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setShowAnalysis(false)}
-                  className="w-full"
+                  onClick={() => setIsPublic(!isPublic)}
                 >
-                  Analyze again
+                  {isPublic ? 'Make Private' : 'Make Public'}
                 </Button>
               </div>
-            )}
 
-            {/* Analysis Error */}
-            {showAnalysis && analysis && !analysis.success && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  {analysis.error || "Unable to analyze this image. Please try a different photo."}
-                </AlertDescription>
-              </Alert>
-            )}
+              {/* AI Analysis Status */}
+              {isAnalyzing && (
+                <Alert>
+                  <Sparkles className="w-4 h-4" />
+                  <AlertDescription className="flex items-center">
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    AI is analyzing your plant photo...
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {/* Analysis Results */}
+              {analysis && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-lg font-semibold flex items-center">
+                      <Sparkles className="w-5 h-5 mr-2 text-green-600" />
+                      AI Analysis Results
+                    </h4>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowAnalysis(!showAnalysis)}
+                    >
+                      {showAnalysis ? 'Hide Details' : 'Show Details'}
+                    </Button>
+                  </div>
+
+                  {analysis.success ? (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      {/* Plant Information */}
+                      <Card>
+                        <CardContent className="p-4">
+                          <div className="flex items-center mb-2">
+                            <TreePine className="w-4 h-4 mr-2 text-green-600" />
+                            <span className="font-medium">Plant Info</span>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-lg font-semibold">{analysis.plantType}</p>
+                            {analysis.variety && (
+                              <p className="text-sm text-gray-600">{analysis.variety}</p>
+                            )}
+                            <Badge variant="outline">{analysis.category}</Badge>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Growth Stage */}
+                      <Card>
+                        <CardContent className="p-4">
+                          <div className="flex items-center mb-2">
+                            <Calendar className="w-4 h-4 mr-2 text-blue-600" />
+                            <span className="font-medium">Growth Stage</span>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-lg font-semibold">{analysis.growthStage}</p>
+                            {analysis.maturitySeason && (
+                              <p className="text-sm text-gray-600">
+                                {analysis.maturitySeason.season} harvest
+                              </p>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Yield Estimate */}
+                      {analysis.estimatedYield && (
+                        <Card>
+                          <CardContent className="p-4">
+                            <div className="flex items-center mb-2">
+                              <BarChart3 className="w-4 h-4 mr-2 text-orange-600" />
+                              <span className="font-medium">Estimated Yield</span>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-lg font-semibold">
+                                {analysis.estimatedYield.quantity} {analysis.estimatedYield.unit}
+                              </p>
+                              <p className="text-sm text-gray-600">
+                                {(analysis.estimatedYield.confidence * 100).toFixed(0)}% confidence
+                              </p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+                    </div>
+                  ) : (
+                    <Alert variant="destructive">
+                      <AlertCircle className="w-4 h-4" />
+                      <AlertDescription>
+                        {analysis.error || 'Unable to analyze the image. Please try a different photo.'}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {/* Detailed Analysis */}
+                  {showAnalysis && analysis.success && analysis.suggestions && (
+                    <Card>
+                      <CardContent className="p-4">
+                        <h5 className="font-medium mb-2">AI Suggestions</h5>
+                        <div className="space-y-2 text-sm">
+                          {analysis.suggestions.name && (
+                            <p><strong>Suggested Name:</strong> {analysis.suggestions.name}</p>
+                          )}
+                          {analysis.suggestions.description && (
+                            <p><strong>Description:</strong> {analysis.suggestions.description}</p>
+                          )}
+                          {analysis.suggestions.priceRange && (
+                            <p><strong>Price Range:</strong> {analysis.suggestions.priceRange}</p>
+                          )}
+                          {analysis.suggestions.inventoryTips && (
+                            <p><strong>Inventory Tips:</strong> {analysis.suggestions.inventoryTips}</p>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}
-
-      {/* Hidden File Input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleInputChange}
-        className="hidden"
-      />
     </div>
   );
 }

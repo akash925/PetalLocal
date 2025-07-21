@@ -249,21 +249,45 @@ export default function Sell() {
                                 };
                                 reader.readAsDataURL(file);
                                 
-                                // Start analysis
+                                // Start real AI analysis
                                 setIsAnalyzing(true);
-                                setTimeout(() => {
-                                  setAnalysisResult({
-                                    plantType: "Cherry Tomato",
-                                    growthStage: "Flowering",
-                                    estimatedYield: { quantity: 25, unit: "lbs" },
-                                    maturitySeason: { season: "Summer", months: ["July", "August", "September"] }
-                                  });
-                                  setIsAnalyzing(false);
-                                  toast({
-                                    title: "AI Analysis Complete!",
-                                    description: "Plant identified with yield predictions",
-                                  });
-                                }, 2000);
+                                
+                                // Set up async AI analysis after image loads
+                                reader.onload = async (loadEvent) => {
+                                  try {
+                                    const base64Image = (loadEvent.target?.result as string).split(',')[1];
+                                    
+                                    // Call real API
+                                    const response = await fetch('/api/analyze-plant', {
+                                      method: 'POST',
+                                      headers: {
+                                        'Content-Type': 'application/json',
+                                      },
+                                      body: JSON.stringify({ image: base64Image }),
+                                    });
+                                    
+                                    const analysisData = await response.json();
+                                    
+                                    if (analysisData.success) {
+                                      setAnalysisResult(analysisData);
+                                      toast({
+                                        title: "AI Analysis Complete!",
+                                        description: `Identified: ${analysisData.plantType || 'Unknown plant'}`,
+                                      });
+                                    } else {
+                                      throw new Error(analysisData.error || 'Analysis failed');
+                                    }
+                                  } catch (error: any) {
+                                    console.error("AI Analysis error:", error);
+                                    toast({
+                                      title: "Analysis failed",
+                                      description: "Unable to analyze image. Please try again.",
+                                      variant: "destructive",
+                                    });
+                                  } finally {
+                                    setIsAnalyzing(false);
+                                  }
+                                };
                               }
                             }}
                           />
@@ -563,13 +587,13 @@ export default function Sell() {
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/signup">
-              <Button size="lg" className="bg-white text-green-600 hover:bg-gray-100 px-8 py-3 text-lg">
+              <Button size="lg" className="bg-white text-green-600 hover:bg-gray-100 px-8 py-3 text-lg font-semibold">
                 Start Selling Today
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
-            <Link href="/browse">
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-green-600 px-8 py-3 text-lg">
+            <Link href="/browse-produce">
+              <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-green-600 px-8 py-3 text-lg font-semibold">
                 Browse Local Produce
               </Button>
             </Link>

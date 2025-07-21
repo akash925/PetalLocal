@@ -50,7 +50,7 @@ function ExpressCheckoutComponent({ item, quantity, onSuccess }: SmartPaymentBut
       const total = item.price * quantity;
       
       // Create payment intent for immediate purchase
-      const response = await apiRequest("POST", "/api/create-payment-intent", {
+      const paymentResponse = await apiRequest("POST", "/api/create-payment-intent", {
         amount: total,
         items: [{
           id: item.id,
@@ -60,27 +60,17 @@ function ExpressCheckoutComponent({ item, quantity, onSuccess }: SmartPaymentBut
         }],
       });
       
-      if (!response.ok) {
-        if (response.status === 401) {
-          toast({
-            title: "Login Required",
-            description: "Please log in to complete your purchase",
-            variant: "destructive",
-          });
-          // Redirect to login
-          window.location.href = "/login";
-          return;
-        }
-        throw new Error("Payment setup failed");
+      if (!paymentResponse.clientSecret) {
+        throw new Error("Payment setup failed - no client secret");
       }
       
-      const data = await response.json();
+      const { clientSecret } = paymentResponse;
       
       // Confirm payment with express checkout
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/order-confirmation?orderId=${data.orderId}`,
+          return_url: `${window.location.origin}/order-confirmation`,
         },
       });
 

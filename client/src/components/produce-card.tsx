@@ -5,8 +5,9 @@ import { Heart, MapPin, Plus, Minus } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SmartPaymentButton } from "./smart-payment-button";
+import { calculateDistanceToFarm } from "@/lib/distance";
 
 interface ProduceCardProps {
   id: number;
@@ -20,6 +21,8 @@ interface ProduceCardProps {
   isSeasonal?: boolean;
   isHeirloom?: boolean;
   farmName: string;
+  farmLatitude?: number;
+  farmLongitude?: number;
   distance?: number;
 }
 
@@ -34,12 +37,24 @@ export function ProduceCard({
   isSeasonal,
   isHeirloom,
   farmName,
-  distance,
+  farmLatitude,
+  farmLongitude,
+  distance: providedDistance,
 }: ProduceCardProps) {
   const { addItem } = useCart();
   const { toast } = useToast();
   const [quantity, setQuantity] = useState(1);
   const [showQuantitySelector, setShowQuantitySelector] = useState(false);
+  const [distance, setDistance] = useState<number | null>(providedDistance || null);
+
+  // Calculate distance if coordinates provided
+  useEffect(() => {
+    if (farmLatitude && farmLongitude && !providedDistance) {
+      calculateDistanceToFarm(farmLatitude, farmLongitude)
+        .then(setDistance)
+        .catch(() => setDistance(null));
+    }
+  }, [farmLatitude, farmLongitude, providedDistance]);
 
   const handleAddToCart = () => {
     addItem({
@@ -144,6 +159,14 @@ export function ProduceCard({
               </span>
               <span className="text-sm text-gray-500 ml-1">/ {unit}</span>
             </div>
+            {distance !== null && (
+              <p className="text-xs text-green-600 font-medium">
+                {distance < 1 ? `${(distance * 5280).toFixed(0)} ft` : `${distance.toFixed(1)} mi`} away
+              </p>
+            )}
+          </div>
+          
+          <div className="flex items-center justify-between">
             {!showQuantitySelector ? (
               <Button
                 size="sm"

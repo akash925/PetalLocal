@@ -10,7 +10,8 @@ import { useEffect } from "react";
 // Pages
 import Home from "@/pages/home";
 import BrowseProduce from "@/pages/produce/browse";
-import ProduceDetail from "@/pages/produce/[id]";
+import ProduceDetailPage from "@/pages/produce/[id]";
+import ProduceDetail from "@/pages/produce-detail";
 import BrowseFarms from "@/pages/farms/browse";
 import FarmDetail from "@/pages/farms/[id]";
 import Cart from "@/pages/cart";
@@ -39,6 +40,7 @@ function Router() {
       <main className="flex-1">
         <Switch>
           <Route path="/" component={Home} />
+          <Route path="/browse-produce" component={BrowseProduce} />
           <Route path="/produce" component={BrowseProduce} />
           <Route path="/produce/:id" component={ProduceDetail} />
           <Route path="/farms" component={BrowseFarms} />
@@ -46,6 +48,8 @@ function Router() {
           <Route path="/cart" component={Cart} />
           <Route path="/checkout" component={Checkout} />
           <Route path="/order-confirmation" component={OrderConfirmation} />
+          <Route path="/login" component={Login} />
+          <Route path="/signup" component={Register} />
           <Route path="/auth/login" component={Login} />
           <Route path="/auth/register" component={Register} />
           <Route path="/dashboard/farmer" component={FarmerDashboard} />
