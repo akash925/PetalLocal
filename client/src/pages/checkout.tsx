@@ -62,7 +62,7 @@ function CheckoutForm({ clientSecret, onSuccess }: CheckoutFormProps) {
 
   const handleExpressCheckout = async (event: any) => {
     const { error } = await stripe!.confirmPayment({
-      elements,
+      elements: elements!,
       confirmParams: {
         return_url: `${window.location.origin}/order-confirmation`,
       },
@@ -95,8 +95,8 @@ function CheckoutForm({ clientSecret, onSuccess }: CheckoutFormProps) {
           onConfirm={handleExpressCheckout}
           options={{
             buttonType: {
-              applePay: 'pay',
-              googlePay: 'pay',
+              applePay: 'pay' as const,
+              googlePay: 'pay' as const,
             },
             layout: {
               maxColumns: 1,

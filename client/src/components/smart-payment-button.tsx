@@ -50,7 +50,7 @@ function ExpressCheckoutComponent({ item, quantity, onSuccess }: SmartPaymentBut
       const total = item.price * quantity;
       
       // Create payment intent for immediate purchase
-      const paymentResponse = await apiRequest("POST", "/api/create-payment-intent", {
+      const response = await apiRequest("POST", "/api/create-payment-intent", {
         amount: total,
         items: [{
           id: item.id,
@@ -60,11 +60,13 @@ function ExpressCheckoutComponent({ item, quantity, onSuccess }: SmartPaymentBut
         }],
       });
       
-      if (!paymentResponse.clientSecret) {
+      const paymentData = await response.json();
+      
+      if (!paymentData.clientSecret) {
         throw new Error("Payment setup failed - no client secret");
       }
       
-      const { clientSecret } = paymentResponse;
+      const { clientSecret } = paymentData;
       
       // Confirm payment with express checkout
       const { error } = await stripe.confirmPayment({

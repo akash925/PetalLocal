@@ -37,7 +37,7 @@ export function Header() {
   }, []);
 
   // Get unread message count
-  const { data: unreadCount = { count: 0 } } = useQuery({
+  const { data: unreadCount = { count: 0 } } = useQuery<{ count: number }>({
     queryKey: ["/api/messages/unread-count"],
     enabled: isAuthenticated,
   });
