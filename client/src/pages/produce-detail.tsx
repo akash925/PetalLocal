@@ -56,14 +56,30 @@ export default function ProduceDetail() {
   const [, produceParams] = useRoute("/produce/:id");
   const [, flowerParams] = useRoute("/flowers/:id");
   const produceId = produceParams?.id || flowerParams?.id;
+  
+  // Debug logging
+  console.log('ProduceDetail Debug:', {
+    produceParams,
+    flowerParams,
+    produceId,
+    currentUrl: window.location.pathname
+  });
   const [quantity, setQuantity] = useState(1);
   const [distance, setDistance] = useState<number | null>(null);
   const { addItem } = useCart();
   const { toast } = useToast();
 
   const { data: produce, isLoading, error } = useQuery<ProduceItem>({
-    queryKey: ['/api/produce', produceId],
+    queryKey: [`/api/produce/${produceId}`],
     enabled: !!produceId,
+  });
+  
+  // Debug logging for query results
+  console.log('Query Debug:', {
+    produce,
+    isLoading,
+    error,
+    queryEnabled: !!produceId
   });
 
   // Calculate distance when produce data loads
@@ -133,7 +149,7 @@ export default function ProduceDetail() {
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Flower not found</h1>
           <p className="text-gray-600 mb-6">The flower you're looking for doesn't exist.</p>
-          <Link href="/produce/browse">
+          <Link href="/flowers/browse">
             <Button>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Browse
