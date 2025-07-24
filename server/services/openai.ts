@@ -181,6 +181,7 @@ Focus on practical farming insights and accurate yield predictions.`
       
       const analysisResult = {
         success: true,
+        source: 'openai',
         plantType: result.plantType,
         variety: result.variety,
         category: result.category,
