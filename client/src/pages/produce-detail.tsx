@@ -29,21 +29,21 @@ interface ProduceItem {
   description: string;
   category: string;
   variety: string;
-  pricePerUnit: number;
+  pricePerUnit: string | number;
   unit: string;
   imageUrl?: string;
   isOrganic: boolean;
   isSeasonal: boolean;
   isHeirloom: boolean;
   farmId: number;
-  farm: {
+  farm?: {
     id: number;
     name: string;
     city: string;
     state: string;
     address: string;
-    latitude: number;
-    longitude: number;
+    latitude: string | number;
+    longitude: string | number;
     isOrganic: boolean;
   };
   inventory?: {
@@ -68,7 +68,9 @@ export default function ProduceDetail() {
   // Calculate distance when produce data loads
   useEffect(() => {
     if (produce?.farm?.latitude && produce?.farm?.longitude) {
-      calculateDistanceToFarm(produce.farm.latitude, produce.farm.longitude)
+      const lat = typeof produce.farm.latitude === 'string' ? parseFloat(produce.farm.latitude) : produce.farm.latitude;
+      const lng = typeof produce.farm.longitude === 'string' ? parseFloat(produce.farm.longitude) : produce.farm.longitude;
+      calculateDistanceToFarm(lat, lng)
         .then(setDistance)
         .catch(() => setDistance(null));
     }
@@ -80,15 +82,15 @@ export default function ProduceDetail() {
     addItem({
       id: produce.id,
       name: produce.name,
-      price: produce.pricePerUnit,
-      unit: produce.unit,
-      farmName: produce.farm.name,
+      price: typeof produce.pricePerUnit === 'string' ? parseFloat(produce.pricePerUnit) : (produce.pricePerUnit || 0),
+      unit: produce.unit || 'unit',
+      farmName: produce.farm?.name || 'Unknown Farm',
       imageUrl: produce.imageUrl,
     }, quantity);
 
     toast({
       title: "Added to cart",
-      description: `${quantity} ${produce.unit}${quantity > 1 ? 's' : ''} of ${produce.name} added to your cart.`,
+      description: `${quantity} ${produce.unit || 'unit'}${quantity > 1 ? 's' : ''} of ${produce.name} added to your cart.`,
     });
   };
 
@@ -201,13 +203,13 @@ export default function ProduceDetail() {
                 ))}
               </div>
               
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">{produce.name}</h1>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">{produce?.name || 'Unknown Product'}</h1>
               
-              {produce.variety && (
+              {produce?.variety && (
                 <p className="text-lg text-gray-600 mb-4">{produce.variety}</p>
               )}
               
-              <p className="text-gray-700 leading-relaxed">{produce.description}</p>
+              <p className="text-gray-700 leading-relaxed">{produce?.description || 'No description available'}</p>
             </div>
 
             {/* Farm Info */}
@@ -215,10 +217,10 @@ export default function ProduceDetail() {
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-semibold text-gray-900">{produce.farm.name}</h3>
+                    <h3 className="font-semibold text-gray-900">{produce.farm?.name || 'Farm Information'}</h3>
                     <div className="flex items-center text-gray-600 text-sm mt-1">
                       <MapPin className="w-4 h-4 mr-1" />
-                      {produce.farm.city}, {produce.farm.state}
+                      {produce.farm?.city || 'Unknown'}, {produce.farm?.state || 'Unknown'}
                     </div>
                     {distance !== null && (
                       <p className="text-sm text-green-600 mt-1">
@@ -226,11 +228,13 @@ export default function ProduceDetail() {
                       </p>
                     )}
                   </div>
-                  <Link href={`/farms/${produce.farm.id}`}>
-                    <Button variant="outline" size="sm">
-                      Visit Farm
-                    </Button>
-                  </Link>
+                  {produce.farm?.id && (
+                    <Link href={`/farms/${produce.farm.id}`}>
+                      <Button variant="outline" size="sm">
+                        Visit Grower
+                      </Button>
+                    </Link>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -241,15 +245,15 @@ export default function ProduceDetail() {
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <span className="text-3xl font-bold text-gray-900">
-                      ${produce.pricePerUnit.toFixed(2)}
+                      ${typeof produce.pricePerUnit === 'string' ? produce.pricePerUnit : produce.pricePerUnit?.toFixed(2) || '0.00'}
                     </span>
-                    <span className="text-lg text-gray-500 ml-2">/ {produce.unit}</span>
+                    <span className="text-lg text-gray-500 ml-2">/ {produce.unit || 'unit'}</span>
                   </div>
                   {produce.inventory && (
                     <div className="text-right">
                       <p className="text-sm text-gray-600">Available:</p>
                       <p className="font-semibold text-green-600">
-                        {produce.inventory.quantityAvailable} {produce.unit}s
+                        {produce.inventory.quantityAvailable} {produce.unit || 'unit'}s
                       </p>
                     </div>
                   )}

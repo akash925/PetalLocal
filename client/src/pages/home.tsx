@@ -33,7 +33,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative bg-cover bg-center bg-gray-900 h-96 md:h-[500px]" 
         style={{
-          backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://images.unsplash.com/photo-1488459716781-31db52582fe9?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')"
+          backgroundImage: "linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://images.unsplash.com/photo-1441974231531-c6227db76b6e?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')"
         }}>
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center px-4 sm:px-6 lg:px-8 max-w-4xl">
@@ -57,13 +57,13 @@ export default function Home() {
                       window.location.href = `/produce?search=${encodeURIComponent(searchQuery)}`;
                     }
                   }}
-                  className="w-full pl-12 pr-20 py-4 text-lg rounded-xl border-0 shadow-lg"
+                  className="w-full pl-12 pr-24 py-4 text-lg rounded-xl border-0 shadow-lg"
                 />
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center">
                   <Search className="w-6 h-6 text-gray-400" />
                 </div>
                 <Link href={`/produce?search=${encodeURIComponent(searchQuery)}`}>
-                  <Button className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg font-medium">
+                  <Button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-pink-500 hover:bg-pink-600 text-white px-6 py-2 rounded-lg font-medium">
                     Search
                   </Button>
                 </Link>
