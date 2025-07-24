@@ -56,14 +56,6 @@ export default function ProduceDetail() {
   const [, produceParams] = useRoute("/produce/:id");
   const [, flowerParams] = useRoute("/flowers/:id");
   const produceId = produceParams?.id || flowerParams?.id;
-  
-  // Debug logging
-  console.log('ProduceDetail Debug:', {
-    produceParams,
-    flowerParams,
-    produceId,
-    currentUrl: window.location.pathname
-  });
   const [quantity, setQuantity] = useState(1);
   const [distance, setDistance] = useState<number | null>(null);
   const { addItem } = useCart();
@@ -72,14 +64,6 @@ export default function ProduceDetail() {
   const { data: produce, isLoading, error } = useQuery<ProduceItem>({
     queryKey: [`/api/produce/${produceId}`],
     enabled: !!produceId,
-  });
-  
-  // Debug logging for query results
-  console.log('Query Debug:', {
-    produce,
-    isLoading,
-    error,
-    queryEnabled: !!produceId
   });
 
   // Calculate distance when produce data loads

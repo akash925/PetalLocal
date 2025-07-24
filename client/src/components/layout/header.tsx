@@ -93,6 +93,11 @@ export function Header() {
             <Link href="/farms" className={`px-3 py-2 text-sm font-medium ${location === '/farms' ? 'text-pink-600' : 'text-gray-500 hover:text-pink-600'}`}>
               Local Growers
             </Link>
+            {!isAuthenticated && (
+              <Link href="/grower-portal" className={`px-3 py-2 text-sm font-medium ${location === '/grower-portal' ? 'text-pink-600' : 'text-gray-500 hover:text-pink-600'}`}>
+                Sell Flowers
+              </Link>
+            )}
 
             {isAuthenticated && user?.role === 'admin' && (
               <Link href="/dashboard/admin" className={`px-3 py-2 text-sm font-medium ${location === '/dashboard/admin' ? 'text-pink-600' : 'text-gray-500 hover:text-pink-600'}`}>
@@ -185,9 +190,9 @@ export function Header() {
                   <Link href="/auth/login">
                     <Button variant="ghost" size="sm">Sign In</Button>
                   </Link>
-                  <Link href="/auth/register">
-                    <Button size="sm" className="bg-green-500 hover:bg-green-600">
-                      Get Started
+                  <Link href="/grower-portal">
+                    <Button size="sm" className="bg-pink-500 hover:bg-pink-600">
+                      Sell Flowers
                     </Button>
                   </Link>
                 </>
@@ -216,6 +221,11 @@ export function Header() {
               <Link href="/farms" className="px-3 py-2 text-sm font-medium text-gray-700">
                 Local Growers
               </Link>
+              {!isAuthenticated && (
+                <Link href="/grower-portal" className="px-3 py-2 text-sm font-medium text-pink-600 font-semibold">
+                  Sell Flowers
+                </Link>
+              )}
               {isAuthenticated ? (
                 <>
                   {user?.role === 'farmer' && (
