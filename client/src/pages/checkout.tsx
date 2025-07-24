@@ -95,8 +95,8 @@ function CheckoutForm({ clientSecret, onSuccess }: CheckoutFormProps) {
           onConfirm={handleExpressCheckout}
           options={{
             buttonType: {
-              applePay: 'pay' as const,
-              googlePay: 'pay' as const,
+              applePay: 'buy' as const,
+              googlePay: 'buy' as const,
             },
             layout: {
               maxColumns: 1,

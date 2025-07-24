@@ -762,7 +762,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      const { platformFee, farmerAmount } = calculatePlatformFee(amount);
+      const { platformFee, farmerPayout } = calculatePlatformFee(amount);
       const paymentResult = await stripeService.createPaymentIntent(amount, order.id);
       
       if (paymentResult.success) {
@@ -774,7 +774,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           userId: user.id,
           isNewUser,
           platformFee: (platformFee || 0).toFixed(2),
-          farmerAmount: (farmerAmount || 0).toFixed(2)
+          farmerPayout: (farmerPayout || 0).toFixed(2)
         });
       } else {
         logger.paymentFailed(paymentResult.error || "Failed to create payment intent", order.id, amount, user.id);
@@ -861,37 +861,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Calculate platform fee using configurable rate
-      const { platformFee, farmerAmount } = calculatePlatformFee(amount);
+      const { platformFee, farmerPayout } = calculatePlatformFee(amount);
 
-      logger.info('payment', `Order ${order.id} - Total: $${amount}, Platform Fee: $${platformFee || 0}, Farmer Gets: $${farmerAmount || 0}`, {
+      logger.info('payment', `Order ${order.id} - Total: $${amount}, Platform Fee: $${platformFee || 0}, Farmer Gets: $${farmerPayout || 0}`, {
         orderId: order.id,
         amount,
         platformFee,
-        farmerAmount,
-        userId,
+        farmerPayout,
+        userId: req.session?.userId,
       });
 
       const paymentResult = await stripeService.createPaymentIntent(amount, order.id);
       
       if (paymentResult.success) {
-        logger.checkoutCompleted(order.id, userId, amount);
+        logger.checkoutCompleted(order.id, req.session?.userId, amount);
         
         res.json({ 
           clientSecret: paymentResult.clientSecret,
           orderId: order.id,
           platformFee: (platformFee || 0).toFixed(2),
-          farmerAmount: (farmerAmount || 0).toFixed(2)
+          farmerPayout: (farmerPayout || 0).toFixed(2)
         });
       } else {
-        logger.paymentFailed(paymentResult.error || "Failed to create payment intent", order.id, amount, userId);
+        logger.paymentFailed(paymentResult.error || "Failed to create payment intent", order.id, amount, req.session?.userId);
         res.status(500).json({ message: paymentResult.error || "Failed to create payment intent" });
       }
     } catch (error) {
       logger.error('checkout', 'Authenticated checkout processing failed', {
         error: error instanceof Error ? error.message : 'Unknown error',
-        userId,
-        amount,
-        itemCount: items?.length || 0,
+        userId: req.session?.userId,
+        amount: req.body.amount,
+        itemCount: req.body.items?.length || 0,
       });
       res.status(500).json({ message: "Failed to create payment intent" });
     }
@@ -966,7 +966,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const buyer = await storage.getUser(order.buyerId);
       
       // Calculate platform fee
-      const { platformFee, farmerAmount } = calculatePlatformFee(parseFloat(order.totalAmount.toString()));
+      const { platformFee, farmerPayout } = calculatePlatformFee(parseFloat(order.totalAmount.toString()));
       
       // Send confirmation email to buyer
       const buyerEmailResult = await emailService.sendOrderConfirmationToBuyer({
@@ -985,7 +985,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             farmEmail,
             orderId: order.id,
             orderTotal: order.totalAmount,
-            farmerAmount,
+            farmerPayout,
             items: orderItems.filter(item => item.produceItem?.farm?.contactEmail === farmEmail),
             buyerName: `${buyer?.firstName || ''} ${buyer?.lastName || ''}`.trim(),
           });
@@ -1023,7 +1023,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const orderItems = await storage.getOrderItems(orderId);
       const buyer = await storage.getUser(order.buyerId);
-      const { platformFee, farmerAmount } = calculatePlatformFee(parseFloat(order.totalAmount.toString()));
+      const { platformFee, farmerPayout } = calculatePlatformFee(parseFloat(order.totalAmount.toString()));
 
       // Generate receipt content (simplified HTML to text for now)
       const receiptContent = `
@@ -1039,7 +1039,7 @@ ${orderItems.map(item => `- ${item.produceItem?.name || 'Item'}: ${item.quantity
 
 Subtotal: $${order.totalAmount}
 Platform Fee (10%): $${platformFee.toFixed(2)}
-Farmer Receives: $${farmerAmount.toFixed(2)}
+Farmer Receives: $${farmerPayout.toFixed(2)}
 Total: $${order.totalAmount}
 
 Status: ${order.status}
