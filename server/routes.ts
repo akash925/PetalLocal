@@ -804,20 +804,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid amount" });
       }
 
+      // Parse items if it's a string (handle both string and array formats)
+      let parsedItems = items;
+      if (typeof items === 'string') {
+        try {
+          parsedItems = JSON.parse(items);
+        } catch (parseError) {
+          logger.error('checkout', 'Failed to parse items string', {
+            items,
+            error: parseError instanceof Error ? parseError.message : 'Unknown parse error',
+            userId
+          });
+          return res.status(400).json({ message: "Invalid items format" });
+        }
+      }
+
       // Validate items
-      if (!items || items.length === 0) {
-        logger.error('checkout', 'No items provided in authenticated checkout', { itemCount: items?.length || 0, userId });
+      if (!parsedItems || !Array.isArray(parsedItems) || parsedItems.length === 0) {
+        logger.error('checkout', 'No items provided in authenticated checkout', { itemCount: parsedItems?.length || 0, userId });
         return res.status(400).json({ message: "No items provided" });
       }
 
       logger.info('checkout', `Processing authenticated checkout for user ${userId}`, {
         amount,
-        itemCount: items.length,
+        itemCount: parsedItems.length,
         userId,
       });
 
       // Check inventory availability for all items
-      for (const item of items) {
+      for (const item of parsedItems) {
         const inventory = await storage.getInventory(item.id);
         if (!inventory || inventory.quantityAvailable < item.quantity) {
           logger.error('checkout', `Insufficient inventory for item ${item.name}`, {
@@ -840,7 +855,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: "pending",
         paymentStatus: "pending",
         deliveryMethod: "pickup", // Default delivery method
-        items: items.map((item: any) => ({
+        items: parsedItems.map((item: any) => ({
           produceItemId: item.id,
           quantity: item.quantity,
           pricePerUnit: item.price,
@@ -850,7 +865,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const order = await storage.createOrder(orderData);
 
       // Reserve inventory for this order
-      for (const item of items) {
+      for (const item of parsedItems) {
         const inventory = await storage.getInventory(item.id);
         if (inventory) {
           await storage.updateInventory(item.id, {
