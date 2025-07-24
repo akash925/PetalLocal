@@ -293,7 +293,7 @@ export default function ProduceDetail() {
                   <div className="flex justify-between items-center">
                     <span className="font-semibold text-gray-900">Total:</span>
                     <span className="text-2xl font-bold text-green-600">
-                      ${(produce.pricePerUnit * quantity).toFixed(2)}
+                      ${((typeof produce.pricePerUnit === 'string' ? parseFloat(produce.pricePerUnit) : produce.pricePerUnit) * quantity).toFixed(2)}
                     </span>
                   </div>
                 </div>
@@ -313,10 +313,10 @@ export default function ProduceDetail() {
                     item={{
                       id: produce.id,
                       name: produce.name,
-                      price: produce.pricePerUnit,
-                      unit: produce.unit,
-                      farmName: produce.farm.name,
-                      imageUrl: produce.imageUrl,
+                      price: typeof produce.pricePerUnit === 'string' ? parseFloat(produce.pricePerUnit) : (produce.pricePerUnit || 0),
+                      unit: produce.unit || 'unit',
+                      farmName: produce.farm?.name || 'Unknown Farm',
+                      imageUrl: produce.imageUrl || '',
                     }}
                     quantity={quantity}
                     onSuccess={() => {

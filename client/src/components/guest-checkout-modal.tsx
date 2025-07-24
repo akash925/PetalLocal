@@ -46,7 +46,7 @@ export function GuestCheckoutModal({ isOpen, onClose, onSubmit, onSignIn, item, 
   const [isSigningIn, setIsSigningIn] = useState(false);
   const { toast } = useToast();
 
-  const total = item.price * quantity;
+  const total = (item.price || 0) * quantity;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,7 +149,7 @@ export function GuestCheckoutModal({ isOpen, onClose, onSubmit, onSignIn, item, 
                   <h4 className="font-medium">{item.name}</h4>
                   <p className="text-sm text-gray-600">From {item.farmName}</p>
                   <p className="text-sm">
-                    {quantity} {item.unit} × ${item.price.toFixed(2)}
+                    {quantity} {item.unit} × ${(item.price || 0).toFixed(2)}
                   </p>
                 </div>
                 <div className="text-right">
