@@ -41,18 +41,18 @@ export default function Sell() {
   const features = [
     {
       id: "ai-identification",
-      title: "AI Plant Identification",
-      description: "Upload photos of plants and produce for instant AI identification",
+      title: "AI Flower Identification",
+      description: "Upload photos of flowers and plants for instant AI identification",
       icon: Sparkles,
-      color: "bg-purple-500",
-      demo: "Upload any plant photo → Get instant identification, growth stage, and yield predictions"
+      color: "bg-pink-500",
+      demo: "Upload any flower photo → Get instant identification, bloom stage, and seasonal predictions"
     },
     {
       id: "smart-listings",
-      title: "Smart Produce Listings",
+      title: "Smart Flower Listings",
       description: "Create listings with automated form filling from photo analysis",
       icon: Leaf,
-      color: "bg-green-500", 
+      color: "bg-pink-500", 
       demo: "Photo analysis auto-fills: name, category, variety, estimated quantity, and pricing suggestions"
     },
     {
@@ -61,7 +61,7 @@ export default function Sell() {
       description: "Connect directly with buyers in your community",
       icon: MapPin,
       color: "bg-blue-500",
-      demo: "Browse local farms → See fresh produce → Buy directly from farmers in your area"
+      demo: "Browse local growers → See fresh flowers → Buy directly from flower growers in your area"
     },
     {
       id: "instant-payments",
@@ -76,39 +76,39 @@ export default function Sell() {
   const screenshots = [
     {
       device: "mobile",
-      title: "Mobile Plant Identification",
+      title: "Mobile Flower Identification",
       description: "Take photos on-the-go for instant AI analysis",
       image: "mobile-ai-scan",
       features: ["Camera integration", "Instant results", "Growth stage analysis"]
     },
     {
       device: "desktop", 
-      title: "Desktop Farm Dashboard",
-      description: "Manage your farm and produce listings",
+      title: "Desktop Grower Dashboard",
+      description: "Manage your garden and flower listings",
       image: "desktop-dashboard",
       features: ["Smart photo uploader", "Inventory management", "Sales analytics"]
     },
     {
       device: "mobile",
       title: "Mobile Marketplace",
-      description: "Browse and buy fresh local produce",
+      description: "Browse and buy fresh local flowers",
       image: "mobile-browse",
       features: ["Location-based search", "Apple Pay checkout", "Real-time inventory"]
     },
     {
       device: "desktop",
       title: "Desktop Buyer Experience", 
-      description: "Discover farms and produce near you",
+      description: "Discover growers and flowers near you",
       image: "desktop-marketplace",
-      features: ["Interactive maps", "Advanced filtering", "Farm profiles"]
+      features: ["Interactive maps", "Advanced filtering", "Grower profiles"]
     }
   ];
 
   const stats = [
-    { label: "Active Farmers", value: "2,500+", icon: Users },
-    { label: "Produce Varieties", value: "1,200+", icon: Leaf },
+    { label: "Flower Growers", value: "2,500+", icon: Users },
+    { label: "Flower Varieties", value: "1,200+", icon: Leaf },
     { label: "AI Identifications", value: "50,000+", icon: Sparkles },
-    { label: "Local Sales", value: "$2.3M+", icon: TrendingUp }
+    { label: "Flower Sales", value: "$2.3M+", icon: TrendingUp }
   ];
 
   return (
@@ -139,7 +139,7 @@ export default function Sell() {
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
-              <Link href="/produce/browse">
+              <Link href="/flowers/browse">
                 <Button size="lg" variant="outline" className="px-8 py-3 text-lg">
                   <Search className="w-5 h-5 mr-2" />
                   Browse Flowers
@@ -153,7 +153,7 @@ export default function Sell() {
             {stats.map((stat) => (
               <Card key={stat.label} className="text-center border-none shadow-lg">
                 <CardContent className="p-6">
-                  <stat.icon className="w-8 h-8 text-green-600 mx-auto mb-3" />
+                  <stat.icon className="w-8 h-8 text-pink-600 mx-auto mb-3" />
                   <div className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</div>
                   <div className="text-sm text-gray-600">{stat.label}</div>
                 </CardContent>
@@ -168,10 +168,10 @@ export default function Sell() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Everything You Need to Sell Produce
+              Everything You Need to Sell Flowers
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              From AI plant identification to instant payments - we've built the complete platform for modern farming.
+              From AI flower identification to instant payments - we've built the complete platform for modern floriculture.
             </p>
           </div>
 

@@ -101,7 +101,7 @@ export function ProduceCard({
 
   return (
     <Card className="group hover:shadow-md transition-shadow duration-200 overflow-hidden">
-      <Link href={`/produce/${id}`}>
+      <Link href={`/flowers/${id}`}>
         <div className="aspect-w-4 aspect-h-3 bg-gray-100 cursor-pointer">
           {imageUrl ? (
             <img
@@ -143,8 +143,8 @@ export function ProduceCard({
           </Button>
         </div>
         
-        <Link href={`/produce/${id}`}>
-          <h3 className="font-semibold text-gray-900 mb-1 hover:text-green-600 cursor-pointer">
+        <Link href={`/flowers/${id}`}>
+          <h3 className="font-semibold text-gray-900 mb-1 hover:text-pink-600 cursor-pointer">
             {name}
           </h3>
         </Link>

@@ -87,7 +87,7 @@ export function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
-            <Link href="/produce" className={`px-3 py-2 text-sm font-medium ${location === '/produce' ? 'text-pink-600' : 'text-gray-500 hover:text-pink-600'}`}>
+            <Link href="/flowers" className={`px-3 py-2 text-sm font-medium ${location === '/flowers' || location === '/produce' ? 'text-pink-600' : 'text-gray-500 hover:text-pink-600'}`}>
               Browse Flowers
             </Link>
             <Link href="/farms" className={`px-3 py-2 text-sm font-medium ${location === '/farms' ? 'text-pink-600' : 'text-gray-500 hover:text-pink-600'}`}>
@@ -210,11 +210,11 @@ export function Header() {
         {isMobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-gray-200" ref={mobileMenuRef}>
             <div className="flex flex-col space-y-2">
-              <Link href="/produce" className="px-3 py-2 text-sm font-medium text-gray-700">
-                Browse Produce
+              <Link href="/flowers" className="px-3 py-2 text-sm font-medium text-gray-700">
+                Browse Flowers
               </Link>
               <Link href="/farms" className="px-3 py-2 text-sm font-medium text-gray-700">
-                Local Farms
+                Local Growers
               </Link>
               {isAuthenticated ? (
                 <>

@@ -53,8 +53,9 @@ interface ProduceItem {
 }
 
 export default function ProduceDetail() {
-  const [, params] = useRoute("/produce/:id");
-  const produceId = params?.id;
+  const [, produceParams] = useRoute("/produce/:id");
+  const [, flowerParams] = useRoute("/flowers/:id");
+  const produceId = produceParams?.id || flowerParams?.id;
   const [quantity, setQuantity] = useState(1);
   const [distance, setDistance] = useState<number | null>(null);
   const { addItem } = useCart();
@@ -149,7 +150,7 @@ export default function ProduceDetail() {
       <div className="bg-white border-b">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
-            <Link href="/produce/browse">
+            <Link href="/flowers/browse">
               <Button variant="ghost" size="sm">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Browse

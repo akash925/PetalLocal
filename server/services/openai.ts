@@ -55,51 +55,51 @@ class OpenAIService {
   private getFallbackAnalysis(): PlantAnalysisResult {
     const fallbackOptions = [
       {
-        plantType: "Tomato",
-        variety: "Cherry Tomato",
-        category: "vegetables",
-        growthStage: "fruiting",
-        condition: "healthy",
-        confidence: 0.85,
-        estimatedYield: { quantity: 2.5, unit: "lbs", confidence: 0.80 },
-        maturitySeason: { season: "summer", months: ["July", "August"], timeToMaturity: "2-3 weeks" },
-        suggestions: {
-          name: "Fresh Cherry Tomatoes",
-          description: "Sweet, bite-sized perfect for salads",
-          priceRange: "$4.50-$6.00 per lb",
-          inventoryTips: "Harvest when fully red but firm"
-        }
-      },
-      {
-        plantType: "Lettuce",
-        variety: "Butterhead",
-        category: "vegetables", 
-        growthStage: "mature",
+        plantType: "Rose",
+        variety: "Garden Rose",
+        category: "roses",
+        growthStage: "blooming",
         condition: "healthy",
         confidence: 0.88,
-        estimatedYield: { quantity: 12, unit: "heads", confidence: 0.85 },
-        maturitySeason: { season: "spring", months: ["April", "May", "June"], timeToMaturity: "1-2 weeks" },
+        estimatedYield: { quantity: 12, unit: "stems", confidence: 0.85 },
+        maturitySeason: { season: "summer", months: ["June", "July", "August"], timeToMaturity: "Peak bloom now" },
         suggestions: {
-          name: "Organic Butterhead Lettuce",
-          description: "Tender, sweet leaves perfect for salads",
-          priceRange: "$2.50-$3.50 per head",
-          inventoryTips: "Harvest in morning for best quality"
+          name: "Premium Garden Roses",
+          description: "Classic, fragrant roses perfect for bouquets",
+          priceRange: "$3.50-$5.00 per stem",
+          inventoryTips: "Cut early morning for longest vase life"
         }
       },
       {
-        plantType: "Basil",
-        variety: "Sweet Basil",
-        category: "herbs",
-        growthStage: "mature",
+        plantType: "Tulip",
+        variety: "Darwin Hybrid",
+        category: "tulips", 
+        growthStage: "blooming",
         condition: "healthy",
         confidence: 0.90,
-        estimatedYield: { quantity: 8, unit: "bunches", confidence: 0.87 },
-        maturitySeason: { season: "summer", months: ["June", "July", "August"], timeToMaturity: "Ready now" },
+        estimatedYield: { quantity: 20, unit: "stems", confidence: 0.88 },
+        maturitySeason: { season: "spring", months: ["March", "April", "May"], timeToMaturity: "Ready now" },
         suggestions: {
-          name: "Fresh Sweet Basil",
-          description: "Aromatic herb perfect for cooking",
-          priceRange: "$3.00-$4.00 per bunch",
-          inventoryTips: "Pinch flowers to maintain leaf quality"
+          name: "Spring Tulip Stems",
+          description: "Vibrant spring tulips in peak condition",
+          priceRange: "$2.50-$4.00 per stem",
+          inventoryTips: "Harvest when buds show color but aren't fully open"
+        }
+      },
+      {
+        plantType: "Sunflower",
+        variety: "Giant Sunflower",
+        category: "sunflowers",
+        growthStage: "mature",
+        condition: "healthy",
+        confidence: 0.85,
+        estimatedYield: { quantity: 8, unit: "stems", confidence: 0.82 },
+        maturitySeason: { season: "late summer", months: ["August", "September"], timeToMaturity: "2-3 weeks" },
+        suggestions: {
+          name: "Giant Sunflower Heads",
+          description: "Large, cheerful sunflowers perfect for arrangements",
+          priceRange: "$5.00-$8.00 per stem",
+          inventoryTips: "Harvest when petals are fully developed"
         }
       }
     ];
@@ -136,33 +136,39 @@ class OpenAIService {
         messages: [
           {
             role: "system",
-            content: `You are an expert agricultural AI assistant specializing in plant and produce identification with predictive harvest capabilities. Analyze the provided image and identify the plant/produce with high accuracy, focusing on growth stage analysis and yield predictions.
+            content: `You are an expert floriculture AI assistant specializing in flower and flowering plant identification. You ONLY identify flowers, flowering plants, and ornamental plants used in floriculture. 
 
-Return your analysis in JSON format with these fields:
-- plantType: The main type of plant/produce (e.g., "tomato", "apple", "lettuce")
-- variety: Specific variety if identifiable (e.g., "cherry tomato", "honeycrisp apple")
-- category: One of: vegetables, fruits, herbs, grains, nuts, other
-- growthStage: Current growth stage (e.g., "seedling", "flowering", "fruiting", "mature", "harvest ready")
-- condition: Current condition (e.g., "healthy", "ripe", "needs water", "pest damage")
+STRICT REQUIREMENTS:
+1. ONLY analyze images containing flowers, flowering plants, or ornamental flowering specimens
+2. REJECT any images showing: vegetables, fruits, non-flowering plants, people, objects, landscapes, or anything non-floral
+3. For non-flower images, return: {"success": false, "error": "Please upload a clear photo of flowers or flowering plants only"}
+
+For valid flower images, return JSON with these fields:
+- plantType: Flower type (e.g., "Rose", "Tulip", "Lily", "Sunflower", "Petunia")
+- variety: Specific variety (e.g., "Hybrid Tea Rose", "Darwin Tulip", "Asiatic Lily")
+- category: One of: roses, tulips, lilies, sunflowers, daisies, carnations, orchids, seasonal, bouquets, other
+- growthStage: Bloom stage (e.g., "bud", "early bloom", "full bloom", "peak bloom", "fading")
+- condition: Flower condition (e.g., "fresh", "peak condition", "needs water", "past prime")
 - confidence: Confidence level 0-1
-- estimatedYield: Object with quantity (number), unit (string), confidence (0-1)
-- maturitySeason: Object with season (string), months (array), timeToMaturity (string)
+- estimatedYield: Object with quantity (number), unit ("stems", "bunches", "heads"), confidence (0-1)
+- maturitySeason: Object with season, months array, timeToMaturity
 - suggestions: Object with name, description, priceRange, inventoryTips
 
-For growth stage analysis:
-- Identify if plant is in early growth (seedling, vegetative), reproductive (flowering, fruiting), or harvest stages
-- Estimate potential yield based on plant size, health, and fruit/vegetable count visible
-- Predict seasonal maturity timing and harvest windows
-- Provide inventory management suggestions for farmers
+Focus on:
+- Accurate flower identification and variety classification
+- Bloom stage assessment for optimal harvest timing
+- Cut flower quality and vase life predictions
+- Seasonal availability and market pricing insights
+- Inventory management for flower growers
 
-Focus on practical farming insights and accurate yield predictions.`
+REMEMBER: Only process flower/flowering plant images. Reject all other content immediately.`
           },
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: "Please analyze this plant image for identification, growth stage assessment, and yield prediction. Focus on helping farmers plan their inventory and harvest timing."
+                text: "Please analyze this flower image for identification, bloom stage assessment, and cut flower yield prediction. Focus on helping flower growers plan their harvest timing and inventory management. ONLY analyze if this is a flower or flowering plant - reject if not floral content."
               },
               {
                 type: "image_url",
