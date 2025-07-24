@@ -506,10 +506,14 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="vegetables">Vegetables</SelectItem>
-                                  <SelectItem value="fruits">Fruits</SelectItem>
-                                  <SelectItem value="herbs">Herbs</SelectItem>
-                                  <SelectItem value="bakery">Bakery</SelectItem>
+                                  <SelectItem value="roses">Roses</SelectItem>
+                                  <SelectItem value="tulips">Tulips</SelectItem>
+                                  <SelectItem value="sunflowers">Sunflowers</SelectItem>
+                                  <SelectItem value="lilies">Lilies</SelectItem>
+                                  <SelectItem value="daisies">Daisies</SelectItem>
+                                  <SelectItem value="carnations">Carnations</SelectItem>
+                                  <SelectItem value="bouquets">Bouquets</SelectItem>
+                                  <SelectItem value="seasonal">Seasonal Flowers</SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormMessage />

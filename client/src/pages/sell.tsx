@@ -112,34 +112,34 @@ export default function Sell() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50">
       {/* Hero Section */}
       <section className="relative px-6 py-20 lg:py-32">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <Badge variant="outline" className="mb-6 px-4 py-2 text-sm font-medium">
               <Sparkles className="w-4 h-4 mr-2" />
-              AI-Powered Local Farming Platform
+              AI-Powered Local Flower Platform
             </Badge>
             
             <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
-              Sell Fresh Produce,{" "}
-              <span className="text-green-600">Powered by AI</span>
+              Sell Beautiful Flowers,{" "}
+              <span className="text-pink-600">Powered by AI</span>
             </h1>
             
             <p className="text-xl text-gray-600 mb-10 max-w-3xl mx-auto">
-              From backyard gardens to commercial farms - use AI to identify plants, predict yields, 
-              and connect with local buyers. The smartest way to sell fresh produce.
+              From garden blooms to commercial floriculture - use AI to identify flowers, predict seasons, 
+              and connect with local flower lovers. The smartest way to sell fresh flowers.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/signup">
-                <Button size="lg" className="bg-green-600 hover:bg-green-700 px-8 py-3 text-lg">
+              <Link href="/auth/register">
+                <Button size="lg" className="bg-pink-600 hover:bg-pink-700 px-8 py-3 text-lg">
                   Start Selling Now
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
               </Link>
-              <Link href="/browse">
+              <Link href="/produce">
                 <Button size="lg" variant="outline" className="px-8 py-3 text-lg">
                   <Search className="w-5 h-5 mr-2" />
                   Browse Produce

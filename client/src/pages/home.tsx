@@ -24,8 +24,8 @@ export default function Home() {
   const categories = [
     { name: "Roses", count: 120, image: "🌹" },
     { name: "Tulips", count: 85, image: "🌷" },
-    { name: "Wildflowers", count: 45, image: "🌻" },
-    { name: "Bouquets", count: 30, image: "💐" },
+    { name: "Sunflowers", count: 45, image: "🌻" },
+    { name: "Lilies", count: 60, image: "🌺" },
   ];
 
   return (

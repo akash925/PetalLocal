@@ -106,7 +106,7 @@ export default function FarmDetail() {
             {/* Farm Produce */}
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                Fresh Produce from {farmData.name}
+                Fresh Flowers from {farmData.name}
               </h2>
               
               {produce.length > 0 ? (
@@ -131,13 +131,13 @@ export default function FarmDetail() {
               ) : (
                 <div className="text-center py-12">
                   <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <span className="text-gray-400 text-2xl">🌱</span>
+                    <span className="text-gray-400 text-2xl">🌸</span>
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    No produce available
+                    No flowers available
                   </h3>
                   <p className="text-gray-600">
-                    This farm hasn't listed any produce items yet.
+                    This grower hasn't listed any flowers yet.
                   </p>
                 </div>
               )}

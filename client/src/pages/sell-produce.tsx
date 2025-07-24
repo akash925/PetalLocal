@@ -31,27 +31,27 @@ export default function SellProduce() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
       {/* Hero Section */}
       <div className="bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center">
             <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center">
-                <Tractor className="w-8 h-8 text-white" />
+              <div className="w-16 h-16 bg-pink-500 rounded-full flex items-center justify-center">
+                <Sprout className="w-8 h-8 text-white" />
               </div>
             </div>
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Sell Your Fresh Produce
+              Sell Your Beautiful Flowers
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              Join our community of local farmers and connect directly with customers who value fresh, local produce. 
+              Join our community of local flower growers and connect directly with customers who value fresh, beautiful blooms. 
               Set your own prices, manage your inventory, and grow your business.
             </p>
             {!isAuthenticated ? (
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/auth/register?role=farmer">
-                  <Button size="lg" className="bg-green-600 hover:bg-green-700 text-white px-8 py-3">
+                  <Button size="lg" className="bg-pink-600 hover:bg-pink-700 text-white px-8 py-3">
                     Start Selling Today
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
@@ -66,8 +66,8 @@ export default function SellProduce() {
               <div className="text-center">
                 <p className="text-gray-600 mb-4">You're logged in as a buyer.</p>
                 <Link href="/auth/register?role=farmer">
-                  <Button size="lg" className="bg-green-600 hover:bg-green-700 text-white px-8 py-3">
-                    Create Farmer Account
+                  <Button size="lg" className="bg-pink-600 hover:bg-pink-700 text-white px-8 py-3">
+                    Create Grower Account
                     <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
                 </Link>
@@ -210,25 +210,25 @@ export default function SellProduce() {
       </div>
 
       {/* CTA Section */}
-      <div className="bg-green-600 py-16">
+      <div className="bg-pink-600 py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">
             Ready to Start Selling?
           </h2>
-          <p className="text-xl text-green-100 mb-8">
-            Join hundreds of local farmers already selling on FarmDirect
+          <p className="text-xl text-pink-100 mb-8">
+            Join hundreds of local flower growers already selling on PetalLocal
           </p>
           {!isAuthenticated ? (
             <Link href="/auth/register?role=farmer">
-              <Button size="lg" className="bg-white text-green-600 hover:bg-gray-100 px-8 py-3">
-                Create Your Farmer Account
+              <Button size="lg" className="bg-white text-pink-600 hover:bg-gray-100 px-8 py-3">
+                Create Your Grower Account
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
           ) : (
             <Link href="/auth/register?role=farmer">
-              <Button size="lg" className="bg-white text-green-600 hover:bg-gray-100 px-8 py-3">
-                Create Farmer Account
+              <Button size="lg" className="bg-white text-pink-600 hover:bg-gray-100 px-8 py-3">
+                Create Grower Account
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
