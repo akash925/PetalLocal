@@ -47,10 +47,14 @@ export default function BrowseProduce() {
   });
 
   const categories = [
-    "vegetables",
-    "fruits", 
-    "herbs",
-    "bakery",
+    "roses",
+    "tulips", 
+    "sunflowers",
+    "lilies",
+    "daisies",
+    "carnations",
+    "bouquets",
+    "seasonal",
   ];
 
   return (
@@ -58,7 +62,7 @@ export default function BrowseProduce() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Browse Fresh Produce</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-4">Browse Beautiful Flowers</h1>
           
           {/* Search and Filters */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -66,7 +70,7 @@ export default function BrowseProduce() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input
                 type="text"
-                placeholder="Search for produce..."
+                placeholder="Search for flowers..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"

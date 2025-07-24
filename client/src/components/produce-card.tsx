@@ -47,14 +47,14 @@ export function ProduceCard({
   const [showQuantitySelector, setShowQuantitySelector] = useState(false);
   const [distance, setDistance] = useState<number | null>(providedDistance || null);
 
-  // Calculate distance if coordinates provided
-  useEffect(() => {
-    if (farmLatitude && farmLongitude && !providedDistance) {
-      calculateDistanceToFarm(farmLatitude, farmLongitude)
-        .then(setDistance)
-        .catch(() => setDistance(null));
-    }
-  }, [farmLatitude, farmLongitude, providedDistance]);
+  // Disable distance calculation temporarily due to accuracy issues
+  // useEffect(() => {
+  //   if (farmLatitude && farmLongitude && !providedDistance) {
+  //     calculateDistanceToFarm(farmLatitude, farmLongitude)
+  //       .then(setDistance)
+  //       .catch(() => setDistance(null));
+  //   }
+  // }, [farmLatitude, farmLongitude, providedDistance]);
 
   const handleAddToCart = () => {
     addItem({
@@ -110,12 +110,12 @@ export function ProduceCard({
               className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200"
             />
           ) : (
-            <div className="w-full h-48 bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center">
+            <div className="w-full h-48 bg-gradient-to-br from-pink-50 to-pink-100 flex items-center justify-center">
               <div className="text-center">
-                <div className="w-12 h-12 mx-auto mb-2 bg-green-200 rounded-full flex items-center justify-center">
-                  <span className="text-green-600 text-xl">🥕</span>
+                <div className="w-12 h-12 mx-auto mb-2 bg-pink-200 rounded-full flex items-center justify-center">
+                  <span className="text-pink-600 text-xl">🌸</span>
                 </div>
-                <span className="text-green-600 text-sm font-medium">{name}</span>
+                <span className="text-pink-600 text-sm font-medium">{name}</span>
               </div>
             </div>
           )}
@@ -159,11 +159,7 @@ export function ProduceCard({
               </span>
               <span className="text-sm text-gray-500 ml-1">/ {unit}</span>
             </div>
-            {distance !== null && (
-              <p className="text-xs text-green-600 font-medium">
-                {distance < 1 ? `${(distance * 5280).toFixed(0)} ft` : `${distance.toFixed(1)} mi`} away
-              </p>
-            )}
+            {/* Distance temporarily disabled due to accuracy issues */}
           </div>
           
           <div className="flex items-center justify-between">

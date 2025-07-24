@@ -72,8 +72,21 @@ export function InteractiveMap({ farms, onFarmSelect, className = "" }: MapProps
     // Only use farm coordinates for initial center if geolocation will be attempted
     // The geolocation callback will handle centering on user location or farms
 
-    // Create map
-    const map = L.map(mapRef.current).setView([centerLat, centerLng], zoom);
+    // Create map with mobile optimization
+    mapInstanceRef.current = L.map(mapRef.current, {
+      scrollWheelZoom: false,
+      dragging: true,
+      touchZoom: true,
+      doubleClickZoom: true,
+      zoomControl: true,
+      attributionControl: false,
+      tap: true,
+      tapTolerance: 15,
+      zoomSnap: 0.5,
+      zoomDelta: 0.5
+    }).setView([centerLat, centerLng], zoom);
+    
+    const map = mapInstanceRef.current;
 
     // Add OpenStreetMap tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -104,7 +117,7 @@ export function InteractiveMap({ farms, onFarmSelect, className = "" }: MapProps
           <p class="text-sm text-gray-600">${farm.address || 'Address not provided'}</p>
           <p class="text-sm text-gray-600">${farm.city}, ${farm.state}</p>
           <p class="text-xs mt-1 ${farm.isOrganic ? 'text-green-600' : 'text-orange-600'}">
-            ${farm.isOrganic ? 'Organic Farm' : 'Conventional Farm'}
+            ${farm.isOrganic ? 'Organic Flower Grower' : 'Conventional Flower Grower'}
           </p>
         </div>
       `);
@@ -190,7 +203,7 @@ export function InteractiveMap({ farms, onFarmSelect, className = "" }: MapProps
       <div className="space-y-4">
         {/* Interactive Map */}
         <div className="relative">
-          <div ref={mapRef} className="h-96 w-full rounded-lg border border-gray-200" />
+          <div ref={mapRef} className="h-80 sm:h-96 w-full rounded-lg border border-gray-200" />
           
           {/* Legend */}
           <div className="absolute bottom-4 left-4 bg-white p-3 rounded-lg shadow-md border">
@@ -198,11 +211,11 @@ export function InteractiveMap({ farms, onFarmSelect, className = "" }: MapProps
             <div className="space-y-1 text-xs">
               <div className="flex items-center">
                 <div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>
-                <span>Organic Farms</span>
+                <span>Organic Growers</span>
               </div>
               <div className="flex items-center">
                 <div className="w-3 h-3 rounded-full bg-orange-500 mr-2"></div>
-                <span>Conventional Farms</span>
+                <span>Conventional Growers</span>
               </div>
               <div className="flex items-center">
                 <div className="w-3 h-3 rounded-full bg-blue-500 mr-2"></div>
@@ -217,7 +230,7 @@ export function InteractiveMap({ farms, onFarmSelect, className = "" }: MapProps
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
             <h4 className="font-medium text-gray-900 mb-2 flex items-center">
               <MapPin className="w-4 h-4 mr-2 text-yellow-600" />
-              Farms not shown on map (missing coordinates):
+              Growers not shown on map (missing coordinates):
             </h4>
             <div className="space-y-2">
               {farmsWithoutCoords.map((farm) => (

@@ -24,7 +24,7 @@ export default function FarmDetail() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
       </div>
     );
   }
@@ -33,9 +33,9 @@ export default function FarmDetail() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Farm not found</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Grower not found</h1>
           <Link href="/produce">
-            <Button>Browse Produce</Button>
+            <Button>Browse Flowers</Button>
           </Link>
         </div>
       </div>
@@ -55,7 +55,7 @@ export default function FarmDetail() {
             className="w-full h-full object-cover"
           />
         ) : (
-          <div className="w-full h-full bg-gradient-to-r from-green-400 to-green-600 flex items-center justify-center">
+          <div className="w-full h-full bg-gradient-to-r from-pink-400 to-pink-600 flex items-center justify-center">
             <span className="text-white text-4xl font-bold">{farmData.name.charAt(0)}</span>
           </div>
         )}
