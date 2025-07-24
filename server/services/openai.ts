@@ -114,8 +114,11 @@ Focus on practical farming insights and accurate yield predictions.`
         plantType: result.plantType,
         variety: result.variety,
         category: result.category,
+        growthStage: result.growthStage,
         condition: result.condition,
         confidence: result.confidence,
+        estimatedYield: result.estimatedYield,
+        maturitySeason: result.maturitySeason,
         suggestions: result.suggestions,
       };
     } catch (error: any) {
