@@ -287,7 +287,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get farm information
       const farm = await storage.getFarm(item.farmId);
       
-      res.json({ ...item, inventory, farm });
+      // Transform data to match frontend expectations
+      const transformedItem = {
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        category: item.category,
+        variety: item.variety,
+        pricePerUnit: parseFloat(item.pricePerUnit as string),
+        unit: item.unit,
+        imageUrl: item.imageUrl,
+        isOrganic: item.isOrganic,
+        isSeasonal: item.isSeasonal,
+        isHeirloom: item.isHeirloom,
+        farmId: item.farmId,
+        inventory: inventory ? {
+          quantityAvailable: inventory.quantityAvailable,
+          lastUpdated: inventory.lastUpdated
+        } : null,
+        farm: farm ? {
+          id: farm.id,
+          name: farm.name,
+          city: farm.city,
+          state: farm.state,
+          address: farm.address,
+          latitude: parseFloat(farm.latitude as string),
+          longitude: parseFloat(farm.longitude as string),
+          isOrganic: farm.isOrganic
+        } : null
+      };
+      
+      res.json(transformedItem);
     } catch (error) {
       console.error("Get produce item error:", error);
       res.status(500).json({ message: "Failed to get produce item" });

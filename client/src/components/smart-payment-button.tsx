@@ -196,7 +196,8 @@ export function SmartPaymentButton({ item, quantity, onSuccess }: SmartPaymentBu
     
     setIsInitializing(true);
     try {
-      const total = item.price * quantity;
+      const price = typeof item.price === 'string' ? parseFloat(item.price) : item.price;
+      const total = price * quantity;
       const items = [{
         id: item.id,
         name: item.name,

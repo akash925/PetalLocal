@@ -182,10 +182,10 @@ export default function ProduceDetail() {
               ) : (
                 <div className="w-full h-full bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center">
                   <div className="text-center">
-                    <div className="w-24 h-24 mx-auto mb-4 bg-green-200 rounded-full flex items-center justify-center">
-                      <span className="text-green-600 text-4xl">🥕</span>
+                    <div className="w-24 h-24 mx-auto mb-4 bg-pink-200 rounded-full flex items-center justify-center">
+                      <span className="text-pink-600 text-4xl">🌸</span>
                     </div>
-                    <span className="text-green-600 text-xl font-medium">{produce.name}</span>
+                    <span className="text-pink-600 text-xl font-medium">{produce.name}</span>
                   </div>
                 </div>
               )}
@@ -203,7 +203,7 @@ export default function ProduceDetail() {
                 ))}
               </div>
               
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">{produce?.name || 'Unknown Product'}</h1>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">{produce.name}</h1>
               
               {produce?.variety && (
                 <p className="text-lg text-gray-600 mb-4">{produce.variety}</p>
@@ -245,7 +245,7 @@ export default function ProduceDetail() {
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <span className="text-3xl font-bold text-gray-900">
-                      ${typeof produce.pricePerUnit === 'string' ? produce.pricePerUnit : produce.pricePerUnit?.toFixed(2) || '0.00'}
+                      ${(produce.pricePerUnit || 0).toFixed(2)}
                     </span>
                     <span className="text-lg text-gray-500 ml-2">/ {produce.unit || 'unit'}</span>
                   </div>
@@ -293,7 +293,7 @@ export default function ProduceDetail() {
                   <div className="flex justify-between items-center">
                     <span className="font-semibold text-gray-900">Total:</span>
                     <span className="text-2xl font-bold text-green-600">
-                      ${((typeof produce.pricePerUnit === 'string' ? parseFloat(produce.pricePerUnit) : produce.pricePerUnit) * quantity).toFixed(2)}
+                      ${((produce.pricePerUnit || 0) * quantity).toFixed(2)}
                     </span>
                   </div>
                 </div>
@@ -313,7 +313,7 @@ export default function ProduceDetail() {
                     item={{
                       id: produce.id,
                       name: produce.name,
-                      price: typeof produce.pricePerUnit === 'string' ? parseFloat(produce.pricePerUnit) : (produce.pricePerUnit || 0),
+                      price: produce.pricePerUnit || 0,
                       unit: produce.unit || 'unit',
                       farmName: produce.farm?.name || 'Unknown Farm',
                       imageUrl: produce.imageUrl || '',
