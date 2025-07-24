@@ -103,23 +103,25 @@ function ExpressCheckoutComponent({ item, quantity, onSuccess }: SmartPaymentBut
 
   return (
     <div className="w-full">
-      <ExpressCheckoutElement
-        onConfirm={handleExpressCheckout}
-        options={{
-          buttonType: {
-            applePay: 'buy',
-            googlePay: 'buy',
-          },
-          layout: {
-            maxColumns: 1,
-            maxRows: 1,
-          },
-          paymentMethods: {
-            applePay: 'always',
-            googlePay: 'always',
-          },
-        }}
-      />
+      <div className="border border-gray-200 rounded-lg overflow-hidden">
+        <ExpressCheckoutElement
+          onConfirm={handleExpressCheckout}
+          options={{
+            buttonType: {
+              applePay: 'buy',
+              googlePay: 'buy',
+            },
+            layout: {
+              maxColumns: 1,
+              maxRows: 1,
+            },
+            paymentMethods: {
+              applePay: 'always',
+              googlePay: 'always',
+            },
+          }}
+        />
+      </div>
     </div>
   );
 }

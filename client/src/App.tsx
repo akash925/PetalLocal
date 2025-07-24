@@ -42,6 +42,7 @@ function Router() {
           <Route path="/" component={Home} />
           <Route path="/browse-produce" component={BrowseProduce} />
           <Route path="/produce" component={BrowseProduce} />
+          <Route path="/produce/browse" component={BrowseProduce} />
           <Route path="/produce/:id" component={ProduceDetail} />
           <Route path="/farms" component={BrowseFarms} />
           <Route path="/farms/:id" component={FarmDetail} />

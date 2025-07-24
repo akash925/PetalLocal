@@ -54,7 +54,7 @@ export default function Home() {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && searchQuery.trim()) {
-                      window.location.href = `/produce?search=${encodeURIComponent(searchQuery)}`;
+                      window.location.href = `/produce/browse?search=${encodeURIComponent(searchQuery)}`;
                     }
                   }}
                   className="w-full pl-12 pr-2 py-4 text-lg rounded-xl border-0 shadow-lg"
@@ -62,8 +62,8 @@ export default function Home() {
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center">
                   <Search className="w-6 h-6 text-gray-400" />
                 </div>
-                <Link href={`/produce?search=${encodeURIComponent(searchQuery)}`}>
-                  <Button className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg font-medium h-10">
+                <Link href={`/produce/browse?search=${encodeURIComponent(searchQuery)}`}>
+                  <Button className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg font-medium h-10">
                     Search
                   </Button>
                 </Link>
@@ -79,7 +79,7 @@ export default function Home() {
           <h2 className="text-2xl font-bold text-gray-900 text-center mb-8">Browse by Flower Type</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {categories.map((category) => (
-              <Link key={category.name} href={`/produce?category=${category.name.toLowerCase()}`}>
+              <Link key={category.name} href={`/produce/browse?category=${category.name.toLowerCase()}`}>
                 <div className="group cursor-pointer">
                   <div className="aspect-square rounded-xl overflow-hidden bg-gray-100 mb-3 shadow-sm group-hover:shadow-md transition-shadow duration-200 flex items-center justify-center">
                     <span className="text-6xl">{category.image}</span>
@@ -98,7 +98,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-3xl font-bold text-gray-900">Fresh Blooms This Week</h2>
-            <Link href="/produce">
+            <Link href="/produce/browse">
               <Button variant="outline" className="flex items-center">
                 View All
                 <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

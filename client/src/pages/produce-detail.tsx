@@ -130,9 +130,9 @@ export default function ProduceDetail() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Produce not found</h1>
-          <p className="text-gray-600 mb-6">The produce item you're looking for doesn't exist.</p>
-          <Link href="/browse-produce">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Flower not found</h1>
+          <p className="text-gray-600 mb-6">The flower you're looking for doesn't exist.</p>
+          <Link href="/produce/browse">
             <Button>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Browse
@@ -149,7 +149,7 @@ export default function ProduceDetail() {
       <div className="bg-white border-b">
         <div className="max-w-6xl mx-auto px-4 py-4">
           <div className="flex items-center gap-4">
-            <Link href="/browse-produce">
+            <Link href="/produce/browse">
               <Button variant="ghost" size="sm">
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back to Browse

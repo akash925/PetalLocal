@@ -153,9 +153,9 @@ export default function BrowseProduce() {
               <div className="p-4 border-b">
                 <h2 className="text-lg font-semibold text-gray-900 flex items-center">
                   <Map className="w-5 h-5 mr-2 text-green-600" />
-                  Produce Locations
+                  Flower Locations
                 </h2>
-                <p className="text-gray-600 text-sm mt-1">Interactive map showing produce from local farms</p>
+                <p className="text-gray-600 text-sm mt-1">Interactive map showing flowers from local growers</p>
               </div>
               <div className="p-4">
                 <ProduceMap 
@@ -169,7 +169,7 @@ export default function BrowseProduce() {
           )
         ) : (
           <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">No produce found matching your criteria.</p>
+            <p className="text-gray-500 text-lg">No flowers found matching your criteria.</p>
             <Button
               variant="outline"
               className="mt-4"
