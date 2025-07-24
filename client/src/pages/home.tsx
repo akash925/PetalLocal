@@ -22,10 +22,10 @@ export default function Home() {
   });
 
   const categories = [
-    { name: "Vegetables", count: 120, image: "🥕" },
-    { name: "Fruits", count: 85, image: "🍎" },
-    { name: "Herbs", count: 45, image: "🌿" },
-    { name: "Bakery", count: 30, image: "🍞" },
+    { name: "Roses", count: 120, image: "🌹" },
+    { name: "Tulips", count: 85, image: "🌷" },
+    { name: "Wildflowers", count: 45, image: "🌻" },
+    { name: "Bouquets", count: 30, image: "💐" },
   ];
 
   return (
@@ -38,10 +38,10 @@ export default function Home() {
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center px-4 sm:px-6 lg:px-8 max-w-4xl">
             <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
-              Grow Local, Eat Local
+              Bloom Local, Love Local
             </h1>
             <p className="text-xl md:text-2xl text-gray-100 mb-8 max-w-2xl mx-auto">
-              Connect directly with local farmers and gardeners for the freshest produce in your community
+              Connect directly with local flower growers and florists for the most beautiful blooms in your community
             </p>
             
             {/* Search Bar */}
@@ -49,7 +49,7 @@ export default function Home() {
               <div className="relative">
                 <Input
                   type="text"
-                  placeholder="Search for fresh produce..."
+                  placeholder="Search for beautiful flowers..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={(e) => {
@@ -63,7 +63,7 @@ export default function Home() {
                   <Search className="w-6 h-6 text-gray-400" />
                 </div>
                 <Link href={`/produce?search=${encodeURIComponent(searchQuery)}`}>
-                  <Button className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg font-medium">
+                  <Button className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg font-medium">
                     Search
                   </Button>
                 </Link>
@@ -76,7 +76,7 @@ export default function Home() {
       {/* Featured Categories */}
       <section className="py-12 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-2xl font-bold text-gray-900 text-center mb-8">Browse by Category</h2>
+          <h2 className="text-2xl font-bold text-gray-900 text-center mb-8">Browse by Flower Type</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {categories.map((category) => (
               <Link key={category.name} href={`/produce?category=${category.name.toLowerCase()}`}>
@@ -85,7 +85,7 @@ export default function Home() {
                     <span className="text-6xl">{category.image}</span>
                   </div>
                   <h3 className="font-semibold text-gray-900 text-center">{category.name}</h3>
-                  <p className="text-sm text-gray-500 text-center">{category.count}+ items</p>
+                  <p className="text-sm text-gray-500 text-center">{category.count}+ varieties</p>
                 </div>
               </Link>
             ))}
@@ -97,7 +97,7 @@ export default function Home() {
       <section className="py-16 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900">Fresh This Week</h2>
+            <h2 className="text-3xl font-bold text-gray-900">Fresh Blooms This Week</h2>
             <Link href="/produce">
               <Button variant="outline" className="flex items-center">
                 View All
@@ -130,61 +130,61 @@ export default function Home() {
       </section>
 
       {/* How It Works */}
-      <section className="py-16 bg-green-50">
+      <section className="py-16 bg-pink-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">How FarmDirect Works</h2>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">How PetalLocal Works</h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Simple steps to get fresh, local produce from farm to your table
+              Simple steps to get beautiful, fresh flowers from local growers to your home
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Search className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">1. Browse & Search</h3>
               <p className="text-gray-600">
-                Discover fresh produce from local farmers and gardeners in your area. Filter by organic, seasonal, or specialty items.
+                Discover beautiful flowers from local growers and florists in your area. Filter by seasonal, organic, or specialty varieties.
               </p>
             </div>
 
             <div className="text-center">
-              <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <ShoppingCart className="w-8 h-8 text-white" />
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">2. Order & Pay</h3>
               <p className="text-gray-600">
-                Add items to your cart and checkout securely. Choose between home delivery or farm pickup options.
+                Add flowers to your cart and checkout securely. Choose between home delivery or grower pickup options.
               </p>
             </div>
 
             <div className="text-center">
-              <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-16 h-16 bg-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Heart className="w-8 h-8 text-white" />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">3. Enjoy Fresh Food</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">3. Enjoy Beautiful Flowers</h3>
               <p className="text-gray-600">
-                Receive your fresh, locally-grown produce and enjoy the superior taste and quality of farm-direct food.
+                Receive your fresh, locally-grown flowers and enjoy the natural beauty and fragrance of garden-fresh blooms.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Call to Action for Farmers */}
-      <section className="py-16 bg-green-600">
+      {/* Call to Action for Growers */}
+      <section className="py-16 bg-pink-600">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">
-            Are You a Local Farmer?
+            Are You a Local Flower Grower?
           </h2>
-          <p className="text-xl text-green-100 mb-8">
-            Join our community and start selling your fresh produce directly to local customers. 
+          <p className="text-xl text-pink-100 mb-8">
+            Join our community and start selling your beautiful flowers directly to local customers. 
             Build lasting relationships with your community.
           </p>
           <Link href="/sell">
-            <Button size="lg" className="bg-white text-green-600 hover:bg-gray-100 px-8 py-3 text-lg">
+            <Button size="lg" className="bg-white text-pink-600 hover:bg-gray-100 px-8 py-3 text-lg">
               Start Selling Today
             </Button>
           </Link>

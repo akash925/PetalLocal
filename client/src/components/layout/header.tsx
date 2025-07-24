@@ -76,26 +76,26 @@ export function Header() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+              <div className="w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center">
                 <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                  <path d="M10 18c-8 0-10-4.687-10-7 0-3.5 2.5-4 4-4 .474 0 1.755.053 2.5-.5.75-.553 1.5-2.5 3.5-2.5s2.75 1.947 3.5 2.5c.745.553 2.026.5 2.5.5 1.5 0 4 .5 4 4 0 2.313-2 7-10 7z"/>
                 </svg>
               </div>
-              <span className="ml-2 text-xl font-bold text-gray-900">FarmDirect</span>
+              <span className="ml-2 text-xl font-bold text-gray-900">PetalLocal</span>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
-            <Link href="/produce" className={`px-3 py-2 text-sm font-medium ${location === '/produce' ? 'text-green-600' : 'text-gray-500 hover:text-green-600'}`}>
-              Browse Produce
+            <Link href="/produce" className={`px-3 py-2 text-sm font-medium ${location === '/produce' ? 'text-pink-600' : 'text-gray-500 hover:text-pink-600'}`}>
+              Browse Flowers
             </Link>
-            <Link href="/farms" className={`px-3 py-2 text-sm font-medium ${location === '/farms' ? 'text-green-600' : 'text-gray-500 hover:text-green-600'}`}>
-              Local Farms
+            <Link href="/farms" className={`px-3 py-2 text-sm font-medium ${location === '/farms' ? 'text-pink-600' : 'text-gray-500 hover:text-pink-600'}`}>
+              Local Growers
             </Link>
 
             {isAuthenticated && user?.role === 'admin' && (
-              <Link href="/dashboard/admin" className={`px-3 py-2 text-sm font-medium ${location === '/dashboard/admin' ? 'text-green-600' : 'text-gray-500 hover:text-green-600'}`}>
+              <Link href="/dashboard/admin" className={`px-3 py-2 text-sm font-medium ${location === '/dashboard/admin' ? 'text-pink-600' : 'text-gray-500 hover:text-pink-600'}`}>
                 Admin
               </Link>
             )}
@@ -122,7 +122,7 @@ export function Header() {
               <Button variant="ghost" size="sm" className="relative">
                 <ShoppingCart className="w-5 h-5" />
                 {itemCount > 0 && (
-                  <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs bg-green-500">
+                  <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs bg-pink-500">
                     {itemCount}
                   </Badge>
                 )}
@@ -134,16 +134,16 @@ export function Header() {
               {isAuthenticated ? (
                 <div className="relative" ref={userMenuRef}>
                   <div className="flex items-center space-x-2">
-                    <div className="flex items-center space-x-2 px-3 py-1 bg-green-50 rounded-lg cursor-pointer hover:bg-green-100"
+                    <div className="flex items-center space-x-2 px-3 py-1 bg-pink-50 rounded-lg cursor-pointer hover:bg-pink-100"
                          onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}>
-                      <User className="w-4 h-4 text-green-600" />
-                      <span className="text-sm text-green-700 font-medium">
+                      <User className="w-4 h-4 text-pink-600" />
+                      <span className="text-sm text-pink-700 font-medium">
                         {user?.firstName || user?.email}
                       </span>
-                      <span className="text-xs text-green-600 bg-green-100 px-2 py-1 rounded">
+                      <span className="text-xs text-pink-600 bg-pink-100 px-2 py-1 rounded">
                         {user?.role || 'buyer'}
                       </span>
-                      <ChevronDown className="w-4 h-4 text-green-600" />
+                      <ChevronDown className="w-4 h-4 text-pink-600" />
                     </div>
                   </div>
                   
