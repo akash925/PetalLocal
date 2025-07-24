@@ -109,9 +109,10 @@ export function SmartPhotoUploader({
         }
 
         if (analysisData.success) {
+          const sourceText = analysisData.source === 'fallback' ? ' (demo mode)' : '';
           toast({
             title: "AI Analysis Complete",
-            description: `Identified: ${analysisData.plantType || 'Unknown plant'}`,
+            description: `Identified: ${analysisData.plantType || 'Unknown plant'}${sourceText}`,
           });
         }
       } catch (error) {

@@ -10,6 +10,7 @@ import { emailService } from "./services/email";
 import { calculatePlatformFee } from "./config";
 import { instagramService } from "./services/instagram";
 import { openaiService } from "./services/openai";
+import { dataCompressionService } from "./services/data-compression";
 import { logger } from "./services/logger";
 import { 
   authLimiter, 
