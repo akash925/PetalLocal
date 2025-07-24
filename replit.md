@@ -111,6 +111,16 @@ RESTful API endpoints organized by domain:
 - **Start command**: Production starts with `npm run start`
 
 ## Recent Changes
+- July 24, 2025: Enhanced grower marketing portal and comprehensive README documentation
+  - ✅ Created compelling grower marketing portal (/grower-portal) showcasing seller features and benefits
+  - ✅ Added "Sell Flowers" navigation links for non-authenticated users in header and mobile menu
+  - ✅ Updated main CTA button from "Get Started" to "Sell Flowers" directing to grower portal
+  - ✅ Wrote comprehensive README with detailed plugin tool documentation and PetalLocal rebranding
+  - ✅ Included MIT license and Copyright 2025 Conmitto Inc in documentation
+  - ✅ Documented all AI features, smart photo management, mapping system, and analytics tools
+  - ✅ Fixed flower detail page data loading issues and removed debug logging
+  - Platform now features professional grower marketing portal and complete documentation
+
 - July 24, 2025: Complete database transformation with authentic flower marketplace data
   - ✅ Deleted all test produce/farm data and replaced with realistic flower inventory
   - ✅ Created 6 authentic flower farms with specialized offerings (roses, lilies, tulips, sunflowers, etc.)
