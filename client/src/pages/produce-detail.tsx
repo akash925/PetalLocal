@@ -29,7 +29,7 @@ interface ProduceItem {
   description: string;
   category: string;
   variety: string;
-  pricePerUnit: string | number;
+  pricePerUnit: number;
   unit: string;
   imageUrl?: string;
   isOrganic: boolean;
@@ -42,8 +42,8 @@ interface ProduceItem {
     city: string;
     state: string;
     address: string;
-    latitude: string | number;
-    longitude: string | number;
+    latitude: number;
+    longitude: number;
     isOrganic: boolean;
   };
   inventory?: {
@@ -68,8 +68,8 @@ export default function ProduceDetail() {
   // Calculate distance when produce data loads
   useEffect(() => {
     if (produce?.farm?.latitude && produce?.farm?.longitude) {
-      const lat = typeof produce.farm.latitude === 'string' ? parseFloat(produce.farm.latitude) : produce.farm.latitude;
-      const lng = typeof produce.farm.longitude === 'string' ? parseFloat(produce.farm.longitude) : produce.farm.longitude;
+      const lat = produce.farm.latitude;
+      const lng = produce.farm.longitude;
       calculateDistanceToFarm(lat, lng)
         .then(setDistance)
         .catch(() => setDistance(null));
@@ -82,7 +82,7 @@ export default function ProduceDetail() {
     addItem({
       id: produce.id,
       name: produce.name,
-      price: typeof produce.pricePerUnit === 'string' ? parseFloat(produce.pricePerUnit) : (produce.pricePerUnit || 0),
+      price: produce.pricePerUnit || 0,
       unit: produce.unit || 'unit',
       farmName: produce.farm?.name || 'Unknown Farm',
       imageUrl: produce.imageUrl,
@@ -119,8 +119,8 @@ export default function ProduceDetail() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading produce details...</p>
+          <div className="animate-spin w-8 h-8 border-4 border-pink-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading flower details...</p>
         </div>
       </div>
     );
@@ -180,7 +180,7 @@ export default function ProduceDetail() {
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center">
+                <div className="w-full h-full bg-gradient-to-br from-pink-50 to-pink-100 flex items-center justify-center">
                   <div className="text-center">
                     <div className="w-24 h-24 mx-auto mb-4 bg-pink-200 rounded-full flex items-center justify-center">
                       <span className="text-pink-600 text-4xl">🌸</span>
@@ -223,7 +223,7 @@ export default function ProduceDetail() {
                       {produce.farm?.city || 'Unknown'}, {produce.farm?.state || 'Unknown'}
                     </div>
                     {distance !== null && (
-                      <p className="text-sm text-green-600 mt-1">
+                      <p className="text-sm text-pink-600 mt-1">
                         {formatDistance(distance)}
                       </p>
                     )}
@@ -245,14 +245,14 @@ export default function ProduceDetail() {
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <span className="text-3xl font-bold text-gray-900">
-                      ${(produce.pricePerUnit || 0).toFixed(2)}
+                      ${produce.pricePerUnit?.toFixed(2) || '0.00'}
                     </span>
                     <span className="text-lg text-gray-500 ml-2">/ {produce.unit || 'unit'}</span>
                   </div>
                   {produce.inventory && (
                     <div className="text-right">
                       <p className="text-sm text-gray-600">Available:</p>
-                      <p className="font-semibold text-green-600">
+                      <p className="font-semibold text-pink-600">
                         {produce.inventory.quantityAvailable} {produce.unit || 'unit'}s
                       </p>
                     </div>
@@ -292,7 +292,7 @@ export default function ProduceDetail() {
                 <div className="bg-gray-50 rounded-lg p-4 mb-6">
                   <div className="flex justify-between items-center">
                     <span className="font-semibold text-gray-900">Total:</span>
-                    <span className="text-2xl font-bold text-green-600">
+                    <span className="text-2xl font-bold text-pink-600">
                       ${((produce.pricePerUnit || 0) * quantity).toFixed(2)}
                     </span>
                   </div>
@@ -302,7 +302,7 @@ export default function ProduceDetail() {
                 <div className="space-y-3">
                   <Button
                     onClick={handleAddToCart}
-                    className="w-full bg-green-500 hover:bg-green-600 text-white py-3"
+                    className="w-full bg-pink-500 hover:bg-pink-600 text-white py-3"
                     size="lg"
                   >
                     Add to Cart
@@ -334,15 +334,15 @@ export default function ProduceDetail() {
             <div className="grid grid-cols-2 gap-4">
               <Card>
                 <CardContent className="p-4 text-center">
-                  <Truck className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                  <Truck className="w-8 h-8 text-pink-500 mx-auto mb-2" />
                   <h4 className="font-semibold text-gray-900 mb-1">Pickup Available</h4>
-                  <p className="text-sm text-gray-600">Farm pickup available</p>
+                  <p className="text-sm text-gray-600">Grower pickup available</p>
                 </CardContent>
               </Card>
               
               <Card>
                 <CardContent className="p-4 text-center">
-                  <Calendar className="w-8 h-8 text-green-500 mx-auto mb-2" />
+                  <Calendar className="w-8 h-8 text-pink-500 mx-auto mb-2" />
                   <h4 className="font-semibold text-gray-900 mb-1">Fresh Daily</h4>
                   <p className="text-sm text-gray-600">Harvested to order</p>
                 </CardContent>
