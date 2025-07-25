@@ -94,7 +94,7 @@ export function Header() {
               Local Growers
             </Link>
             {!isAuthenticated && (
-              <Link href="/grower-portal" className={`px-3 py-2 text-sm font-medium ${location === '/grower-portal' ? 'text-pink-600' : 'text-gray-500 hover:text-pink-600'}`}>
+              <Link href="/sell" className={`px-3 py-2 text-sm font-medium ${location === '/sell' ? 'text-pink-600' : 'text-gray-500 hover:text-pink-600'}`}>
                 Sell Flowers
               </Link>
             )}
@@ -190,7 +190,7 @@ export function Header() {
                   <Link href="/auth/login">
                     <Button variant="ghost" size="sm">Sign In</Button>
                   </Link>
-                  <Link href="/grower-portal">
+                  <Link href="/sell">
                     <Button size="sm" className="bg-pink-500 hover:bg-pink-600">
                       Sell Flowers
                     </Button>
@@ -222,7 +222,7 @@ export function Header() {
                 Local Growers
               </Link>
               {!isAuthenticated && (
-                <Link href="/grower-portal" className="px-3 py-2 text-sm font-medium text-pink-600 font-semibold">
+                <Link href="/sell" className="px-3 py-2 text-sm font-medium text-pink-600 font-semibold">
                   Sell Flowers
                 </Link>
               )}

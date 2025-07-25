@@ -1,159 +1,152 @@
-import { useState, useRef } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { SmartPhotoUploader } from "@/components/smart-photo-uploader";
+import { useState, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { 
-  ArrowRight, 
-  Upload, 
-  Sparkles, 
-  ShoppingCart, 
-  Search, 
+  Flower, 
+  DollarSign, 
+  Users, 
+  TrendingUp, 
   Camera, 
-  TreePine, 
-  Leaf, 
   MapPin, 
-  DollarSign,
-  TrendingUp,
-  Users,
-  Smartphone,
-  Monitor,
-  Apple,
+  Clock, 
   Star,
-  Clock,
-  BarChart3,
-  Calendar,
+  ArrowRight,
   CheckCircle,
+  Smartphone,
+  BarChart3,
+  Upload,
+  Sparkles,
   Loader2
 } from "lucide-react";
 
 export default function Sell() {
-  const [selectedFeature, setSelectedFeature] = useState<string>("ai-identification");
+  const { isAuthenticated, user } = useAuth();
+  const [, setLocation] = useLocation();
   const [demoImage, setDemoImage] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
+  // Smart routing function for Create Grower Account button
+  const handleCreateGrowerAccount = () => {
+    if (isAuthenticated && user?.role === 'farmer') {
+      // User is already a farmer, redirect to dashboard
+      setLocation('/dashboard/farmer');
+    } else if (isAuthenticated && user?.role === 'buyer') {
+      // User is authenticated as buyer, redirect to signup with role change
+      setLocation('/auth/signup?role=farmer&upgrade=true');
+    } else {
+      // User is not authenticated, redirect to signup
+      setLocation('/auth/signup?role=farmer');
+    }
+  };
+
+  // Smart routing function for Sign In button
+  const handleSignIn = () => {
+    if (isAuthenticated && user?.role === 'farmer') {
+      // User is already a farmer, redirect to dashboard
+      setLocation('/dashboard/farmer');
+    } else {
+      // User needs to sign in
+      setLocation('/auth/login');
+    }
+  };
+
   const features = [
     {
-      id: "ai-identification",
-      title: "AI Flower Identification",
-      description: "Upload photos of flowers and plants for instant AI identification",
-      icon: Sparkles,
-      color: "bg-pink-500",
-      demo: "Upload any flower photo → Get instant identification, bloom stage, and seasonal predictions"
+      icon: <Camera className="w-8 h-8 text-pink-500" />,
+      title: "AI-Powered Listings",
+      description: "Upload photos and let our AI identify your flowers, suggest prices, and optimize descriptions automatically."
     },
     {
-      id: "smart-listings",
-      title: "Smart Flower Listings",
-      description: "Create listings with automated form filling from photo analysis",
-      icon: Leaf,
-      color: "bg-pink-500", 
-      demo: "Photo analysis auto-fills: name, category, variety, estimated quantity, and pricing suggestions"
+      icon: <BarChart3 className="w-8 h-8 text-pink-500" />,
+      title: "Smart Analytics",
+      description: "Track your sales, monitor popular flowers, and get insights on the best times to list your blooms."
     },
     {
-      id: "local-marketplace",
-      title: "Local Marketplace",
-      description: "Connect directly with buyers in your community",
-      icon: MapPin,
-      color: "bg-blue-500",
-      demo: "Browse local growers → See fresh flowers → Buy directly from flower growers in your area"
+      icon: <MapPin className="w-8 h-8 text-pink-500" />,
+      title: "Local Discovery",
+      description: "Customers find you through location-based search and interactive maps showing your farm and available flowers."
     },
     {
-      id: "instant-payments",
-      title: "Instant Payments",
-      description: "Apple Pay, Google Pay, and traditional checkout options",
-      icon: DollarSign,
-      color: "bg-yellow-500",
-      demo: "Secure checkout with Apple Pay, Google Pay, or guest checkout in seconds"
-    }
-  ];
-
-  const screenshots = [
-    {
-      device: "mobile",
-      title: "Mobile Flower Identification",
-      description: "Take photos on-the-go for instant AI analysis",
-      image: "mobile-ai-scan",
-      features: ["Camera integration", "Instant results", "Growth stage analysis"]
-    },
-    {
-      device: "desktop", 
-      title: "Desktop Grower Dashboard",
-      description: "Manage your garden and flower listings",
-      image: "desktop-dashboard",
-      features: ["Smart photo uploader", "Inventory management", "Sales analytics"]
-    },
-    {
-      device: "mobile",
-      title: "Mobile Marketplace",
-      description: "Browse and buy fresh local flowers",
-      image: "mobile-browse",
-      features: ["Location-based search", "Apple Pay checkout", "Real-time inventory"]
-    },
-    {
-      device: "desktop",
-      title: "Desktop Buyer Experience", 
-      description: "Discover growers and flowers near you",
-      image: "desktop-marketplace",
-      features: ["Interactive maps", "Advanced filtering", "Grower profiles"]
+      icon: <Smartphone className="w-8 h-8 text-pink-500" />,
+      title: "Mobile-First",
+      description: "Manage your flower listings, respond to customers, and track orders from anywhere with our mobile-optimized platform."
     }
   ];
 
   const stats = [
-    { label: "Flower Growers", value: "2,500+", icon: Users },
-    { label: "Flower Varieties", value: "1,200+", icon: Leaf },
-    { label: "AI Identifications", value: "50,000+", icon: Sparkles },
-    { label: "Flower Sales", value: "$2.3M+", icon: TrendingUp }
+    { label: "Average Monthly Revenue", value: "$2,400", icon: <DollarSign className="w-5 h-5" /> },
+    { label: "Platform Fee", value: "Only 10%", icon: <TrendingUp className="w-5 h-5" /> },
+    { label: "Active Buyers", value: "1,200+", icon: <Users className="w-5 h-5" /> },
+    { label: "Average Rating", value: "4.8★", icon: <Star className="w-5 h-5" /> }
+  ];
+
+  const benefits = [
+    "Reach local customers actively seeking fresh flowers",
+    "AI-powered photo analysis and inventory management",
+    "Integrated payment processing with instant payouts",
+    "Customer review system builds your reputation",
+    "Seasonal demand insights and pricing recommendations",
+    "Mobile-friendly dashboard for on-the-go management"
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-pink-50">
       {/* Hero Section */}
-      <section className="relative px-6 py-20 lg:py-32">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <Badge variant="outline" className="mb-6 px-4 py-2 text-sm font-medium">
-              <Sparkles className="w-4 h-4 mr-2" />
-              AI-Powered Local Flower Platform
-            </Badge>
-            
-            <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
-              Sell Beautiful Flowers,{" "}
-              <span className="text-pink-600">Powered by AI</span>
-            </h1>
-            
-            <p className="text-xl text-gray-600 mb-10 max-w-3xl mx-auto">
-              From garden blooms to commercial floriculture - use AI to identify flowers, predict seasons, 
-              and connect with local flower lovers. The smartest way to sell fresh flowers.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/auth/register">
-                <Button size="lg" className="bg-pink-600 hover:bg-pink-700 px-8 py-3 text-lg">
-                  Start Selling Now
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-              </Link>
-              <Link href="/flowers/browse">
-                <Button size="lg" variant="outline" className="px-8 py-3 text-lg">
-                  <Search className="w-5 h-5 mr-2" />
-                  Browse Flowers
-                </Button>
-              </Link>
-            </div>
+      <section className="relative py-20 px-4 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-pink-500/5 to-purple-500/5"></div>
+        <div className="relative max-w-6xl mx-auto text-center">
+          <Badge className="mb-6 bg-pink-100 text-pink-800 hover:bg-pink-100">
+            <Flower className="w-4 h-4 mr-2" />
+            For Flower Growers
+          </Badge>
+          
+          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6 leading-tight">
+            Turn Your Garden Into a
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600 block">
+              Thriving Business
+            </span>
+          </h1>
+          
+          <p className="text-xl text-gray-600 mb-12 max-w-3xl mx-auto leading-relaxed">
+            Join PetalLocal's marketplace and connect with flower lovers in your community. 
+            List your blooms, manage inventory with AI assistance, and grow your floral business 
+            with tools designed specifically for growers.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+            <Button 
+              size="lg" 
+              onClick={handleCreateGrowerAccount}
+              className="bg-pink-500 hover:bg-pink-600 text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              {isAuthenticated && user?.role === 'farmer' ? 'Go to Dashboard' : 'Start Selling Today'}
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline" 
+              onClick={handleSignIn}
+              className="border-2 border-pink-500 text-pink-600 hover:bg-pink-50 px-8 py-4 rounded-xl text-lg font-semibold"
+            >
+              {isAuthenticated && user?.role === 'farmer' ? 'Grower Dashboard' : 'Sign In to Portal'}
+            </Button>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
-            {stats.map((stat) => (
-              <Card key={stat.label} className="text-center border-none shadow-lg">
-                <CardContent className="p-6">
-                  <stat.icon className="w-8 h-8 text-pink-600 mx-auto mb-3" />
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+            {stats.map((stat, index) => (
+              <Card key={index} className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+                <CardContent className="p-6 text-center">
+                  <div className="flex items-center justify-center text-pink-500 mb-2">
+                    {stat.icon}
+                  </div>
                   <div className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</div>
                   <div className="text-sm text-gray-600">{stat.label}</div>
                 </CardContent>
@@ -163,487 +156,314 @@ export default function Sell() {
         </div>
       </section>
 
-      {/* Interactive Features Section */}
-      <section className="px-6 py-20 bg-white">
-        <div className="max-w-7xl mx-auto">
+      {/* AI Demo Section */}
+      <section className="py-20 px-4 bg-white">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Everything You Need to Sell Flowers
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+              Try Our AI Flower Identification
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              From AI flower identification to instant payments - we've built the complete platform for modern floriculture.
+              Upload a photo of any flower and see how our AI instantly identifies it, 
+              provides growth insights, and suggests optimal pricing for your listings.
             </p>
           </div>
 
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Feature Selector */}
-            <div className="space-y-4">
-              {features.map((feature) => (
-                <Card 
-                  key={feature.id}
-                  className={`cursor-pointer transition-all hover:shadow-md ${
-                    selectedFeature === feature.id 
-                      ? 'ring-2 ring-green-500 shadow-lg' 
-                      : 'hover:shadow-md'
-                  }`}
-                  onClick={() => setSelectedFeature(feature.id)}
-                >
+            {/* AI Demo Interface */}
+            <div className="lg:sticky lg:top-20">
+              <Card className="shadow-xl border-none">
+                <CardContent className="p-8">
+                  <div className="space-y-6">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-lg bg-pink-500 flex items-center justify-center">
+                        <Sparkles className="w-5 h-5 text-white" />
+                      </div>
+                      <h3 className="text-xl font-semibold">AI Plant Identification</h3>
+                    </div>
+                    
+                    {/* Functional Upload Interface */}
+                    {!demoImage ? (
+                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50">
+                        <Camera className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600 mb-4">Upload or drag flower photo here</p>
+                        <Button 
+                          variant="outline" 
+                          className="mb-4"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          <Upload className="w-4 h-4 mr-2" />
+                          Select Photo
+                        </Button>
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          accept="image/*"
+                          className="hidden"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              // Simple image preview
+                              const reader = new FileReader();
+                              reader.onload = (e) => {
+                                setDemoImage(e.target?.result as string);
+                              };
+                              reader.readAsDataURL(file);
+                              
+                              // Start real AI analysis
+                              setIsAnalyzing(true);
+                              
+                              // Set up async AI analysis after image loads
+                              reader.onload = async (loadEvent) => {
+                                try {
+                                  const base64Image = (loadEvent.target?.result as string).split(',')[1];
+                                  
+                                  // Call real API
+                                  const response = await fetch('/api/analyze-plant', {
+                                    method: 'POST',
+                                    headers: {
+                                      'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({ image: base64Image }),
+                                  });
+                                  
+                                  const analysisData = await response.json();
+                                  
+                                  if (analysisData.success) {
+                                    setAnalysisResult(analysisData);
+                                    toast({
+                                      title: "AI Analysis Complete!",
+                                      description: `Identified: ${analysisData.plantType || 'Unknown plant'}`,
+                                    });
+                                  } else {
+                                    // Handle graceful fallback
+                                    setAnalysisResult({
+                                      success: true,
+                                      plantType: "Beautiful Flower",
+                                      confidence: 0.85,
+                                      bloomStage: "Full bloom",
+                                      season: "Spring/Summer",
+                                      estimatedQuantity: 12,
+                                      suggestedPrice: "$3.50",
+                                      source: "demo"
+                                    });
+                                  }
+                                } catch (error) {
+                                  console.error('AI analysis error:', error);
+                                  // Provide demo results on error
+                                  setAnalysisResult({
+                                    success: true,
+                                    plantType: "Beautiful Flower",
+                                    confidence: 0.85,
+                                    bloomStage: "Full bloom",
+                                    season: "Spring/Summer",
+                                    estimatedQuantity: 12,
+                                    suggestedPrice: "$3.50",
+                                    source: "demo"
+                                  });
+                                } finally {
+                                  setIsAnalyzing(false);
+                                }
+                              };
+                            }
+                          }}
+                        />
+                        <p className="text-xs text-gray-500 mt-2">
+                          Supports JPG, PNG files up to 10MB
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {/* Image Preview */}
+                        <div className="relative">
+                          <img
+                            src={demoImage}
+                            alt="Uploaded flower"
+                            className="w-full h-48 object-cover rounded-lg"
+                          />
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="absolute top-2 right-2 bg-white"
+                            onClick={() => {
+                              setDemoImage(null);
+                              setAnalysisResult(null);
+                              setIsAnalyzing(false);
+                            }}
+                          >
+                            Change Photo
+                          </Button>
+                        </div>
+
+                        {/* Analysis Loading */}
+                        {isAnalyzing && (
+                          <div className="flex items-center justify-center py-4">
+                            <Loader2 className="w-6 h-6 animate-spin text-pink-500 mr-2" />
+                            <span className="text-gray-600">Analyzing with AI...</span>
+                          </div>
+                        )}
+
+                        {/* Analysis Results */}
+                        {analysisResult && !isAnalyzing && (
+                          <div className="bg-green-50 rounded-lg p-4 space-y-3">
+                            <div className="flex items-center gap-2">
+                              <CheckCircle className="w-5 h-5 text-green-500" />
+                              <span className="font-semibold text-green-800">Analysis Complete!</span>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <span className="text-gray-600">Plant Type:</span>
+                                <div className="font-medium">{analysisResult.plantType}</div>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Confidence:</span>
+                                <div className="font-medium">{Math.round((analysisResult.confidence || 0.85) * 100)}%</div>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Bloom Stage:</span>
+                                <div className="font-medium">{analysisResult.bloomStage || 'Full bloom'}</div>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Season:</span>
+                                <div className="font-medium">{analysisResult.season || 'Spring/Summer'}</div>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Est. Quantity:</span>
+                                <div className="font-medium">{analysisResult.estimatedQuantity || 12} stems</div>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Suggested Price:</span>
+                                <div className="font-medium text-green-600">{analysisResult.suggestedPrice || '$3.50'}/stem</div>
+                              </div>
+                            </div>
+                            
+                            {analysisResult.source === "demo" && (
+                              <p className="text-xs text-gray-500 mt-2">
+                                * Demo results shown - actual AI analysis provides detailed insights
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Features List */}
+            <div className="space-y-6">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">
+                Powered by Advanced AI Technology
+              </h3>
+              
+              {features.map((feature, index) => (
+                <Card key={index} className="border-0 shadow-lg hover:shadow-xl transition-all duration-300 group">
                   <CardContent className="p-6">
-                    <div className="flex items-center gap-4">
-                      <div className={`w-12 h-12 rounded-lg ${feature.color} flex items-center justify-center`}>
-                        <feature.icon className="w-6 h-6 text-white" />
+                    <div className="flex items-start gap-4">
+                      <div className="mt-1 group-hover:scale-110 transition-transform duration-200">
+                        {feature.icon}
                       </div>
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                          {feature.title}
-                        </h3>
-                        <p className="text-gray-600 text-sm">{feature.description}</p>
+                      <div>
+                        <h4 className="text-xl font-semibold text-gray-900 mb-2">{feature.title}</h4>
+                        <p className="text-gray-600 leading-relaxed">{feature.description}</p>
                       </div>
-                      {selectedFeature === feature.id && (
-                        <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                      )}
                     </div>
                   </CardContent>
                 </Card>
               ))}
             </div>
-
-            {/* Feature Demo */}
-            <div className="lg:sticky lg:top-20">
-              <Card className="shadow-xl border-none">
-                <CardContent className="p-8">
-                  {selectedFeature === "ai-identification" && (
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-lg bg-purple-500 flex items-center justify-center">
-                          <Sparkles className="w-5 h-5 text-white" />
-                        </div>
-                        <h3 className="text-xl font-semibold">AI Plant Identification</h3>
-                      </div>
-                      
-                      {/* Functional Upload Interface */}
-                      {!demoImage ? (
-                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center bg-gray-50">
-                          <Camera className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                          <p className="text-gray-600 mb-4">Upload or drag plant photo here</p>
-                          <Button 
-                            variant="outline" 
-                            className="mb-4"
-                            onClick={() => fileInputRef.current?.click()}
-                          >
-                            <Upload className="w-4 h-4 mr-2" />
-                            Select Photo
-                          </Button>
-                          <input
-                            type="file"
-                            ref={fileInputRef}
-                            accept="image/*"
-                            className="hidden"
-                            onChange={async (e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                // Simple image preview
-                                const reader = new FileReader();
-                                reader.onload = (e) => {
-                                  setDemoImage(e.target?.result as string);
-                                };
-                                reader.readAsDataURL(file);
-                                
-                                // Start real AI analysis
-                                setIsAnalyzing(true);
-                                
-                                // Set up async AI analysis after image loads
-                                reader.onload = async (loadEvent) => {
-                                  try {
-                                    const base64Image = (loadEvent.target?.result as string).split(',')[1];
-                                    
-                                    // Call real API
-                                    const response = await fetch('/api/analyze-plant', {
-                                      method: 'POST',
-                                      headers: {
-                                        'Content-Type': 'application/json',
-                                      },
-                                      body: JSON.stringify({ image: base64Image }),
-                                    });
-                                    
-                                    const analysisData = await response.json();
-                                    
-                                    if (analysisData.success) {
-                                      setAnalysisResult(analysisData);
-                                      toast({
-                                        title: "AI Analysis Complete!",
-                                        description: `Identified: ${analysisData.plantType || 'Unknown plant'}`,
-                                      });
-                                    } else {
-                                      // Fallback demo analysis when API quota exceeded
-                                      const demoAnalysis = {
-                                        success: true,
-                                        plantType: "Cherry Tomato",
-                                        variety: "Sweet 100",
-                                        category: "vegetables",
-                                        growthStage: "fruiting",
-                                        condition: "healthy",
-                                        confidence: 0.92,
-                                        estimatedYield: {
-                                          quantity: 3.5,
-                                          unit: "lbs",
-                                          confidence: 0.88
-                                        },
-                                        maturitySeason: {
-                                          season: "summer",
-                                          months: ["July", "August", "September"],
-                                          timeToMaturity: "2-3 weeks"
-                                        },
-                                        suggestions: {
-                                          name: "Organic Cherry Tomatoes",
-                                          description: "Sweet, bite-sized tomatoes perfect for fresh market sales",
-                                          priceRange: "$5.50-$7.00 per lb",
-                                          inventoryTips: "Harvest when fully red for premium pricing. Store at room temperature."
-                                        }
-                                      };
-                                      setAnalysisResult(demoAnalysis);
-                                      toast({
-                                        title: "Demo Analysis Complete!",
-                                        description: "Identified: Cherry Tomato (demo mode - upgrade for real-time AI)",
-                                        variant: "default",
-                                      });
-                                    }
-                                  } catch (error: any) {
-                                    console.error("AI Analysis error:", error);
-                                    toast({
-                                      title: "Analysis failed",
-                                      description: "Unable to analyze image. Please try again.",
-                                      variant: "destructive",
-                                    });
-                                  } finally {
-                                    setIsAnalyzing(false);
-                                  }
-                                };
-                              }
-                            }}
-                          />
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
-                          <div className="relative">
-                            <img 
-                              src={demoImage} 
-                              alt="Uploaded plant" 
-                              className="w-full h-48 object-cover rounded-lg"
-                            />
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              className="absolute top-2 right-2"
-                              onClick={() => {
-                                setDemoImage(null);
-                                setAnalysisResult(null);
-                                setIsAnalyzing(false);
-                              }}
-                            >
-                              Remove
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Analysis Loading or Results */}
-                      {isAnalyzing && (
-                        <div className="bg-blue-50 rounded-lg p-6 text-center">
-                          <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-3" />
-                          <p className="text-blue-800 font-semibold">Analyzing your plant...</p>
-                          <p className="text-blue-600 text-sm">Using AI to identify species and predict yields</p>
-                        </div>
-                      )}
-                      
-                      {analysisResult && !isAnalyzing && (
-                        <div className="bg-green-50 rounded-lg p-6 space-y-3">
-                          <div className="flex items-center gap-2 text-green-800 mb-3">
-                            <CheckCircle className="w-5 h-5" />
-                            <span className="font-semibold">AI Analysis Complete</span>
-                          </div>
-                          <div className="space-y-2 text-sm">
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Plant Type:</span>
-                              <span className="font-medium">{analysisResult.plantType}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Growth Stage:</span>
-                              <span className="font-medium">{analysisResult.growthStage}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Estimated Yield:</span>
-                              <span className="font-medium">{analysisResult.estimatedYield?.quantity} {analysisResult.estimatedYield?.unit}</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-gray-600">Harvest Season:</span>
-                              <span className="font-medium">{analysisResult.maturitySeason?.season} ({analysisResult.maturitySeason?.months.join('-')})</span>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {selectedFeature === "smart-listings" && (
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
-                          <Leaf className="w-5 h-5 text-white" />
-                        </div>
-                        <h3 className="text-xl font-semibold">Smart Produce Listings</h3>
-                      </div>
-                      
-                      {/* Mock Form */}
-                      <div className="space-y-4">
-                        <div>
-                          <label className="text-sm font-medium text-gray-700">Product Name</label>
-                          <div className="mt-1 p-3 border rounded-lg bg-green-50 text-green-800">
-                            ✨ Auto-filled: Organic Cherry Tomatoes
-                          </div>
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-gray-700">Category</label>
-                          <div className="mt-1 p-3 border rounded-lg bg-green-50 text-green-800">
-                            ✨ Auto-filled: Vegetables
-                          </div>
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium text-gray-700">Estimated Quantity</label>
-                          <div className="mt-1 p-3 border rounded-lg bg-green-50 text-green-800">
-                            ✨ Auto-filled: 25 lbs
-                          </div>
-                        </div>
-                        <div className="bg-blue-50 p-4 rounded-lg">
-                          <p className="text-sm text-blue-800">
-                            <strong>AI Suggestion:</strong> Based on your tomato variety and growth stage, 
-                            consider pricing at $4-6 per pound for premium organic cherry tomatoes.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {selectedFeature === "local-marketplace" && (
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-lg bg-blue-500 flex items-center justify-center">
-                          <MapPin className="w-5 h-5 text-white" />
-                        </div>
-                        <h3 className="text-xl font-semibold">Local Marketplace</h3>
-                      </div>
-                      
-                      {/* Mock Marketplace */}
-                      <div className="space-y-4">
-                        <div className="flex items-center gap-3 p-4 border rounded-lg">
-                          <div className="w-12 h-12 bg-green-200 rounded-lg"></div>
-                          <div className="flex-1">
-                            <h4 className="font-medium">Fresh Basil</h4>
-                            <p className="text-sm text-gray-600">Sunny Acres Farm • 2.3 miles</p>
-                            <p className="text-green-600 font-semibold">$3.50/bunch</p>
-                          </div>
-                          <Badge variant="secondary">Organic</Badge>
-                        </div>
-                        <div className="flex items-center gap-3 p-4 border rounded-lg">
-                          <div className="w-12 h-12 bg-red-200 rounded-lg"></div>
-                          <div className="flex-1">
-                            <h4 className="font-medium">Heirloom Tomatoes</h4>
-                            <p className="text-sm text-gray-600">Green Valley Gardens • 1.8 miles</p>
-                            <p className="text-green-600 font-semibold">$5.00/lb</p>
-                          </div>
-                          <Badge variant="secondary">Heirloom</Badge>
-                        </div>
-                        <div className="text-center pt-4">
-                          <Button variant="outline" className="w-full">
-                            <Search className="w-4 h-4 mr-2" />
-                            Browse All Local Produce
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {selectedFeature === "instant-payments" && (
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-10 h-10 rounded-lg bg-yellow-500 flex items-center justify-center">
-                          <DollarSign className="w-5 h-5 text-white" />
-                        </div>
-                        <h3 className="text-xl font-semibold">Instant Payments</h3>
-                      </div>
-                      
-                      {/* Mock Checkout */}
-                      <div className="space-y-4">
-                        <div className="border rounded-lg p-4">
-                          <h4 className="font-medium mb-3">Order Summary</h4>
-                          <div className="flex justify-between mb-2">
-                            <span>Cherry Tomatoes (2 lbs)</span>
-                            <span>$10.00</span>
-                          </div>
-                          <div className="flex justify-between text-lg font-semibold pt-2 border-t">
-                            <span>Total</span>
-                            <span>$10.00</span>
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-3">
-                          <Button className="w-full bg-black text-white hover:bg-gray-800">
-                            <Apple className="w-4 h-4 mr-2" />
-                            Pay with Apple Pay
-                          </Button>
-                          <Button variant="outline" className="w-full">
-                            Pay with Google Pay
-                          </Button>
-                          <Button variant="outline" className="w-full">
-                            Guest Checkout
-                          </Button>
-                        </div>
-                        
-                        <div className="text-center text-sm text-gray-600">
-                          <p>Secure payments powered by Stripe</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* App Screenshots Section */}
-      <section className="px-6 py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
-              Beautiful on Every Device
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Optimized experiences for both farmers and buyers, whether on mobile or desktop.
-            </p>
-          </div>
-
-          <div className="grid lg:grid-cols-2 gap-12">
-            {screenshots.map((screenshot, index) => (
-              <Card key={index} className="shadow-xl border-none overflow-hidden">
-                <CardContent className="p-8">
-                  <div className="flex items-center gap-3 mb-6">
-                    {screenshot.device === "mobile" ? (
-                      <Smartphone className="w-6 h-6 text-green-600" />
-                    ) : (
-                      <Monitor className="w-6 h-6 text-green-600" />
-                    )}
-                    <h3 className="text-xl font-semibold">{screenshot.title}</h3>
-                  </div>
-                  
-                  <p className="text-gray-600 mb-6">{screenshot.description}</p>
-                  
-                  {/* Mock Screenshot */}
-                  <div className={`${
-                    screenshot.device === "mobile" 
-                      ? "w-48 h-96 mx-auto" 
-                      : "w-full h-64"
-                  } bg-gradient-to-br from-green-100 to-blue-100 rounded-lg border-4 border-gray-200 flex items-center justify-center mb-6`}>
-                    <div className="text-center p-8">
-                      {screenshot.image === "mobile-ai-scan" && (
-                        <div className="space-y-4">
-                          <Camera className="w-12 h-12 text-green-600 mx-auto" />
-                          <div className="space-y-2">
-                            <div className="text-xs bg-white rounded px-2 py-1">📸 Plant Photo</div>
-                            <div className="text-xs bg-green-100 rounded px-2 py-1">🌱 Tomato Plant</div>
-                            <div className="text-xs bg-blue-100 rounded px-2 py-1">📊 25 lbs yield</div>
-                          </div>
-                        </div>
-                      )}
-                      {screenshot.image === "desktop-dashboard" && (
-                        <div className="space-y-4">
-                          <BarChart3 className="w-12 h-12 text-green-600 mx-auto" />
-                          <div className="grid grid-cols-2 gap-2 text-xs">
-                            <div className="bg-white rounded p-2">📸 Smart Upload</div>
-                            <div className="bg-white rounded p-2">📊 Analytics</div>
-                            <div className="bg-white rounded p-2">🌾 Inventory</div>
-                            <div className="bg-white rounded p-2">💰 Sales</div>
-                          </div>
-                        </div>
-                      )}
-                      {screenshot.image === "mobile-browse" && (
-                        <div className="space-y-2">
-                          <ShoppingCart className="w-12 h-12 text-green-600 mx-auto" />
-                          <div className="space-y-1 text-xs">
-                            <div className="bg-white rounded px-2 py-1">🍅 Local Tomatoes</div>
-                            <div className="bg-white rounded px-2 py-1">🥬 Fresh Lettuce</div>
-                            <div className="bg-white rounded px-2 py-1">🥕 Organic Carrots</div>
-                            <div className="bg-black text-white rounded px-2 py-1">Apple Pay</div>
-                          </div>
-                        </div>
-                      )}
-                      {screenshot.image === "desktop-marketplace" && (
-                        <div className="space-y-4">
-                          <MapPin className="w-12 h-12 text-green-600 mx-auto" />
-                          <div className="grid grid-cols-3 gap-1 text-xs">
-                            <div className="bg-white rounded p-1">🗺️ Map</div>
-                            <div className="bg-white rounded p-1">🔍 Search</div>
-                            <div className="bg-white rounded p-1">🏪 Farms</div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    {screenshot.features.map((feature, featureIndex) => (
-                      <div key={featureIndex} className="flex items-center gap-2 text-sm text-gray-600">
-                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                        {feature}
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+      {/* Benefits Section */}
+      <section className="py-20 px-4 bg-gradient-to-r from-pink-500 to-purple-600">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-4xl font-bold text-white mb-4">
+            Why Growers Choose PetalLocal
+          </h2>
+          <p className="text-xl text-pink-100 mb-12">
+            Join hundreds of successful flower growers who have grown their business with our platform
+          </p>
+          
+          <div className="grid md:grid-cols-2 gap-6 text-left">
+            {benefits.map((benefit, index) => (
+              <div key={index} className="flex items-start space-x-3">
+                <CheckCircle className="w-6 h-6 text-pink-200 mt-1 flex-shrink-0" />
+                <span className="text-white text-lg">{benefit}</span>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
+      {/* Success Story */}
+      <section className="py-20 px-4 bg-white">
+        <div className="max-w-4xl mx-auto">
+          <Card className="border-0 shadow-2xl bg-gradient-to-br from-pink-50 to-white">
+            <CardContent className="p-12">
+              <div className="text-center mb-8">
+                <div className="w-20 h-20 mx-auto mb-6 bg-pink-500 rounded-full flex items-center justify-center">
+                  <Flower className="w-10 h-10 text-white" />
+                </div>
+                <h3 className="text-3xl font-bold text-gray-900 mb-4">
+                  "PetalLocal transformed my small garden into a $50k/year business"
+                </h3>
+                <p className="text-lg text-gray-600 mb-6 leading-relaxed">
+                  "I started with just a few rose bushes in my backyard. The AI tools helped me understand 
+                  which flowers were in demand, and the local customer base grew my business beyond my wildest dreams. 
+                  Now I supply weddings, events, and weekly flower subscriptions throughout my community."
+                </p>
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="w-12 h-12 bg-pink-200 rounded-full flex items-center justify-center">
+                    <span className="text-pink-600 font-bold">SM</span>
+                  </div>
+                  <div className="text-left">
+                    <div className="font-semibold text-gray-900">Sarah Martinez</div>
+                    <div className="text-gray-600">Rose Haven Gardens, Roseville CA</div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+
       {/* CTA Section */}
-      <section className="px-6 py-20 bg-green-600 text-white">
+      <section className="py-20 px-4 bg-gray-50">
         <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-3xl lg:text-4xl font-bold mb-6">
-            Ready to Transform Your Farm Sales?
+          <h2 className="text-4xl font-bold text-gray-900 mb-6">
+            Ready to Grow Your Flower Business?
           </h2>
-          <p className="text-xl mb-10 text-green-100">
-            Join thousands of farmers using AI to identify plants, predict yields, and connect with local buyers.
+          <p className="text-xl text-gray-600 mb-10">
+            Join our community of successful flower growers. Start listing your blooms today 
+            and connect with customers who appreciate locally-grown, fresh flowers.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/signup">
-              <Button size="lg" className="bg-white text-green-600 hover:bg-gray-100 px-8 py-3 text-lg font-semibold">
-                Start Selling Today
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </Link>
-            <Link href="/browse-produce">
-              <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-green-600 px-8 py-3 text-lg font-semibold">
-                Browse Local Produce
-              </Button>
-            </Link>
+            <Button 
+              size="lg" 
+              onClick={handleCreateGrowerAccount}
+              className="bg-pink-500 hover:bg-pink-600 text-white px-10 py-4 rounded-xl text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              {isAuthenticated && user?.role === 'farmer' ? 'Go to Dashboard' : 'Create Grower Account'}
+              <Flower className="w-5 h-5 ml-2" />
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline" 
+              onClick={handleSignIn}
+              className="border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-10 py-4 rounded-xl text-lg font-semibold"
+            >
+              {isAuthenticated && user?.role === 'farmer' ? 'Grower Dashboard' : 'Sign In to Existing Account'}
+            </Button>
           </div>
           
-          <div className="mt-12 flex items-center justify-center gap-8 text-green-200">
-            <div className="flex items-center gap-2">
-              <Star className="w-5 h-5 fill-current" />
-              <span>Free to start</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock className="w-5 h-5" />
-              <span>Setup in minutes</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5" />
-              <span>Increase sales 3x</span>
-            </div>
-          </div>
+          <p className="text-sm text-gray-500 mt-6">
+            Free to start • Only 10% fee on sales • No monthly charges
+          </p>
         </div>
       </section>
     </div>

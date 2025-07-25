@@ -22,7 +22,7 @@ export function Footer() {
           <div>
             <h3 className="text-lg font-semibold mb-4">For Buyers</h3>
             <ul className="space-y-2 text-gray-300">
-              <li><Link href="/produce" className="hover:text-pink-400 transition-colors duration-200">Browse Flowers</Link></li>
+              <li><Link href="/flowers" className="hover:text-pink-400 transition-colors duration-200">Browse Flowers</Link></li>
               <li><Link href="/farms" className="hover:text-pink-400 transition-colors duration-200">Find Local Growers</Link></li>
             </ul>
           </div>
