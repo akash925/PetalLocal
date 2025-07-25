@@ -62,7 +62,7 @@ export default function ProduceDetail() {
   const { toast } = useToast();
 
   const { data: produce, isLoading, error } = useQuery<ProduceItem>({
-    queryKey: [`/api/produce/${produceId}`],
+    queryKey: [`/api/flowers/${produceId}`],
     enabled: !!produceId,
   });
 

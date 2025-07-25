@@ -258,7 +258,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Produce routes
-  app.get("/api/produce", async (req, res) => {
+  app.get("/api/flowers", async (req, res) => {
     try {
       const { query, category } = req.query;
       const items = await storage.searchProduceItems(
@@ -272,7 +272,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/produce/:id", async (req, res) => {
+  app.get("/api/flowers/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
       const item = await storage.getProduceItem(id);
@@ -324,7 +324,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/produce", requireAuth, requireRole("farmer"), async (req: any, res) => {
+  app.post("/api/flowers", requireAuth, requireRole("farmer"), async (req: any, res) => {
     try {
       console.log("Creating produce with data:", req.body);
       console.log("User session:", req.session);
@@ -355,7 +355,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/produce/:id", requireAuth, requireRole("farmer"), async (req: any, res) => {
+  app.put("/api/flowers/:id", requireAuth, requireRole("farmer"), async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const userId = req.session?.userId;
@@ -393,7 +393,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/produce/:id", requireAuth, requireRole("farmer"), async (req: any, res) => {
+  app.delete("/api/flowers/:id", requireAuth, requireRole("farmer"), async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const userId = req.session?.userId;
@@ -612,7 +612,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // CSV Bulk Upload route
-  app.post("/api/produce/bulk-upload", requireAuth, requireRole("farmer"), async (req: any, res) => {
+  app.post("/api/flowers/bulk-upload", requireAuth, requireRole("farmer"), async (req: any, res) => {
     try {
       const userId = req.session?.userId;
       if (!userId) {

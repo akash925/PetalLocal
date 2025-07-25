@@ -11,7 +11,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const { data: featuredProduce = [] } = useQuery({
-    queryKey: ["/api/produce"],
+    queryKey: ["/api/flowers"],
     select: (data: any[]) => {
       // Deduplicate by ID and get first 8 items
       const uniqueItems = data.filter((item, index, self) => 

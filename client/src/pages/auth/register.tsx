@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Link, useLocation } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
 
 const registerSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -31,11 +33,19 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 export default function Register() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { isAuthenticated, isLoading } = useAuth();
 
   // Check for role parameter and redirect URL in URL
   const urlParams = new URLSearchParams(window.location.search);
   const roleParam = urlParams.get('role');
   const redirectUrl = urlParams.get('redirect') || '/';
+
+  // Redirect authenticated users
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      setLocation(redirectUrl);
+    }
+  }, [isAuthenticated, isLoading, redirectUrl, setLocation]);
 
   const form = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
@@ -61,7 +71,7 @@ export default function Register() {
       // Invalidate auth query to refresh user state
       queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
-        title: "Welcome to FarmDirect!",
+        title: "Welcome to PetalLocal!",
         description: "Your account has been created successfully.",
       });
       setLocation(redirectUrl);
@@ -79,13 +89,27 @@ export default function Register() {
     registerMutation.mutate(data);
   };
 
+  // Show loading while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pink-500"></div>
+      </div>
+    );
+  }
+
+  // Don't render form if already authenticated (will redirect via useEffect)
+  if (isAuthenticated) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-2xl">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">Join FarmDirect</CardTitle>
+          <CardTitle className="text-2xl font-bold">Join PetalLocal</CardTitle>
           <CardDescription>
-            Connect with local farmers and fresh produce
+            Connect with local flower growers and beautiful blooms
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -19,7 +19,7 @@ export default function ProduceDetail() {
   const [quantity, setQuantity] = useState(1);
 
   const { data: produceItem, isLoading, error } = useQuery({
-    queryKey: [`/api/produce/${id}`],
+    queryKey: [`/api/flowers/${id}`],
     enabled: !!id,
   });
 
@@ -56,8 +56,8 @@ export default function ProduceDetail() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Produce item not found</h1>
-          <Link href="/produce">
-            <Button>Browse Produce</Button>
+          <Link href="/flowers/browse">
+            <Button>Browse Flowers</Button>
           </Link>
         </div>
       </div>
@@ -68,7 +68,7 @@ export default function ProduceDetail() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Back Button */}
-        <Link href="/produce">
+        <Link href="/flowers/browse">
           <Button variant="ghost" className="mb-6">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Browse

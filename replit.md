@@ -111,6 +111,17 @@ RESTful API endpoints organized by domain:
 - **Start command**: Production starts with `npm run start`
 
 ## Recent Changes
+- July 25, 2025: Completed comprehensive API endpoint migration from /produce to /flowers for specialized flower marketplace
+  - ✅ Updated all server routes from /api/produce to /api/flowers maintaining backwards compatibility
+  - ✅ Migrated all client-side API calls across home page, browse pages, and farmer dashboard
+  - ✅ Fixed authentication redirect issue - login and signup forms now properly redirect authenticated users
+  - ✅ Enhanced cart system with optimistic updates for instant UI feedback and improved user experience
+  - ✅ Updated error messages and descriptions to be flower-focused throughout the application
+  - ✅ Maintained existing authentication system with akash@agarwalhome.com (grower) and admin accounts
+  - ✅ All API endpoints now correctly serve flower data with proper route naming convention
+  - ✅ Added loading states to authentication pages to prevent form rendering during auth checks
+  - Platform now features consistent flower marketplace API with enhanced user experience
+
 - July 24, 2025: Enhanced grower marketing portal and comprehensive README documentation
   - ✅ Created compelling grower marketing portal (/grower-portal) showcasing seller features and benefits
   - ✅ Added "Sell Flowers" navigation links for non-authenticated users in header and mobile menu

@@ -69,10 +69,10 @@ export default function FarmerDashboard() {
 
   // Get farmer's produce items
   const { data: produceItems = [] } = useQuery({
-    queryKey: ["/api/produce", user?.id],
+    queryKey: ["/api/flowers", user?.id],
     queryFn: async () => {
-      const response = await fetch("/api/produce");
-      if (!response.ok) throw new Error("Failed to fetch produce");
+      const response = await fetch("/api/flowers");
+      if (!response.ok) throw new Error("Failed to fetch flowers");
       const allProduce = await response.json();
       // Filter to only show produce from farmer's farms
       const farmIds = farms.map(f => f.id);
@@ -132,17 +132,17 @@ export default function FarmerDashboard() {
     mutationFn: async (data: any) => {
       console.log("Creating produce with data:", data);
       console.log("User data:", user);
-      const response = await apiRequest("POST", "/api/produce", data);
+      const response = await apiRequest("POST", "/api/flowers", data);
       return response;
     },
     onSuccess: (data) => {
       console.log("Produce created successfully:", data);
       toast({
         title: "Success!",
-        description: "Produce item created successfully and is now available for purchase",
+        description: "Flower item created successfully and is now available for purchase",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/produce"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/produce", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/flowers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/flowers", user?.id] });
       setIsAddingProduce(false);
       form.reset();
     },
@@ -204,16 +204,16 @@ export default function FarmerDashboard() {
 
   const editProduceMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: any }) => {
-      const response = await apiRequest("PUT", `/api/produce/${id}`, data);
+      const response = await apiRequest("PUT", `/api/flowers/${id}`, data);
       return response;
     },
     onSuccess: () => {
       toast({
-        title: "Produce item updated successfully!",
-        description: "Your produce item changes have been saved",
+        title: "Flower item updated successfully!",
+        description: "Your flower item changes have been saved",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/produce"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/produce", user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["/api/flowers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/flowers", user?.id] });
       setEditingItem(null);
       setEditModalOpen(false);
       setSelectedProduceItem(null);
@@ -258,7 +258,7 @@ export default function FarmerDashboard() {
     if (!farmId) {
       toast({
         title: "Error",
-        description: "You need to create a farm first before adding produce.",
+        description: "You need to create a farm first before adding flowers.",
         variant: "destructive",
       });
       return;
@@ -417,7 +417,7 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                                 });
 
                                 // Upload to backend
-                                const response = await apiRequest("POST", "/api/produce/bulk-upload", {
+                                const response = await apiRequest("POST", "/api/flowers/bulk-upload", {
                                   csvData
                                 });
 
@@ -427,7 +427,7 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                                 });
 
                                 // Refresh the produce list
-                                queryClient.invalidateQueries({ queryKey: ["/api/produce", user?.id] });
+                                queryClient.invalidateQueries({ queryKey: ["/api/flowers", user?.id] });
                                 setShowBulkUpload(false);
 
                               } catch (error: any) {
@@ -799,12 +799,12 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                           onClick={async () => {
                             if (window.confirm('Are you sure you want to delete this produce item?')) {
                               try {
-                                await apiRequest("DELETE", `/api/produce/${item.id}`);
+                                await apiRequest("DELETE", `/api/flowers/${item.id}`);
                                 toast({
                                   title: "Item deleted",
-                                  description: "The produce item has been deleted successfully",
+                                  description: "The flower item has been deleted successfully",
                                 });
-                                queryClient.invalidateQueries({ queryKey: ["/api/produce", user?.id] });
+                                queryClient.invalidateQueries({ queryKey: ["/api/flowers", user?.id] });
                               } catch (error: any) {
                                 toast({
                                   title: "Error",
@@ -900,7 +900,7 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                                     title: "Stock updated",
                                     description: "Inventory has been updated successfully",
                                   });
-                                  queryClient.invalidateQueries({ queryKey: ["/api/produce", user?.id] });
+                                  queryClient.invalidateQueries({ queryKey: ["/api/flowers", user?.id] });
                                   setEditingInventory(null);
                                 } catch (error: any) {
                                   toast({

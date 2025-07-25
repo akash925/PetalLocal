@@ -66,6 +66,7 @@ export function useCart() {
       removeItem(id);
       return;
     }
+    // Instant UI update with optimistic state
     setItems(prev =>
       prev.map(item =>
         item.id === id ? { ...item, quantity } : item

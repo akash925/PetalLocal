@@ -27,14 +27,14 @@ export default function BrowseProduce() {
   }, []);
 
   const { data: produce = [], isLoading } = useQuery({
-    queryKey: ["/api/produce", searchQuery, selectedCategory],
+    queryKey: ["/api/flowers", searchQuery, selectedCategory],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (searchQuery) params.append("query", searchQuery);
       if (selectedCategory && selectedCategory !== "all") params.append("category", selectedCategory);
       
-      const response = await fetch(`/api/produce?${params}`);
-      if (!response.ok) throw new Error("Failed to fetch produce");
+      const response = await fetch(`/api/flowers?${params}`);
+      if (!response.ok) throw new Error("Failed to fetch flowers");
       return response.json();
     },
     select: (data: any[]) => {
