@@ -1,6 +1,7 @@
 import session from 'express-session';
 import connectPgSimple from 'connect-pg-simple';
-import { pool } from '../db';
+import { pool, db } from '../db';
+import { sql } from 'drizzle-orm';
 import { logger } from '../services/logger';
 
 const PgSession = connectPgSimple(session);
@@ -51,8 +52,8 @@ export function getSessionConfig(sessionStore: connectPgSimple.PGStore): session
 // Session cleanup helper
 export async function cleanupExpiredSessions(): Promise<void> {
   try {
-    const result = await pool.query(`
-      DELETE FROM session 
+    const result = await db.execute(sql`
+      DELETE FROM sessions 
       WHERE expire < NOW()
     `);
     
