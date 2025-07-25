@@ -1,5 +1,6 @@
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -18,6 +19,33 @@ import {
 } from "lucide-react";
 
 export default function GrowerPortal() {
+  const { isAuthenticated, user } = useAuth();
+  const [, setLocation] = useLocation();
+
+  // Smart routing function for Create Grower Account button
+  const handleCreateGrowerAccount = () => {
+    if (isAuthenticated && user?.role === 'farmer') {
+      // User is already a farmer, redirect to dashboard
+      setLocation('/dashboard/farmer');
+    } else if (isAuthenticated && user?.role === 'buyer') {
+      // User is authenticated as buyer, redirect to signup with role change
+      setLocation('/auth/signup?role=farmer&upgrade=true');
+    } else {
+      // User is not authenticated, redirect to signup
+      setLocation('/auth/signup?role=farmer');
+    }
+  };
+
+  // Smart routing function for Sign In button
+  const handleSignIn = () => {
+    if (isAuthenticated && user?.role === 'farmer') {
+      // User is already a farmer, redirect to dashboard
+      setLocation('/dashboard/farmer');
+    } else {
+      // User needs to sign in
+      setLocation('/auth/login');
+    }
+  };
   const features = [
     {
       icon: <Camera className="w-8 h-8 text-pink-500" />,
@@ -82,17 +110,22 @@ export default function GrowerPortal() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-            <Link href="/auth/signup?role=farmer">
-              <Button size="lg" className="bg-pink-500 hover:bg-pink-600 text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200">
-                Start Selling Today
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            </Link>
-            <Link href="/auth/login">
-              <Button size="lg" variant="outline" className="border-2 border-pink-500 text-pink-600 hover:bg-pink-50 px-8 py-4 rounded-xl text-lg font-semibold">
-                Sign In to Portal
-              </Button>
-            </Link>
+            <Button 
+              size="lg" 
+              onClick={handleCreateGrowerAccount}
+              className="bg-pink-500 hover:bg-pink-600 text-white px-8 py-4 rounded-xl text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              {isAuthenticated && user?.role === 'farmer' ? 'Go to Dashboard' : 'Start Selling Today'}
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline" 
+              onClick={handleSignIn}
+              className="border-2 border-pink-500 text-pink-600 hover:bg-pink-50 px-8 py-4 rounded-xl text-lg font-semibold"
+            >
+              {isAuthenticated && user?.role === 'farmer' ? 'Grower Dashboard' : 'Sign In to Portal'}
+            </Button>
           </div>
 
           {/* Stats Grid */}
@@ -206,17 +239,22 @@ export default function GrowerPortal() {
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/auth/signup?role=farmer">
-              <Button size="lg" className="bg-pink-500 hover:bg-pink-600 text-white px-10 py-4 rounded-xl text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200">
-                Create Grower Account
-                <Flower className="w-5 h-5 ml-2" />
-              </Button>
-            </Link>
-            <Link href="/auth/login">
-              <Button size="lg" variant="outline" className="border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-10 py-4 rounded-xl text-lg font-semibold">
-                Sign In to Existing Account
-              </Button>
-            </Link>
+            <Button 
+              size="lg" 
+              onClick={handleCreateGrowerAccount}
+              className="bg-pink-500 hover:bg-pink-600 text-white px-10 py-4 rounded-xl text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-200"
+            >
+              {isAuthenticated && user?.role === 'farmer' ? 'Go to Dashboard' : 'Create Grower Account'}
+              <Flower className="w-5 h-5 ml-2" />
+            </Button>
+            <Button 
+              size="lg" 
+              variant="outline" 
+              onClick={handleSignIn}
+              className="border-2 border-gray-300 text-gray-700 hover:bg-gray-50 px-10 py-4 rounded-xl text-lg font-semibold"
+            >
+              {isAuthenticated && user?.role === 'farmer' ? 'Grower Dashboard' : 'Sign In to Existing Account'}
+            </Button>
           </div>
           
           <p className="text-sm text-gray-500 mt-6">
