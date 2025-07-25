@@ -58,32 +58,35 @@ export default function BrowseProduce() {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Browse Beautiful Flowers</h1>
+        <div className="mb-12 text-center">
+          <h1 className="text-5xl luxury-heading text-luxury-black mb-6">Exceptional Flowers</h1>
+          <p className="text-xl luxury-subheading max-w-2xl mx-auto mb-8">
+            Discover our carefully curated collection of premium flowers from local artisan growers
+          </p>
           
           {/* Search and Filters */}
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
+          <div className="flex flex-col md:flex-row gap-6 max-w-4xl mx-auto">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-luxury-gray w-5 h-5" />
               <Input
                 type="text"
-                placeholder="Search for flowers..."
+                placeholder="Search for exceptional flowers..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="pl-16 py-4 text-lg border-2 border-gray-200 focus:border-tiffany focus:ring-tiffany rounded-sm"
               />
             </div>
             
             <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-full md:w-48">
-                <Filter className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="All Categories" />
+              <SelectTrigger className="w-full md:w-64 py-4 border-2 border-gray-200 focus:border-tiffany rounded-sm">
+                <Filter className="w-5 h-5 mr-3 text-luxury-gray" />
+                <SelectValue placeholder="All Collections" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
+                <SelectItem value="all">All Collections</SelectItem>
                 {categories.map((category) => (
                   <SelectItem key={category} value={category}>
                     {category.charAt(0).toUpperCase() + category.slice(1)}
@@ -129,7 +132,7 @@ export default function BrowseProduce() {
           </div>
         ) : produce.length > 0 ? (
           viewMode === "grid" ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {produce.map((item: any) => (
                 <ProduceCard
                   key={item.id}

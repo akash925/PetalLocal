@@ -42,32 +42,35 @@ export default function BrowseFarms() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Browse Local Growers</h1>
+        <div className="mb-12 text-center">
+          <h1 className="text-5xl luxury-heading text-luxury-black mb-6">Artisan Growers</h1>
+          <p className="text-xl luxury-subheading max-w-2xl mx-auto mb-8">
+            Meet the passionate flower growers who cultivate beauty with dedication and artistry
+          </p>
           
           {/* Search and Filters */}
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
+          <div className="flex flex-col md:flex-row gap-6 max-w-4xl mx-auto">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-luxury-gray w-5 h-5" />
               <Input
                 type="text"
-                placeholder="Search for flower growers..."
+                placeholder="Search for exceptional growers..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="pl-16 py-4 text-lg border-2 border-gray-200 focus:border-tiffany focus:ring-tiffany rounded-sm"
               />
             </div>
             
             <Select value={selectedFilter} onValueChange={setSelectedFilter}>
-              <SelectTrigger className="w-full md:w-48">
-                <Filter className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="All Farms" />
+              <SelectTrigger className="w-full md:w-64 py-4 border-2 border-gray-200 focus:border-tiffany rounded-sm">
+                <Filter className="w-5 h-5 mr-3 text-luxury-gray" />
+                <SelectValue placeholder="All Growers" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Farms</SelectItem>
+                <SelectItem value="all">All Growers</SelectItem>
                 {filters.map((filter) => (
                   <SelectItem key={filter} value={filter}>
                     {filter.charAt(0).toUpperCase() + filter.slice(1).replace('-', ' ')}
@@ -104,7 +107,7 @@ export default function BrowseFarms() {
         {farms.length > 0 ? (
           <div className="space-y-6">
             {viewMode === "grid" ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {farms.map((farm: any) => (
                   <FarmCard
                     key={farm.id}
@@ -132,7 +135,7 @@ export default function BrowseFarms() {
                   <OptimizedMap 
                     locations={farms}
                     type="farms"
-                    onLocationSelect={setSelectedFarm}
+                    onLocationSelect={(location) => setSelectedFarm(location)}
                     centerOnUser={true}
                   />
                 </div>
