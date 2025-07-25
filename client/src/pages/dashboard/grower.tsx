@@ -30,7 +30,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-export default function FarmerDashboard() {
+export default function GrowerDashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -322,7 +322,7 @@ export default function FarmerDashboard() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h1>
-          <p className="text-gray-600">You need to be a farmer to access this dashboard.</p>
+          <p className="text-gray-600">You need to be a grower to access this dashboard.</p>
         </div>
       </div>
     );
@@ -332,8 +332,8 @@ export default function FarmerDashboard() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Farmer Dashboard</h1>
-          <p className="text-gray-600">Manage your farm and produce listings</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Grower Dashboard</h1>
+          <p className="text-gray-600">Manage your farm and flower listings</p>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
@@ -672,7 +672,7 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                               <FormControl>
                                 <SmartPhotoUploader
                                   onImageSelect={(imageData) => {
-                                    console.log("Farmer Dashboard: Image selected:", imageData);
+                                    console.log("Grower Dashboard: Image selected:", imageData);
                                     field.onChange(imageData);
                                   }}
                                 />

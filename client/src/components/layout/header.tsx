@@ -158,9 +158,9 @@ export function Header() {
 
                       
                       {user?.role === 'farmer' && (
-                        <Link href="/dashboard/farmer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <Link href="/dashboard/grower" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                           <Settings className="w-4 h-4 inline mr-2" />
-                          Dashboard
+                          Grower Dashboard
                         </Link>
                       )}
                       
@@ -229,8 +229,8 @@ export function Header() {
               {isAuthenticated ? (
                 <>
                   {user?.role === 'farmer' && (
-                    <Link href="/dashboard/farmer" className="px-3 py-2 text-sm font-medium text-gray-700">
-                      Dashboard
+                    <Link href="/dashboard/grower" className="px-3 py-2 text-sm font-medium text-gray-700">
+                      Grower Dashboard
                     </Link>
                   )}
                   {user?.role === 'admin' && (

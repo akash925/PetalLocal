@@ -17,7 +17,7 @@ import FarmDetail from "@/pages/farms/[id]";
 import Cart from "@/pages/cart";
 import Login from "@/pages/auth/login";
 import Register from "@/pages/auth/register";
-import FarmerDashboard from "@/pages/dashboard/farmer";
+import GrowerDashboard from "@/pages/dashboard/grower";
 import AdminDashboard from "@/pages/dashboard/admin";
 import Messages from "@/pages/messages";
 import Checkout from "@/pages/checkout";
@@ -56,7 +56,8 @@ function Router() {
           <Route path="/signup" component={Register} />
           <Route path="/auth/login" component={Login} />
           <Route path="/auth/register" component={Register} />
-          <Route path="/dashboard/farmer" component={FarmerDashboard} />
+          <Route path="/dashboard/grower" component={GrowerDashboard} />
+          <Route path="/dashboard/farmer" component={GrowerDashboard} />
           <Route path="/dashboard/admin" component={AdminDashboard} />
           <Route path="/messages" component={Messages} />
           <Route path="/sell" component={Sell} />

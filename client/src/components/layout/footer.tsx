@@ -1,6 +1,8 @@
 import { Link } from "wouter";
+import { useAuth } from "@/hooks/useAuth";
 
 export function Footer() {
+  const { isAuthenticated, user } = useAuth();
   return (
     <footer className="bg-gray-900 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -31,7 +33,13 @@ export function Footer() {
             <h3 className="text-lg font-semibold mb-4">For Growers</h3>
             <ul className="space-y-2 text-gray-300">
               <li><Link href="/sell" className="hover:text-pink-400 transition-colors duration-200">Sell Your Flowers</Link></li>
-              <li><Link href="/dashboard/farmer" className="hover:text-pink-400 transition-colors duration-200">Grower Dashboard</Link></li>
+              <li>
+                {isAuthenticated && user?.role === 'farmer' ? (
+                  <Link href="/dashboard/grower" className="hover:text-pink-400 transition-colors duration-200">Grower Dashboard</Link>
+                ) : (
+                  <Link href="/auth/signup?role=farmer" className="hover:text-pink-400 transition-colors duration-200">Grower Dashboard</Link>
+                )}
+              </li>
             </ul>
           </div>
         </div>

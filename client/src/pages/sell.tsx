@@ -36,7 +36,7 @@ export default function Sell() {
   const handleCreateGrowerAccount = () => {
     if (isAuthenticated && user?.role === 'farmer') {
       // User is already a farmer, redirect to dashboard
-      setLocation('/dashboard/farmer');
+      setLocation('/dashboard/grower');
     } else if (isAuthenticated && user?.role === 'buyer') {
       // User is authenticated as buyer, redirect to signup with role change
       setLocation('/auth/signup?role=farmer&upgrade=true');
@@ -50,7 +50,7 @@ export default function Sell() {
   const handleSignIn = () => {
     if (isAuthenticated && user?.role === 'farmer') {
       // User is already a farmer, redirect to dashboard
-      setLocation('/dashboard/farmer');
+      setLocation('/dashboard/grower');
     } else {
       // User needs to sign in
       setLocation('/auth/login');
@@ -305,44 +305,88 @@ export default function Sell() {
 
                         {/* Analysis Results */}
                         {analysisResult && !isAnalyzing && (
-                          <div className="bg-green-50 rounded-lg p-4 space-y-3">
-                            <div className="flex items-center gap-2">
-                              <CheckCircle className="w-5 h-5 text-green-500" />
-                              <span className="font-semibold text-green-800">Analysis Complete!</span>
+                          <div className="space-y-4">
+                            <div className="bg-green-50 rounded-lg p-4 space-y-3">
+                              <div className="flex items-center gap-2">
+                                <CheckCircle className="w-5 h-5 text-green-500" />
+                                <span className="font-semibold text-green-800">Analysis Complete!</span>
+                              </div>
+                              
+                              <div className="grid grid-cols-2 gap-3 text-sm">
+                                <div>
+                                  <span className="text-gray-600">Plant Type:</span>
+                                  <div className="font-medium">{analysisResult.plantType}</div>
+                                </div>
+                                <div>
+                                  <span className="text-gray-600">Confidence:</span>
+                                  <div className="font-medium">{Math.round((analysisResult.confidence || 0.85) * 100)}%</div>
+                                </div>
+                                <div>
+                                  <span className="text-gray-600">Bloom Stage:</span>
+                                  <div className="font-medium">{analysisResult.bloomStage || 'Full bloom'}</div>
+                                </div>
+                                <div>
+                                  <span className="text-gray-600">Season:</span>
+                                  <div className="font-medium">{analysisResult.season || 'Spring/Summer'}</div>
+                                </div>
+                                <div>
+                                  <span className="text-gray-600">Est. Quantity:</span>
+                                  <div className="font-medium">{analysisResult.estimatedQuantity || 12} stems</div>
+                                </div>
+                                <div>
+                                  <span className="text-gray-600">Suggested Price:</span>
+                                  <div className="font-medium text-green-600">{analysisResult.suggestedPrice || '$3.50'}/stem</div>
+                                </div>
+                              </div>
+                              
+                              {analysisResult.source === "demo" && (
+                                <p className="text-xs text-gray-500 mt-2">
+                                  * Demo results shown - actual AI analysis provides detailed insights
+                                </p>
+                              )}
                             </div>
-                            
-                            <div className="grid grid-cols-2 gap-3 text-sm">
-                              <div>
-                                <span className="text-gray-600">Plant Type:</span>
-                                <div className="font-medium">{analysisResult.plantType}</div>
+
+                            {/* Sample Flower Listing Preview */}
+                            <div className="bg-pink-50 rounded-lg p-4 border border-pink-200">
+                              <h4 className="font-semibold text-pink-800 mb-3 flex items-center gap-2">
+                                <Sparkles className="w-4 h-4" />
+                                Generated Flower Listing Preview
+                              </h4>
+                              
+                              <div className="bg-white rounded-lg p-4 shadow-sm border">
+                                <div className="flex gap-4">
+                                  <img
+                                    src={demoImage}
+                                    alt="Identified flower"
+                                    className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
+                                  />
+                                  <div className="flex-1">
+                                    <h5 className="font-semibold text-lg text-gray-900 mb-1">
+                                      {analysisResult.plantType}
+                                    </h5>
+                                    <p className="text-gray-600 text-sm mb-2">
+                                      Fresh {analysisResult.plantType.toLowerCase()} in {analysisResult.bloomStage.toLowerCase()} stage. 
+                                      Perfect for bouquets, arrangements, or garden decoration.
+                                    </p>
+                                    <div className="flex items-center gap-4 text-sm">
+                                      <div className="text-pink-600 font-semibold">
+                                        {analysisResult.suggestedPrice || '$3.50'}/stem
+                                      </div>
+                                      <div className="text-gray-500">
+                                        {analysisResult.estimatedQuantity || 12} available
+                                      </div>
+                                      <div className="bg-pink-100 text-pink-700 px-2 py-1 rounded text-xs">
+                                        {analysisResult.season || 'Spring/Summer'}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
                               </div>
-                              <div>
-                                <span className="text-gray-600">Confidence:</span>
-                                <div className="font-medium">{Math.round((analysisResult.confidence || 0.85) * 100)}%</div>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">Bloom Stage:</span>
-                                <div className="font-medium">{analysisResult.bloomStage || 'Full bloom'}</div>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">Season:</span>
-                                <div className="font-medium">{analysisResult.season || 'Spring/Summer'}</div>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">Est. Quantity:</span>
-                                <div className="font-medium">{analysisResult.estimatedQuantity || 12} stems</div>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">Suggested Price:</span>
-                                <div className="font-medium text-green-600">{analysisResult.suggestedPrice || '$3.50'}/stem</div>
-                              </div>
-                            </div>
-                            
-                            {analysisResult.source === "demo" && (
-                              <p className="text-xs text-gray-500 mt-2">
-                                * Demo results shown - actual AI analysis provides detailed insights
+                              
+                              <p className="text-xs text-pink-600 mt-2">
+                                This is how your flower would appear as a marketplace listing with AI-generated details
                               </p>
-                            )}
+                            </div>
                           </div>
                         )}
                       </div>
