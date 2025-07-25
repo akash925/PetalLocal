@@ -37,7 +37,7 @@ function ApplePayComponent({ item, quantity, onSuccess }: ApplePayButtonProps) {
       const total = item.price * quantity;
       
       // Create payment intent for immediate purchase
-      const response = await apiRequest("POST", "/api/create-payment-intent", {
+      const payloadData = {
         amount: total,
         items: [{
           id: item.id,
@@ -45,7 +45,11 @@ function ApplePayComponent({ item, quantity, onSuccess }: ApplePayButtonProps) {
           quantity: quantity,
           price: item.price,
         }],
-      });
+      };
+      
+      console.log("Sending Apple Pay payment data:", payloadData);
+      
+      const response = await apiRequest("POST", "/api/create-payment-intent", payloadData);
       
       const data = await response.json();
       
@@ -71,6 +75,7 @@ function ApplePayComponent({ item, quantity, onSuccess }: ApplePayButtonProps) {
         onSuccess();
       }
     } catch (error) {
+      console.error("Failed to initialize payment:", error);
       toast({
         title: "Error",
         description: "Failed to process payment. Please try again.",

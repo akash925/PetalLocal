@@ -1,0 +1,41 @@
+[vite] connecting...
+[vite] connected.
+Farm form submitted with data: 
+Object {ownerId: 4, name: "Akash Flower Gardens", description: "Premium organic flower farm specializing in seasonal blooms and custom arrangements. Family-owned…", address: "814 2nd Street", city: "Santa Monica", …}
+Form validation state: 
+Object {defaultValues: {…}}
+Form errors: 
+Object {}
+Submitting farm data: 
+Object {ownerId: 4, name: "Akash Flower Gardens", description: "Premium organic flower farm specializing in seasonal blooms and custom arrangements. Family-owned…", address: "814 2nd Street", city: "Santa Monica", …}
+Farm form submitted with data: 
+Object {ownerId: 4, name: "Akash Flower Gardens", description: "Premium organic flower farm specializing in seasonal blooms and custom arrangements. Family-owned…", address: "814 2nd Street", city: "Santa Monica", …}
+Form validation state: 
+Object {defaultValues: {…}}
+Form errors: 
+Object {}
+Submitting farm data: 
+Object {ownerId: 4, name: "Akash Flower Gardens", description: "Premium organic flower farm specializing in seasonal blooms and custom arrangements. Family-owned…", address: "814 2nd Street", city: "Santa Monica", …}
+address: "814 2nd Street"
+city: "Santa Monica"
+deliveryAvailable: true
+description: "Premium organic flower farm specializing in seasonal blooms and custom arrangements. Family-owned for over 10 years, we grow the freshest flowers in Northern California."
+farmToursAvailable: "yes"
+imageUrl: "https://images.unsplash.com/photo-1464822759844-d150ad6cdb18?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400"
+instagramHandle: "@akashflowers"
+isOrganic: true
+name: "Akash Flower Gardens"
+ownerId: 4
+phoneNumber: "4082303749"
+pickupAvailable: true
+state: "California"
+website: "https://akashflowers.com"
+zipCode: "90403"
+[[Prototype]]: Object
+Failed to initialize payment: 
+Error {}
+
+at t.value (https://e18a4db3-6667-42b2-bde7-b07c66487007-00-2rcoqvcqey2n1.spock.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://e18a4db3-6667-42b2-bde7-b07c66487007-00-2rcoqvcqey2n1.spock.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://e18a4db3-6667-42b2-bde7-b07c66487007-00-2rcoqvcqey2n1.spock.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://e18a4db3-6667-42b2-bde7-b07c66487007-00-2rcoqvcqey2n1.spock.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400

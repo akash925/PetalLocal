@@ -828,6 +828,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { amount, items = [] } = req.body;
       const userId = req.session?.userId;
       
+      console.log("Payment request received:", {
+        body: req.body,
+        amount,
+        items,
+        itemsType: typeof items,
+        itemsLength: Array.isArray(items) ? items.length : 'not array',
+        userId
+      });
+      
       logger.checkoutStarted(userId, undefined, items);
       
       if (!amount || amount <= 0) {
