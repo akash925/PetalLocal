@@ -4,30 +4,38 @@
 
 :root {
   --background: hsl(0, 0%, 100%);
-  --foreground: hsl(20, 14.3%, 4.1%);
+  --foreground: hsl(0, 0%, 15%);
   --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(20, 14.3%, 4.1%);
+  --card-foreground: hsl(0, 0%, 15%);
   --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(20, 14.3%, 4.1%);
-  --primary: hsl(142, 76%, 36%);
-  --primary-foreground: hsl(355.7, 100%, 97.3%);
-  --secondary: hsl(60, 4.8%, 95.9%);
-  --secondary-foreground: hsl(24, 9.8%, 10%);
-  --muted: hsl(60, 4.8%, 95.9%);
-  --muted-foreground: hsl(25, 5.3%, 44.7%);
-  --accent: hsl(142, 76%, 36%);
-  --accent-foreground: hsl(355.7, 100%, 97.3%);
+  --popover-foreground: hsl(0, 0%, 15%);
+  --primary: hsl(179, 100%, 41%);
+  --primary-foreground: hsl(0, 0%, 100%);
+  --secondary: hsl(179, 15%, 95%);
+  --secondary-foreground: hsl(0, 0%, 15%);
+  --muted: hsl(179, 15%, 97%);
+  --muted-foreground: hsl(0, 0%, 45%);
+  --accent: hsl(179, 100%, 41%);
+  --accent-foreground: hsl(0, 0%, 100%);
   --destructive: hsl(0, 84.2%, 60.2%);
   --destructive-foreground: hsl(60, 9.1%, 97.8%);
-  --border: hsl(20, 5.9%, 90%);
-  --input: hsl(20, 5.9%, 90%);
-  --ring: hsl(142, 76%, 36%);
-  --chart-1: hsl(142, 76%, 36%);
-  --chart-2: hsl(160, 60%, 45%);
+  --border: hsl(179, 15%, 90%);
+  --input: hsl(179, 15%, 95%);
+  --ring: hsl(179, 100%, 41%);
+  --chart-1: hsl(179, 100%, 41%);
+  --chart-2: hsl(179, 60%, 55%);
   --chart-3: hsl(30, 80%, 55%);
   --chart-4: hsl(280, 65%, 60%);
   --chart-5: hsl(340, 75%, 55%);
-  --radius: 0.5rem;
+  --radius: 0.25rem;
+  
+  /* Tiffany-inspired luxury colors */
+  --tiffany-blue: hsl(179, 100%, 41%);
+  --tiffany-blue-light: hsl(179, 60%, 85%);
+  --tiffany-blue-dark: hsl(179, 100%, 35%);
+  --luxury-black: hsl(0, 0%, 15%);
+  --luxury-gray: hsl(0, 0%, 45%);
+  --luxury-gray-light: hsl(0, 0%, 85%);
 }
 
 .dark {
@@ -64,28 +72,55 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    letter-spacing: -0.01em;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 400;
+    letter-spacing: -0.025em;
   }
 }
 
-/* Custom farm-themed styling */
+/* Tiffany-inspired luxury styling */
 .hero-pattern {
   background-image: 
-    radial-gradient(circle at 25% 25%, hsl(142, 76%, 36%, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 75% 75%, hsl(142, 76%, 36%, 0.1) 0%, transparent 50%);
+    radial-gradient(circle at 25% 25%, var(--tiffany-blue-light) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, var(--tiffany-blue-light) 0%, transparent 50%);
 }
 
-.produce-card-hover {
-  transition: all 0.2s ease-in-out;
+.luxury-card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid var(--border);
 }
 
-.produce-card-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+.luxury-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.08), 0 8px 16px -8px rgba(0, 0, 0, 0.04);
+  border-color: var(--tiffany-blue);
 }
 
-.farm-badge {
-  background: linear-gradient(135deg, hsl(142, 76%, 36%) 0%, hsl(160, 60%, 45%) 100%);
+.tiffany-badge {
+  background: var(--tiffany-blue);
   color: white;
+  font-weight: 500;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+.luxury-button {
+  background: var(--luxury-black);
+  color: white;
+  font-weight: 500;
+  letter-spacing: 0.025em;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+}
+
+.luxury-button:hover {
+  background: var(--tiffany-blue);
+  transform: translateY(-1px);
 }
 
 /* Animation for loading states */
@@ -104,42 +139,75 @@
   background-size: 400% 100%;
 }
 
-/* Utility classes for farm-specific styling */
-.text-farm-green {
-  color: hsl(142, 76%, 36%);
+/* Luxury Tiffany-inspired utility classes */
+.text-tiffany {
+  color: var(--tiffany-blue);
 }
 
-.bg-farm-green {
-  background-color: hsl(142, 76%, 36%);
+.bg-tiffany {
+  background-color: var(--tiffany-blue);
 }
 
-.border-farm-green {
-  border-color: hsl(142, 76%, 36%);
+.border-tiffany {
+  border-color: var(--tiffany-blue);
 }
 
-.hover\:bg-farm-green-dark:hover {
-  background-color: hsl(142, 76%, 30%);
+.text-luxury-black {
+  color: var(--luxury-black);
 }
 
-/* Focus states with farm green */
-.focus\:ring-farm-green:focus {
-  --tw-ring-color: hsl(142, 76%, 36%);
+.bg-luxury-black {
+  background-color: var(--luxury-black);
 }
 
-/* Custom scrollbar for produce lists */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+.hover\:bg-tiffany-dark:hover {
+  background-color: var(--tiffany-blue-dark);
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: hsl(60, 4.8%, 95.9%);
+/* Focus states with Tiffany blue */
+.focus\:ring-tiffany:focus {
+  --tw-ring-color: var(--tiffany-blue);
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: hsl(142, 76%, 36%);
-  border-radius: 3px;
+/* Elegant scrollbar for flower lists */
+.luxury-scrollbar::-webkit-scrollbar {
+  width: 4px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: hsl(142, 76%, 30%);
+.luxury-scrollbar::-webkit-scrollbar-track {
+  background: var(--muted);
+}
+
+.luxury-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--tiffany-blue);
+  border-radius: 2px;
+}
+
+.luxury-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--tiffany-blue-dark);
+}
+
+/* Elegant typography */
+.luxury-heading {
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  color: var(--luxury-black);
+}
+
+.luxury-subheading {
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: var(--luxury-gray);
+}
+
+/* Premium service elements */
+.premium-service-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8fffe 100%);
+  border: 1px solid var(--border);
+  transition: all 0.3s ease;
+}
+
+.premium-service-card:hover {
+  border-color: var(--tiffany-blue);
+  box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.08);
 }

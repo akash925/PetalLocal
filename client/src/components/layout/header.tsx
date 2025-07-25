@@ -70,38 +70,38 @@ export function Header() {
   });
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+    <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+        <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center">
-              <div className="w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center">
-                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <div className="w-10 h-10 bg-tiffany rounded-sm flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
                   <path d="M10 18c-8 0-10-4.687-10-7 0-3.5 2.5-4 4-4 .474 0 1.755.053 2.5-.5.75-.553 1.5-2.5 3.5-2.5s2.75 1.947 3.5 2.5c.745.553 2.026.5 2.5.5 1.5 0 4 .5 4 4 0 2.313-2 7-10 7z"/>
                 </svg>
               </div>
-              <span className="ml-2 text-xl font-bold text-gray-900">PetalLocal</span>
+              <span className="ml-3 text-2xl luxury-heading">PETALLOCAL</span>
             </Link>
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8">
-            <Link href="/flowers" className={`px-3 py-2 text-sm font-medium ${location === '/flowers' || location === '/produce' ? 'text-pink-600' : 'text-gray-500 hover:text-pink-600'}`}>
-              Browse Flowers
+          <nav className="hidden md:flex space-x-12">
+            <Link href="/flowers" className={`px-4 py-2 text-sm font-medium tracking-wide transition-colors ${location === '/flowers' || location === '/produce' ? 'text-tiffany border-b-2 border-tiffany' : 'text-luxury-black hover:text-tiffany'}`}>
+              FLOWERS
             </Link>
-            <Link href="/farms" className={`px-3 py-2 text-sm font-medium ${location === '/farms' ? 'text-pink-600' : 'text-gray-500 hover:text-pink-600'}`}>
-              Local Growers
+            <Link href="/farms" className={`px-4 py-2 text-sm font-medium tracking-wide transition-colors ${location === '/farms' ? 'text-tiffany border-b-2 border-tiffany' : 'text-luxury-black hover:text-tiffany'}`}>
+              GROWERS
             </Link>
             {!isAuthenticated && (
-              <Link href="/sell" className={`px-3 py-2 text-sm font-medium ${location === '/sell' ? 'text-pink-600' : 'text-gray-500 hover:text-pink-600'}`}>
-                Sell Flowers
+              <Link href="/sell" className={`px-4 py-2 text-sm font-medium tracking-wide transition-colors ${location === '/sell' ? 'text-tiffany border-b-2 border-tiffany' : 'text-luxury-black hover:text-tiffany'}`}>
+                SELL FLOWERS
               </Link>
             )}
 
             {isAuthenticated && user?.role === 'admin' && (
-              <Link href="/dashboard/admin" className={`px-3 py-2 text-sm font-medium ${location === '/dashboard/admin' ? 'text-pink-600' : 'text-gray-500 hover:text-pink-600'}`}>
-                Admin
+              <Link href="/dashboard/admin" className={`px-4 py-2 text-sm font-medium tracking-wide transition-colors ${location === '/dashboard/admin' ? 'text-tiffany border-b-2 border-tiffany' : 'text-luxury-black hover:text-tiffany'}`}>
+                ADMIN
               </Link>
             )}
           </nav>
@@ -124,10 +124,10 @@ export function Header() {
 
             {/* Cart */}
             <Link href="/cart">
-              <Button variant="ghost" size="sm" className="relative">
+              <Button variant="ghost" size="sm" className="relative hover:text-tiffany">
                 <ShoppingCart className="w-5 h-5" />
                 {itemCount > 0 && (
-                  <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs bg-pink-500">
+                  <Badge className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs bg-tiffany">
                     {itemCount}
                   </Badge>
                 )}

@@ -100,84 +100,72 @@ export function ProduceCard({
   };
 
   return (
-    <Card className="group hover:shadow-md transition-shadow duration-200 overflow-hidden">
+    <Card className="luxury-card-hover overflow-hidden bg-white">
       <Link href={`/flowers/${id}`}>
-        <div className="aspect-w-4 aspect-h-3 bg-gray-100 cursor-pointer">
+        <div className="aspect-w-4 aspect-h-3 bg-gray-50 cursor-pointer relative">
           {imageUrl ? (
             <img
               src={imageUrl}
               alt={name}
-              className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200"
+              className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300"
             />
           ) : (
-            <div className="w-full h-48 bg-gradient-to-br from-pink-50 to-pink-100 flex items-center justify-center">
+            <div className="w-full h-56 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
               <div className="text-center">
-                <div className="w-12 h-12 mx-auto mb-2 bg-pink-200 rounded-full flex items-center justify-center">
-                  <span className="text-pink-600 text-xl">🌸</span>
+                <div className="w-16 h-16 mx-auto mb-3 bg-tiffany rounded-sm flex items-center justify-center">
+                  <span className="text-white text-2xl">🌸</span>
                 </div>
-                <span className="text-pink-600 text-sm font-medium">{name}</span>
+                <span className="text-luxury-black text-sm font-medium luxury-heading">{name}</span>
               </div>
             </div>
           )}
         </div>
       </Link>
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex flex-wrap gap-1">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-wrap gap-2">
             {getBadges().map((badge, index) => (
-              <Badge key={index} variant={badge.variant} className="text-xs">
-                {badge.text}
+              <Badge key={index} variant={badge.variant} className={`text-xs px-3 py-1 ${badge.text === 'Organic' ? 'tiffany-badge' : ''}`}>
+                {badge.text.toUpperCase()}
               </Badge>
             ))}
           </div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="p-1 text-gray-400 hover:text-red-500"
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-          >
-            <Heart className="w-4 h-4" />
-          </Button>
         </div>
         
         <Link href={`/flowers/${id}`}>
-          <h3 className="font-semibold text-gray-900 mb-1 hover:text-pink-600 cursor-pointer">
+          <h3 className="text-xl luxury-heading mb-2 hover:text-tiffany cursor-pointer transition-colors">
             {name}
           </h3>
         </Link>
         
-        <p className="text-sm text-gray-600 mb-2">{farmName}</p>
+        <p className="text-sm luxury-subheading mb-4">{farmName}</p>
         
-        <div className="space-y-3">
+        <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <span className="text-lg font-bold text-gray-900">
+            <div className="flex items-baseline">
+              <span className="text-2xl luxury-heading text-luxury-black">
                 ${pricePerUnit.toFixed(2)}
               </span>
-              <span className="text-sm text-gray-500 ml-1">/ {unit}</span>
+              <span className="text-sm luxury-subheading ml-2">per {unit}</span>
             </div>
-            {/* Distance temporarily disabled due to accuracy issues */}
           </div>
           
           <div className="flex items-center justify-between">
             {!showQuantitySelector ? (
               <Button
                 size="sm"
-                className="bg-green-500 hover:bg-green-600 text-white px-3 py-1"
+                className="luxury-button w-full py-3 text-sm tracking-wide"
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
                   setShowQuantitySelector(true);
                 }}
               >
-                Add to Cart
+                ADD TO BAG
               </Button>
             ) : (
-              <div className="flex items-center gap-2">
-                <div className="flex items-center border rounded">
+              <div className="w-full space-y-3">
+                <div className="flex items-center justify-center border border-gray-200 rounded-sm">
                   <Button
                     variant="ghost"
                     size="sm"
@@ -186,11 +174,11 @@ export function ProduceCard({
                       e.stopPropagation();
                       setQuantity(Math.max(1, quantity - 1));
                     }}
-                    className="h-8 w-8 p-0"
+                    className="h-10 w-10 p-0 hover:text-tiffany"
                   >
-                    <Minus className="w-3 h-3" />
+                    <Minus className="w-4 h-4" />
                   </Button>
-                  <span className="px-2 text-sm font-medium min-w-[30px] text-center">
+                  <span className="px-4 text-sm font-medium min-w-[40px] text-center luxury-heading">
                     {quantity}
                   </span>
                   <Button
@@ -201,21 +189,21 @@ export function ProduceCard({
                       e.stopPropagation();
                       setQuantity(quantity + 1);
                     }}
-                    className="h-8 w-8 p-0"
+                    className="h-10 w-10 p-0 hover:text-tiffany"
                   >
-                    <Plus className="w-3 h-3" />
+                    <Plus className="w-4 h-4" />
                   </Button>
                 </div>
                 <Button
                   size="sm"
-                  className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 text-xs"
+                  className="luxury-button w-full py-3 text-sm tracking-wide"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
                     handleAddToCart();
                   }}
                 >
-                  Add
+                  CONFIRM
                 </Button>
               </div>
             )}
