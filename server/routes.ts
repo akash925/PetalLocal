@@ -828,14 +828,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { amount, items = [] } = req.body;
       const userId = req.session?.userId;
       
-      console.log("Payment request received:", {
-        body: req.body,
-        amount,
-        items,
-        itemsType: typeof items,
-        itemsLength: Array.isArray(items) ? items.length : 'not array',
-        userId
-      });
+
       
       logger.checkoutStarted(userId, undefined, items);
       
@@ -861,10 +854,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Convert object with numeric keys back to array
         const keys = Object.keys(items).filter(key => !isNaN(parseInt(key))).sort((a, b) => parseInt(a) - parseInt(b));
         parsedItems = keys.map(key => items[key]);
-        console.log("Converted object to array:", parsedItems);
+
       }
-      
-      console.log("Final parsed items:", parsedItems, "Type:", typeof parsedItems, "IsArray:", Array.isArray(parsedItems));
+
 
       // Validate items
       if (!parsedItems || !Array.isArray(parsedItems) || parsedItems.length === 0) {
