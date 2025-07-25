@@ -37,7 +37,7 @@ export function Footer() {
                 {isAuthenticated && user?.role === 'farmer' ? (
                   <Link href="/dashboard/grower" className="hover:text-pink-400 transition-colors duration-200">Grower Dashboard</Link>
                 ) : (
-                  <Link href="/auth/signup?role=farmer" className="hover:text-pink-400 transition-colors duration-200">Grower Dashboard</Link>
+                  <Link href="/auth/signup?role=grower" className="hover:text-pink-400 transition-colors duration-200">Grower Dashboard</Link>
                 )}
               </li>
             </ul>

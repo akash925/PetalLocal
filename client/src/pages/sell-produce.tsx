@@ -50,7 +50,7 @@ export default function SellProduce() {
             </p>
             {!isAuthenticated ? (
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link href="/auth/register?role=farmer">
+                <Link href="/auth/register?role=grower">
                   <Button size="lg" className="bg-pink-600 hover:bg-pink-700 text-white px-8 py-3">
                     Start Selling Today
                     <ArrowRight className="w-5 h-5 ml-2" />
@@ -65,7 +65,7 @@ export default function SellProduce() {
             ) : (
               <div className="text-center">
                 <p className="text-gray-600 mb-4">You're logged in as a buyer.</p>
-                <Link href="/auth/register?role=farmer">
+                <Link href="/auth/register?role=grower">
                   <Button size="lg" className="bg-pink-600 hover:bg-pink-700 text-white px-8 py-3">
                     Create Grower Account
                     <ArrowRight className="w-5 h-5 ml-2" />
@@ -219,14 +219,14 @@ export default function SellProduce() {
             Join hundreds of local flower growers already selling on PetalLocal
           </p>
           {!isAuthenticated ? (
-            <Link href="/auth/register?role=farmer">
+            <Link href="/auth/register?role=grower">
               <Button size="lg" className="bg-white text-pink-600 hover:bg-gray-100 px-8 py-3">
                 Create Your Grower Account
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
           ) : (
-            <Link href="/auth/register?role=farmer">
+            <Link href="/auth/register?role=grower">
               <Button size="lg" className="bg-white text-pink-600 hover:bg-gray-100 px-8 py-3">
                 Create Grower Account
                 <ArrowRight className="w-5 h-5 ml-2" />

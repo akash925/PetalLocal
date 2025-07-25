@@ -18,7 +18,7 @@ const registerSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
-  role: z.enum(["buyer", "farmer"], {
+  role: z.enum(["buyer", "grower"], {
     required_error: "Please select your role",
   }),
   phone: z.string().optional(),
@@ -54,7 +54,7 @@ export default function Register() {
       password: "",
       firstName: "",
       lastName: "",
-      role: roleParam === "farmer" ? "farmer" : "buyer",
+      role: roleParam === "grower" || roleParam === "farmer" ? "grower" : "buyer",
       phone: "",
       address: "",
       city: "",
@@ -194,8 +194,8 @@ export default function Register() {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="buyer">Buyer - I want to buy fresh produce</SelectItem>
-                        <SelectItem value="farmer">Farmer - I want to sell my produce</SelectItem>
+                        <SelectItem value="buyer">Buyer - I want to buy fresh flowers</SelectItem>
+                        <SelectItem value="grower">Grower - I want to sell my flowers</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

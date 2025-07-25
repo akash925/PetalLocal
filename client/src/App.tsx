@@ -56,6 +56,7 @@ function Router() {
           <Route path="/signup" component={Register} />
           <Route path="/auth/login" component={Login} />
           <Route path="/auth/register" component={Register} />
+          <Route path="/auth/signup" component={Register} />
           <Route path="/dashboard/grower" component={GrowerDashboard} />
           <Route path="/dashboard/farmer" component={GrowerDashboard} />
           <Route path="/dashboard/admin" component={AdminDashboard} />

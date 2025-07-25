@@ -118,7 +118,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     password: passwordSchema,
     firstName: nameSchema,
     lastName: nameSchema,
-    role: z.enum(['farmer', 'buyer', 'admin']).default('buyer'),
+    role: z.enum(['grower', 'farmer', 'buyer', 'admin']).default('buyer'),
   });
 
   app.post("/api/auth/register", 
@@ -324,7 +324,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/flowers", requireAuth, requireRole("farmer"), async (req: any, res) => {
+  app.post("/api/flowers", requireAuth, requireAnyRole(["farmer", "grower"]), async (req: any, res) => {
     try {
       console.log("Creating produce with data:", req.body);
       console.log("User session:", req.session);
@@ -355,7 +355,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/flowers/:id", requireAuth, requireRole("farmer"), async (req: any, res) => {
+  app.put("/api/flowers/:id", requireAuth, requireAnyRole(["farmer", "grower"]), async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const userId = req.session?.userId;
@@ -393,7 +393,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/flowers/:id", requireAuth, requireRole("farmer"), async (req: any, res) => {
+  app.delete("/api/flowers/:id", requireAuth, requireAnyRole(["farmer", "grower"]), async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const userId = req.session?.userId;
@@ -476,7 +476,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/farms", requireAuth, requireRole("farmer"), async (req: any, res) => {
+  app.post("/api/farms", requireAuth, requireAnyRole(["farmer", "grower"]), async (req: any, res) => {
     try {
       console.log("Creating farm with data:", req.body);
       console.log("User session:", req.session);
@@ -506,7 +506,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/farms/:id", requireAuth, requireRole("farmer"), async (req: any, res) => {
+  app.put("/api/farms/:id", requireAuth, requireAnyRole(["farmer", "grower"]), async (req: any, res) => {
     try {
       const id = parseInt(req.params.id);
       const userId = req.session?.userId;
@@ -558,7 +558,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Inventory routes
-  app.put("/api/inventory/:produceItemId", requireAuth, requireRole("farmer"), async (req: any, res) => {
+  app.put("/api/inventory/:produceItemId", requireAuth, requireAnyRole(["farmer", "grower"]), async (req: any, res) => {
     try {
       const produceItemId = parseInt(req.params.produceItemId);
       const userId = req.session?.userId;
@@ -612,7 +612,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // CSV Bulk Upload route
-  app.post("/api/flowers/bulk-upload", requireAuth, requireRole("farmer"), async (req: any, res) => {
+  app.post("/api/flowers/bulk-upload", requireAuth, requireAnyRole(["farmer", "grower"]), async (req: any, res) => {
     try {
       const userId = req.session?.userId;
       if (!userId) {

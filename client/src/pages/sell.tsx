@@ -39,10 +39,10 @@ export default function Sell() {
       setLocation('/dashboard/grower');
     } else if (isAuthenticated && user?.role === 'buyer') {
       // User is authenticated as buyer, redirect to signup with role change
-      setLocation('/auth/signup?role=farmer&upgrade=true');
+      setLocation('/auth/signup?role=grower&upgrade=true');
     } else {
       // User is not authenticated, redirect to signup
-      setLocation('/auth/signup?role=farmer');
+      setLocation('/auth/signup?role=grower');
     }
   };
 
