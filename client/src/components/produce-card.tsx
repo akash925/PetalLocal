@@ -1,13 +1,14 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, MapPin, Plus, Minus } from "lucide-react";
+import { Heart, MapPin, Plus, Minus, Expand } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 import { useState, useEffect } from "react";
 import { SmartPaymentButton } from "./smart-payment-button";
 import { calculateDistanceToFarm } from "@/lib/distance";
+import { ImageModal } from "./image-modal";
 
 interface ProduceCardProps {
   id: number;
@@ -46,6 +47,7 @@ export function ProduceCard({
   const [quantity, setQuantity] = useState(1);
   const [showQuantitySelector, setShowQuantitySelector] = useState(false);
   const [distance, setDistance] = useState<number | null>(providedDistance || null);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   // Disable distance calculation temporarily due to accuracy issues
   // useEffect(() => {
@@ -101,15 +103,16 @@ export function ProduceCard({
 
   return (
     <Card className="luxury-card-hover overflow-hidden bg-white">
-      <Link href={`/flowers/${id}`}>
-        <div className="aspect-w-4 aspect-h-3 bg-gray-50 cursor-pointer relative">
-          {imageUrl ? (
-            <img
-              src={imageUrl}
-              alt={name}
-              className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300"
-            />
-          ) : (
+      <div className="relative group">
+        <Link href={`/flowers/${id}`}>
+          <div className="aspect-w-4 aspect-h-3 bg-gray-50 cursor-pointer relative">
+            {imageUrl ? (
+              <img
+                src={imageUrl}
+                alt={name}
+                className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            ) : (
             <div className="w-full h-56 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
               <div className="text-center">
                 <div className="w-16 h-16 mx-auto mb-3 bg-tiffany rounded-sm flex items-center justify-center">
@@ -119,8 +122,25 @@ export function ProduceCard({
               </div>
             </div>
           )}
-        </div>
-      </Link>
+          </div>
+        </Link>
+        
+        {/* Full-screen button for images */}
+        {imageUrl && (
+          <Button
+            variant="secondary"
+            size="sm"
+            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-all duration-300 bg-white/90 hover:bg-white text-luxury-black border-0 z-10"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsImageModalOpen(true);
+            }}
+          >
+            <Expand className="w-3 h-3" />
+          </Button>
+        )}
+      </div>
       <CardContent className="p-6">
         <div className="flex items-center justify-between mb-4">
           <div className="flex flex-wrap gap-2">
@@ -240,6 +260,16 @@ export function ProduceCard({
           </div>
         )}
       </CardContent>
+      
+      {/* Image Modal */}
+      {imageUrl && (
+        <ImageModal
+          src={imageUrl}
+          alt={name}
+          isOpen={isImageModalOpen}
+          onClose={() => setIsImageModalOpen(false)}
+        />
+      )}
     </Card>
   );
 }

@@ -8,15 +8,17 @@ import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/use-toast";
 import { MessageFarmerButton } from "@/components/message-farmer-button";
 import { SmartPaymentButton } from "@/components/smart-payment-button";
-import { MapPin, Calendar, Truck, Store, Heart, ArrowLeft } from "lucide-react";
+import { MapPin, Calendar, Truck, Store, Heart, ArrowLeft, Expand } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
+import { ImageModal } from "@/components/image-modal";
 
 export default function ProduceDetail() {
   const { id } = useParams();
   const { addItem } = useCart();
   const { toast } = useToast();
   const [quantity, setQuantity] = useState(1);
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
 
   const { data: produceItem, isLoading, error } = useQuery({
     queryKey: [`/api/flowers/${id}`],
@@ -78,20 +80,35 @@ export default function ProduceDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Image Section */}
           <div className="space-y-4">
-            <div className="aspect-[4/3] max-h-96 rounded-xl overflow-hidden bg-gray-100">
+            <div className="relative aspect-[4/3] max-h-96 rounded-sm overflow-hidden bg-gray-50 luxury-card-hover cursor-pointer group">
               {produceItem.imageUrl ? (
-                <img
-                  src={produceItem.imageUrl}
-                  alt={produceItem.name}
-                  className="w-full h-full object-cover"
-                />
+                <>
+                  <img
+                    src={produceItem.imageUrl}
+                    alt={produceItem.name}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    onClick={() => setIsImageModalOpen(true)}
+                  />
+                  {/* Full-screen button overlay */}
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="opacity-0 group-hover:opacity-100 transition-all duration-300 bg-white/90 hover:bg-white text-luxury-black border-0"
+                      onClick={() => setIsImageModalOpen(true)}
+                    >
+                      <Expand className="w-4 h-4 mr-2" />
+                      View Full Size
+                    </Button>
+                  </div>
+                </>
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-green-50 to-green-100 flex items-center justify-center">
+                <div className="w-full h-full bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
                   <div className="text-center">
-                    <div className="w-16 h-16 mx-auto mb-4 bg-green-200 rounded-full flex items-center justify-center">
-                      <span className="text-green-600 text-2xl">🥕</span>
+                    <div className="w-16 h-16 mx-auto mb-4 bg-tiffany rounded-sm flex items-center justify-center">
+                      <span className="text-white text-2xl">🌸</span>
                     </div>
-                    <span className="text-green-600 font-medium">{produceItem.name}</span>
+                    <span className="text-luxury-black font-medium luxury-heading">{produceItem.name}</span>
                   </div>
                 </div>
               )}
@@ -271,6 +288,16 @@ export default function ProduceDetail() {
           </div>
         </div>
       </div>
+      
+      {/* Image Modal */}
+      {produceItem.imageUrl && (
+        <ImageModal
+          src={produceItem.imageUrl}
+          alt={produceItem.name}
+          isOpen={isImageModalOpen}
+          onClose={() => setIsImageModalOpen(false)}
+        />
+      )}
     </div>
   );
 }
