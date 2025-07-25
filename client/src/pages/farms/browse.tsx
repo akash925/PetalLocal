@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FarmCard } from "@/components/farm-card";
-import { InteractiveMap } from "@/components/interactive-map";
+import { OptimizedMap } from "@/components/optimized-map";
 import { Search, Filter, Grid, Map } from "lucide-react";
 
 export default function BrowseFarms() {
@@ -129,10 +129,11 @@ export default function BrowseFarms() {
                   <p className="text-gray-600 text-sm mt-1">Interactive map showing local flower growers in your area</p>
                 </div>
                 <div className="p-4">
-                  <InteractiveMap 
-                    farms={farms} 
-                    selectedFarm={selectedFarm}
-                    onFarmSelect={setSelectedFarm}
+                  <OptimizedMap 
+                    locations={farms}
+                    type="farms"
+                    onLocationSelect={setSelectedFarm}
+                    centerOnUser={true}
                   />
                 </div>
               </div>

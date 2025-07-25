@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ProduceCard } from "@/components/produce-card";
-import { ProduceMap } from "@/components/produce-map";
+import { OptimizedProduceMap } from "@/components/optimized-produce-map";
 import { Search, Filter, Grid, Map } from "lucide-react";
 
 export default function BrowseProduce() {
@@ -158,7 +158,7 @@ export default function BrowseProduce() {
                 <p className="text-gray-600 text-sm mt-1">Interactive map showing flowers from local growers</p>
               </div>
               <div className="p-4">
-                <ProduceMap 
+                <OptimizedProduceMap 
                   produce={produce}
                   onProduceSelect={(item) => {
                     console.log('Selected produce:', item);
