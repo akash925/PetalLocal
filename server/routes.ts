@@ -844,7 +844,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid amount" });
       }
 
-      // Parse items if it's a string (handle both string and array formats)
+      // Parse items if it's a string or object (handle both string, array, and object formats)
       let parsedItems = items;
       if (typeof items === 'string') {
         try {
@@ -857,7 +857,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
           return res.status(400).json({ message: "Invalid items format" });
         }
+      } else if (items && typeof items === 'object' && !Array.isArray(items)) {
+        // Convert object with numeric keys back to array
+        const keys = Object.keys(items).filter(key => !isNaN(parseInt(key))).sort((a, b) => parseInt(a) - parseInt(b));
+        parsedItems = keys.map(key => items[key]);
+        console.log("Converted object to array:", parsedItems);
       }
+      
+      console.log("Final parsed items:", parsedItems, "Type:", typeof parsedItems, "IsArray:", Array.isArray(parsedItems));
 
       // Validate items
       if (!parsedItems || !Array.isArray(parsedItems) || parsedItems.length === 0) {
