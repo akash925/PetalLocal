@@ -205,15 +205,15 @@ export default function Home() {
       {/* Call to Action for Growers */}
       <section className="py-16 bg-pink-600">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold text-white mb-4">
+          <h2 className="text-3xl luxury-heading text-white mb-4 font-light">
             Are You a Local Flower Grower?
           </h2>
-          <p className="text-xl text-pink-100 mb-8">
+          <p className="text-xl text-pink-100 mb-8 font-light leading-relaxed">
             Join our community and start selling your beautiful flowers directly to local customers. 
             Build lasting relationships with your community.
           </p>
           <Link href="/sell">
-            <Button size="lg" className="bg-white text-pink-600 hover:bg-gray-100 px-8 py-3 text-lg">
+            <Button size="lg" className="bg-white text-pink-600 hover:bg-gray-100 px-8 py-3 text-lg font-light tracking-wide">
               Start Selling Today
             </Button>
           </Link>

@@ -6,7 +6,6 @@ import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 import { useState, useEffect } from "react";
-import { SmartPaymentButton } from "./smart-payment-button";
 import { calculateDistanceToFarm } from "@/lib/distance";
 import { ImageModal } from "./image-modal";
 
@@ -228,33 +227,10 @@ export function ProduceCard({
               </div>
             )}
           </div>
-          
-          {/* Smart Payment Button */}
-          <div className="pt-2 border-t" onClick={(e) => e.stopPropagation()}>
-            <SmartPaymentButton
-              item={{
-                id,
-                name,
-                price: pricePerUnit,
-                unit,
-                farmName,
-                imageUrl,
-              }}
-              quantity={showQuantitySelector ? quantity : 1}
-              onSuccess={() => {
-                toast({
-                  title: "Purchase Complete!",
-                  description: `Successfully purchased ${quantity} ${unit}${quantity > 1 ? 's' : ''} of ${name}`,
-                });
-                setQuantity(1);
-                setShowQuantitySelector(false);
-              }}
-            />
-          </div>
         </div>
         
         {distance && (
-          <div className="flex items-center text-xs text-gray-500">
+          <div className="flex items-center text-xs luxury-subheading font-light">
             <MapPin className="w-3 h-3 mr-1" />
             <span>{distance.toFixed(1)} miles away</span>
           </div>
