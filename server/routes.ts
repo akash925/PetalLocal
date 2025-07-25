@@ -160,7 +160,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json({ user: { ...user, password: undefined } });
       } catch (error) {
         logger.error('auth', 'Registration error', {
-          error: error.message,
+          error: error instanceof Error ? error.message : 'Unknown error',
           ip: req.ip,
         });
         res.status(500).json({ error: "Registration failed" });
@@ -212,7 +212,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.json({ user: { ...user, password: undefined } });
       } catch (error) {
         logger.error('auth', 'Login error', {
-          error: error.message,
+          error: error instanceof Error ? error.message : 'Unknown error',
           ip: req.ip,
         });
         res.status(500).json({ error: "Login failed" });
@@ -1023,10 +1023,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { platformFee, farmerPayout } = calculatePlatformFee(parseFloat(order.totalAmount.toString()));
       
       // Send confirmation email to buyer
-      const buyerEmailResult = await emailService.sendOrderConfirmationToBuyer({
-        buyerEmail,
-        orderId: order.id,
-        orderTotal: order.totalAmount,
+      const buyerEmailResult = await emailService.sendOrderConfirmation(buyerEmail, {
+        id: order.id,
+        totalAmount: order.totalAmount,
         platformFee,
         items: orderItems,
         buyerName: `${buyer?.firstName || ''} ${buyer?.lastName || ''}`.trim(),
@@ -1035,12 +1034,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send notification emails to farmers
       const farmerEmailPromises = farmEmails.map(async (farmEmail: string) => {
         if (farmEmail) {
-          return await emailService.sendOrderNotificationToFarmer({
-            farmEmail,
-            orderId: order.id,
-            orderTotal: order.totalAmount,
+          return await emailService.sendOrderConfirmation(farmEmail, {
+            id: order.id,
+            totalAmount: order.totalAmount,
             farmerPayout,
-            items: orderItems.filter(item => item.produceItem?.farm?.contactEmail === farmEmail),
+            items: orderItems.filter(item => item.produceItemId && farmEmail), // Filter relevant items
             buyerName: `${buyer?.firstName || ''} ${buyer?.lastName || ''}`.trim(),
           });
         }
@@ -1083,13 +1081,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const receiptContent = `
 FarmDirect Order Receipt
 Order #${order.id}
-Date: ${new Date(order.createdAt).toLocaleDateString()}
+Date: ${order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}
 
 Customer: ${buyer?.firstName || ''} ${buyer?.lastName || ''}
 Email: ${buyer?.email || ''}
 
 Items:
-${orderItems.map(item => `- ${item.produceItem?.name || 'Item'}: ${item.quantity} x $${item.pricePerUnit} = $${item.totalPrice}`).join('\n')}
+${orderItems.map(item => `- Item ${item.produceItemId}: ${item.quantity} x $${item.pricePerUnit} = $${item.totalPrice}`).join('\n')}
 
 Subtotal: $${order.totalAmount}
 Platform Fee (10%): $${platformFee.toFixed(2)}
