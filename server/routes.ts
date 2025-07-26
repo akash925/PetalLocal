@@ -29,6 +29,8 @@ import { z } from "zod";
 import mongoSanitize from "express-mongo-sanitize";
 import { healthCheckEndpoint, livenessProbe, readinessProbe } from "./middleware/healthcheck";
 import { environmentValidator } from "./utils/environment";
+import express from "express";
+import path from "path";
 
 // Extend session interface
 declare module "express-session" {
@@ -72,6 +74,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Session middleware with secure configuration
   app.use(session(getSessionConfig(sessionStore)));
+
+  // Serve attached assets (uploaded images) statically
+  app.use('/attached_assets', express.static(path.resolve(process.cwd(), 'attached_assets')));
 
   // Health check and monitoring endpoints
   app.get('/health', healthCheckEndpoint);
