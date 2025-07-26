@@ -31,36 +31,38 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-b from-white via-gray-50 to-white h-96 md:h-[600px]">
+      <section className="relative bg-gradient-to-b from-white via-gray-50 to-white min-h-[500px] md:h-[600px] py-12 md:py-0">
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center px-4 sm:px-6 lg:px-8 max-w-5xl">
-            <h1 className="text-5xl md:text-7xl luxury-heading text-luxury-black mb-6">
+          <div className="text-center px-6 sm:px-8 lg:px-8 max-w-5xl w-full">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl luxury-heading text-luxury-black mb-8 md:mb-6 leading-tight">
               Beautiful Flowers,<br />Beautiful Moments
             </h1>
-            <p className="text-xl md:text-2xl luxury-subheading mb-12 max-w-3xl mx-auto">
+            <p className="text-lg sm:text-xl md:text-2xl luxury-subheading mb-12 md:mb-12 max-w-3xl mx-auto leading-relaxed">
               Discover exceptional flowers from local growers curated for life's most precious occasions
             </p>
             
             {/* Search Bar */}
             <div className="max-w-2xl mx-auto">
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder="Search for exceptional flowers..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && searchQuery.trim()) {
-                      window.location.href = `/flowers/browse?search=${encodeURIComponent(searchQuery)}`;
-                    }
-                  }}
-                  className="w-full pl-16 pr-32 py-6 text-lg border-2 border-gray-200 focus:border-tiffany focus:ring-tiffany rounded-sm"
-                />
-                <div className="absolute inset-y-0 left-0 pl-6 flex items-center">
-                  <Search className="w-6 h-6 text-luxury-gray" />
+              <div className="flex flex-col sm:flex-row gap-4 sm:gap-0">
+                <div className="relative flex-1">
+                  <Input
+                    type="text"
+                    placeholder="Search for exceptional flowers..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && searchQuery.trim()) {
+                        window.location.href = `/flowers/browse?search=${encodeURIComponent(searchQuery)}`;
+                      }
+                    }}
+                    className="w-full pl-12 sm:pl-16 pr-4 sm:pr-32 py-4 sm:py-6 text-base sm:text-lg border-2 border-gray-200 focus:border-tiffany focus:ring-tiffany rounded-sm sm:rounded-r-none"
+                  />
+                  <div className="absolute inset-y-0 left-0 pl-4 sm:pl-6 flex items-center">
+                    <Search className="w-5 h-5 sm:w-6 sm:h-6 text-luxury-gray" />
+                  </div>
                 </div>
                 <Link href={`/flowers/browse?search=${encodeURIComponent(searchQuery)}`}>
-                  <Button className="absolute right-2 top-1/2 transform -translate-y-1/2 luxury-button px-8 py-4 h-auto rounded-sm">
+                  <Button className="w-full sm:w-auto sm:absolute sm:right-2 sm:top-1/2 sm:transform sm:-translate-y-1/2 luxury-button px-6 sm:px-8 py-4 h-auto rounded-sm sm:rounded-sm">
                     Shop Now
                   </Button>
                 </Link>
@@ -71,16 +73,16 @@ export default function Home() {
       </section>
 
       {/* The PetalLocal Experience */}
-      <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl luxury-heading text-luxury-black mb-6">The PetalLocal Experience</h2>
-            <p className="text-xl luxury-subheading max-w-3xl mx-auto">
+      <section className="py-16 md:py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-8">
+          <div className="text-center mb-12 md:mb-16">
+            <h2 className="text-3xl md:text-4xl luxury-heading text-luxury-black mb-6 md:mb-6">The PetalLocal Experience</h2>
+            <p className="text-lg md:text-xl luxury-subheading max-w-3xl mx-auto leading-relaxed">
               Exceptional service and extraordinary flowers, curated with passion and delivered with care
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
             {[
               {
                 icon: "🌹",
@@ -108,12 +110,12 @@ export default function Home() {
               }
             ].map((category) => (
               <Link key={category.title} href={`/flowers/browse?category=${category.link}`}>
-                <div className="premium-service-card p-8 text-center h-full">
-                  <div className="text-6xl mb-6">{category.icon}</div>
-                  <h3 className="text-xl luxury-heading mb-4">{category.title}</h3>
+                <div className="premium-service-card p-6 md:p-8 text-center h-full">
+                  <div className="text-5xl md:text-6xl mb-4 md:mb-6">{category.icon}</div>
+                  <h3 className="text-lg md:text-xl luxury-heading mb-3 md:mb-4">{category.title}</h3>
                   <p className="luxury-subheading text-sm leading-relaxed">{category.description}</p>
-                  <div className="mt-6">
-                    <span className="text-tiffany text-sm font-medium tracking-wide">DISCOVER MORE</span>
+                  <div className="mt-4 md:mt-6">
+                    <span className="text-tiffany text-xs md:text-sm font-medium tracking-wide">DISCOVER MORE</span>
                   </div>
                 </div>
               </Link>
