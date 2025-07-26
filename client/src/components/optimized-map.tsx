@@ -42,10 +42,9 @@ export function OptimizedMap({
     const loadLeaflet = async () => {
       try {
         if (!L && typeof window !== 'undefined') {
-          const leafletModule = await import('leaflet');
-          L = leafletModule.default;
+          console.log('Loading Leaflet library...');
           
-          // Add CSS
+          // Add CSS first
           if (!document.querySelector('link[href*="leaflet.css"]')) {
             const link = document.createElement('link');
             link.rel = 'stylesheet';
@@ -53,11 +52,28 @@ export function OptimizedMap({
             link.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
             link.crossOrigin = '';
             document.head.appendChild(link);
+            
+            // Wait for CSS to load
+            await new Promise((resolve) => {
+              link.onload = resolve;
+              link.onerror = resolve; // Continue even if CSS fails
+              setTimeout(resolve, 1000); // Fallback timeout
+            });
           }
+          
+          const leafletModule = await import('leaflet');
+          L = leafletModule.default;
+          console.log('Leaflet loaded successfully');
+          
+          // Small delay to ensure DOM is ready
+          setTimeout(() => {
+            setIsLoading(false);
+          }, 100);
         }
       } catch (error) {
         console.error('Failed to load Leaflet:', error);
-        setLoadError('Failed to load map library');
+        setLoadError('Failed to load map library. Please refresh the page.');
+        setIsLoading(false);
       }
     };
 
@@ -114,10 +130,21 @@ export function OptimizedMap({
 
   // Initialize map
   useEffect(() => {
-    if (!L || !mapRef.current || locations.length === 0) return;
+    console.log('Map useEffect triggered:', { 
+      hasL: !!L, 
+      hasMapRef: !!mapRef.current, 
+      locationsCount: locations.length,
+      isLoading 
+    });
+    
+    if (!L || !mapRef.current || locations.length === 0) {
+      console.log('Map init conditions not met - returning early');
+      return;
+    }
 
     const initMap = async () => {
       try {
+        console.log('Initializing map with', locations.length, 'locations');
         setIsLoading(true);
         
         // Clean up existing map
@@ -250,10 +277,14 @@ export function OptimizedMap({
       }
     };
 
-    initMap();
+    // Small delay to ensure DOM is ready
+    const timeoutId = setTimeout(() => {
+      initMap();
+    }, 200);
 
     // Cleanup
     return () => {
+      clearTimeout(timeoutId);
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
@@ -278,16 +309,18 @@ export function OptimizedMap({
   if (loadError) {
     return (
       <div className={`bg-gray-100 rounded-lg p-8 text-center ${className}`}>
-        <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-        <p className="text-gray-600 mb-4">{loadError}</p>
+        <div className="text-red-500 mb-4">
+          <MapPin className="w-8 h-8 mx-auto mb-2" />
+          <p className="text-sm font-medium">Map Loading Error</p>
+          <p className="text-xs text-gray-600 mt-1">{loadError}</p>
+        </div>
         <Button 
+          onClick={() => window.location.reload()} 
           variant="outline" 
-          onClick={() => {
-            setLoadError(null);
-            setIsLoading(true);
-          }}
+          size="sm"
+          className="text-xs"
         >
-          Try Again
+          Refresh Page
         </Button>
       </div>
     );
