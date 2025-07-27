@@ -1120,36 +1120,44 @@ FarmDirect - Fresh. Local. Direct.
   // Admin Dashboard Routes
   app.get("/api/admin/stats", requireRole('admin'), async (req: any, res) => {
     try {
-      const totalRevenue = await storage.db.select({
-        total: sql`COALESCE(SUM(${storage.orders.totalAmount}), 0)`
-      }).from(storage.orders);
+      // Import db directly from database/connection file
+      const { db } = require("./database/connection");
+      
+      // Get total revenue
+      const revenueResult = await db.execute(sql`
+        SELECT COALESCE(SUM(total_amount), 0) as total_revenue
+        FROM orders
+      `);
+      
+      // Get total orders
+      const ordersResult = await db.execute(sql`
+        SELECT COUNT(*) as total_orders,
+               COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_orders
+        FROM orders
+      `);
+      
+      // Get total users
+      const usersResult = await db.execute(sql`
+        SELECT COUNT(*) as total_users FROM users
+      `);
+      
+      // Get total flowers
+      const flowersResult = await db.execute(sql`
+        SELECT COUNT(*) as total_flowers 
+        FROM produce_items 
+        WHERE is_active = true
+      `);
 
-      const totalOrders = await storage.db.select({
-        count: sql`COUNT(*)`
-      }).from(storage.orders);
-
-      const totalUsers = await storage.db.select({
-        count: sql`COUNT(*)`
-      }).from(storage.users);
-
-      const totalFlowers = await storage.db.select({
-        count: sql`COUNT(*)`
-      }).from(storage.produceItems).where(eq(storage.produceItems.isActive, true));
-
-      const pendingOrders = await storage.db.select({
-        count: sql`COUNT(*)`
-      }).from(storage.orders).where(eq(storage.orders.status, 'pending'));
-
-      const revenue = parseFloat(totalRevenue[0]?.total || '0');
+      const revenue = parseFloat(revenueResult.rows[0]?.total_revenue || '0');
       const platformFees = revenue * 0.1; // 10% platform fee
 
       res.json({
         totalRevenue: revenue,
-        totalOrders: parseInt(totalOrders[0]?.count || '0'),
-        totalUsers: parseInt(totalUsers[0]?.count || '0'),
-        totalFlowers: parseInt(totalFlowers[0]?.count || '0'),
+        totalOrders: parseInt(ordersResult.rows[0]?.total_orders || '0'),
+        totalUsers: parseInt(usersResult.rows[0]?.total_users || '0'),
+        totalFlowers: parseInt(flowersResult.rows[0]?.total_flowers || '0'),
         platformFees: platformFees,
-        pendingOrders: parseInt(pendingOrders[0]?.count || '0'),
+        pendingOrders: parseInt(ordersResult.rows[0]?.pending_orders || '0'),
       });
     } catch (error) {
       console.error("Admin stats error:", error);
@@ -1159,44 +1167,63 @@ FarmDirect - Fresh. Local. Direct.
 
   app.get("/api/admin/orders", requireRole('admin'), async (req: any, res) => {
     try {
-      const ordersWithDetails = await storage.db
-        .select({
-          id: storage.orders.id,
-          buyerId: storage.orders.buyerId,
-          status: storage.orders.status,
-          totalAmount: storage.orders.totalAmount,
-          deliveryMethod: storage.orders.deliveryMethod,
-          paymentStatus: storage.orders.paymentStatus,
-          createdAt: storage.orders.createdAt,
-          buyerName: sql`CONCAT(${storage.users.firstName}, ' ', ${storage.users.lastName})`,
-          buyerEmail: storage.users.email,
-        })
-        .from(storage.orders)
-        .leftJoin(storage.users, eq(storage.orders.buyerId, storage.users.id))
-        .orderBy(desc(storage.orders.createdAt))
-        .limit(50);
+      // Get orders with buyer details
+      const { db } = require("./database/connection");
+      
+      const ordersResult = await db.execute(sql`
+        SELECT 
+          o.id,
+          o.buyer_id,
+          o.status,
+          o.total_amount,
+          o.delivery_method,
+          o.payment_status,
+          o.created_at,
+          CONCAT(u.first_name, ' ', u.last_name) as buyer_name,
+          u.email as buyer_email
+        FROM orders o
+        LEFT JOIN users u ON o.buyer_id = u.id
+        ORDER BY o.created_at DESC
+        LIMIT 50
+      `);
 
       // Get order items for each order
       const ordersWithItems = await Promise.all(
-        ordersWithDetails.map(async (order) => {
-          const items = await storage.db
-            .select({
-              id: storage.orderItems.id,
-              flowerName: storage.produceItems.name,
-              category: storage.produceItems.category,
-              farmName: storage.farms.name,
-              quantity: storage.orderItems.quantity,
-              pricePerUnit: storage.orderItems.pricePerUnit,
-              totalPrice: storage.orderItems.totalPrice,
-            })
-            .from(storage.orderItems)
-            .leftJoin(storage.produceItems, eq(storage.orderItems.produceItemId, storage.produceItems.id))
-            .leftJoin(storage.farms, eq(storage.produceItems.farmId, storage.farms.id))
-            .where(eq(storage.orderItems.orderId, order.id));
+        ordersResult.rows.map(async (order) => {
+          const itemsResult = await db.execute(sql`
+            SELECT 
+              oi.id,
+              oi.quantity,
+              oi.price_per_unit,
+              oi.total_price,
+              pi.name as flower_name,
+              pi.category,
+              f.name as farm_name
+            FROM order_items oi
+            LEFT JOIN produce_items pi ON oi.produce_item_id = pi.id
+            LEFT JOIN farms f ON pi.farm_id = f.id
+            WHERE oi.order_id = ${order.id}
+          `);
 
           return {
-            ...order,
-            items,
+            id: order.id,
+            buyerId: order.buyer_id,
+            status: order.status,
+            totalAmount: parseFloat(order.total_amount),
+            deliveryMethod: order.delivery_method,
+            paymentStatus: order.payment_status,
+            createdAt: order.created_at,
+            buyerName: order.buyer_name,
+            buyerEmail: order.buyer_email,
+            items: itemsResult.rows.map(item => ({
+              id: item.id,
+              flowerName: item.flower_name,
+              category: item.category,
+              farmName: item.farm_name,
+              quantity: item.quantity,
+              pricePerUnit: parseFloat(item.price_per_unit),
+              totalPrice: parseFloat(item.total_price),
+            }))
           };
         })
       );
@@ -1210,31 +1237,46 @@ FarmDirect - Fresh. Local. Direct.
 
   app.get("/api/admin/activity", requireRole('admin'), async (req: any, res) => {
     try {
-      // Get recent activity from various tables
-      const recentOrders = await storage.db
-        .select({
-          description: sql`CONCAT('New order #', ${storage.orders.id}, ' from ', ${storage.users.firstName}, ' ', ${storage.users.lastName})`,
-          timestamp: storage.orders.createdAt,
-          type: sql`'order'`,
-        })
-        .from(storage.orders)
-        .leftJoin(storage.users, eq(storage.orders.buyerId, storage.users.id))
-        .orderBy(desc(storage.orders.createdAt))
-        .limit(10);
+      // Get recent activity
+      const { db } = require("./database/connection");
+      
+      // Get recent orders
+      const ordersResult = await db.execute(sql`
+        SELECT 
+          CONCAT('New order #', o.id, ' from ', u.first_name, ' ', u.last_name) as description,
+          o.created_at as timestamp,
+          'order' as type
+        FROM orders o
+        LEFT JOIN users u ON o.buyer_id = u.id
+        ORDER BY o.created_at DESC
+        LIMIT 10
+      `);
 
-      const recentUsers = await storage.db
-        .select({
-          description: sql`CONCAT('New ', ${storage.users.role}, ' registered: ', ${storage.users.firstName}, ' ', ${storage.users.lastName})`,
-          timestamp: storage.users.createdAt,
-          type: sql`'user'`,
-        })
-        .from(storage.users)
-        .orderBy(desc(storage.users.createdAt))
-        .limit(5);
+      // Get recent users
+      const usersResult = await db.execute(sql`
+        SELECT 
+          CONCAT('New ', role, ' registered: ', first_name, ' ', last_name) as description,
+          created_at as timestamp,
+          'user' as type
+        FROM users
+        ORDER BY created_at DESC
+        LIMIT 5
+      `);
 
-      const activity = [...recentOrders, ...recentUsers]
-        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-        .slice(0, 15);
+      const activity = [
+        ...ordersResult.rows.map(row => ({
+          description: row.description,
+          timestamp: row.timestamp,
+          type: row.type
+        })),
+        ...usersResult.rows.map(row => ({
+          description: row.description,
+          timestamp: row.timestamp,
+          type: row.type
+        }))
+      ]
+      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+      .slice(0, 15);
 
       res.json(activity);
     } catch (error) {

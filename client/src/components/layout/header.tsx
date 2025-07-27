@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/useCart";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -100,7 +100,7 @@ export function Header() {
             )}
 
             {isAuthenticated && user?.role === 'admin' && (
-              <Link href="/dashboard/admin" className={`px-4 py-2 text-sm font-medium tracking-wide transition-colors ${location === '/dashboard/admin' ? 'text-tiffany border-b-2 border-tiffany' : 'text-luxury-black hover:text-tiffany'}`}>
+              <Link href="/admin" className={`px-4 py-2 text-sm font-medium tracking-wide transition-colors ${location === '/admin' || location === '/dashboard/admin' ? 'text-tiffany border-b-2 border-tiffany' : 'text-luxury-black hover:text-tiffany'}`}>
                 ADMIN
               </Link>
             )}
@@ -165,7 +165,7 @@ export function Header() {
                       )}
                       
                       {user?.role === 'admin' && (
-                        <Link href="/dashboard/admin" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                        <Link href="/admin" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                           <Settings className="w-4 h-4 inline mr-2" />
                           Admin Dashboard
                         </Link>

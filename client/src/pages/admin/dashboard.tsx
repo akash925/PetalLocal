@@ -4,8 +4,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { DollarSign, Package, ShoppingCart, Users, TrendingUp, MapPin, Clock, CreditCard } from "lucide-react";
+import { DollarSign, Package, ShoppingCart, Users, TrendingUp, MapPin, Clock, CreditCard, Shield, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
+import { useLocation } from "wouter";
+import { useAuth } from "@/hooks/use-auth";
 
 interface Order {
   id: number;
@@ -40,17 +42,63 @@ interface DashboardStats {
 }
 
 export default function AdminDashboard() {
+  const [, setLocation] = useLocation();
+  const { user, isLoading: authLoading, isAdmin } = useAuth();
+
   const { data: stats, isLoading: statsLoading } = useQuery<DashboardStats>({
     queryKey: ["/api/admin/stats"],
+    enabled: isAdmin,
   });
 
   const { data: orders, isLoading: ordersLoading } = useQuery<Order[]>({
     queryKey: ["/api/admin/orders"],
+    enabled: isAdmin,
   });
 
   const { data: recentActivity, isLoading: activityLoading } = useQuery({
     queryKey: ["/api/admin/activity"],
+    enabled: isAdmin,
   });
+
+  // Redirect non-admin users
+  if (authLoading) {
+    return (
+      <div className="container mx-auto py-8">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-64 mb-6"></div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-32 bg-gray-200 rounded"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    setLocation('/login');
+    return null;
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="container mx-auto py-8">
+        <Card className="max-w-md mx-auto">
+          <CardContent className="pt-6 text-center">
+            <Shield className="mx-auto h-12 w-12 text-red-400 mb-4" />
+            <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
+            <p className="text-muted-foreground mb-4">
+              You need administrator privileges to access this page.
+            </p>
+            <Button onClick={() => setLocation('/')} variant="outline">
+              Return Home
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const getStatusBadge = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
