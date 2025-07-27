@@ -18,10 +18,11 @@ import Cart from "@/pages/cart";
 import Login from "@/pages/auth/login";
 import Register from "@/pages/auth/register";
 import GrowerDashboard from "@/pages/dashboard/grower";
-import AdminDashboard from "@/pages/dashboard/admin";
+import AdminDashboard from "@/pages/admin/dashboard";
 import Messages from "@/pages/messages";
 import Checkout from "@/pages/checkout";
 import OrderConfirmation from "@/pages/order-confirmation";
+import OrderTracking from "@/pages/order-tracking";
 import Sell from "@/pages/sell";
 import SellProduce from "@/pages/sell-produce";
 import NotFound from "@/pages/not-found";
@@ -52,6 +53,8 @@ function Router() {
           <Route path="/cart" component={Cart} />
           <Route path="/checkout" component={Checkout} />
           <Route path="/order-confirmation" component={OrderConfirmation} />
+          <Route path="/orders/:id" component={OrderTracking} />
+          <Route path="/order-tracking" component={OrderTracking} />
           <Route path="/login" component={Login} />
           <Route path="/signup" component={Register} />
           <Route path="/auth/login" component={Login} />
@@ -60,6 +63,8 @@ function Router() {
           <Route path="/dashboard/grower" component={GrowerDashboard} />
           <Route path="/dashboard/farmer" component={GrowerDashboard} />
           <Route path="/dashboard/admin" component={AdminDashboard} />
+          <Route path="/admin" component={AdminDashboard} />
+          <Route path="/admin/dashboard" component={AdminDashboard} />
           <Route path="/messages" component={Messages} />
           <Route path="/sell" component={Sell} />
           <Route path="/sell-produce" component={SellProduce} />

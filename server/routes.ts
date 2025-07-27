@@ -31,6 +31,7 @@ import { healthCheckEndpoint, livenessProbe, readinessProbe } from "./middleware
 import { environmentValidator } from "./utils/environment";
 import express from "express";
 import path from "path";
+import { sql, eq, desc } from "drizzle-orm";
 
 // Extend session interface
 declare module "express-session" {
@@ -1113,6 +1114,132 @@ FarmDirect - Fresh. Local. Direct.
     } catch (error) {
       console.error("Generate receipt error:", error);
       res.status(500).json({ message: "Failed to generate receipt" });
+    }
+  });
+
+  // Admin Dashboard Routes
+  app.get("/api/admin/stats", requireRole('admin'), async (req: any, res) => {
+    try {
+      const totalRevenue = await storage.db.select({
+        total: sql`COALESCE(SUM(${storage.orders.totalAmount}), 0)`
+      }).from(storage.orders);
+
+      const totalOrders = await storage.db.select({
+        count: sql`COUNT(*)`
+      }).from(storage.orders);
+
+      const totalUsers = await storage.db.select({
+        count: sql`COUNT(*)`
+      }).from(storage.users);
+
+      const totalFlowers = await storage.db.select({
+        count: sql`COUNT(*)`
+      }).from(storage.produceItems).where(eq(storage.produceItems.isActive, true));
+
+      const pendingOrders = await storage.db.select({
+        count: sql`COUNT(*)`
+      }).from(storage.orders).where(eq(storage.orders.status, 'pending'));
+
+      const revenue = parseFloat(totalRevenue[0]?.total || '0');
+      const platformFees = revenue * 0.1; // 10% platform fee
+
+      res.json({
+        totalRevenue: revenue,
+        totalOrders: parseInt(totalOrders[0]?.count || '0'),
+        totalUsers: parseInt(totalUsers[0]?.count || '0'),
+        totalFlowers: parseInt(totalFlowers[0]?.count || '0'),
+        platformFees: platformFees,
+        pendingOrders: parseInt(pendingOrders[0]?.count || '0'),
+      });
+    } catch (error) {
+      console.error("Admin stats error:", error);
+      res.status(500).json({ message: "Failed to get admin stats" });
+    }
+  });
+
+  app.get("/api/admin/orders", requireRole('admin'), async (req: any, res) => {
+    try {
+      const ordersWithDetails = await storage.db
+        .select({
+          id: storage.orders.id,
+          buyerId: storage.orders.buyerId,
+          status: storage.orders.status,
+          totalAmount: storage.orders.totalAmount,
+          deliveryMethod: storage.orders.deliveryMethod,
+          paymentStatus: storage.orders.paymentStatus,
+          createdAt: storage.orders.createdAt,
+          buyerName: sql`CONCAT(${storage.users.firstName}, ' ', ${storage.users.lastName})`,
+          buyerEmail: storage.users.email,
+        })
+        .from(storage.orders)
+        .leftJoin(storage.users, eq(storage.orders.buyerId, storage.users.id))
+        .orderBy(desc(storage.orders.createdAt))
+        .limit(50);
+
+      // Get order items for each order
+      const ordersWithItems = await Promise.all(
+        ordersWithDetails.map(async (order) => {
+          const items = await storage.db
+            .select({
+              id: storage.orderItems.id,
+              flowerName: storage.produceItems.name,
+              category: storage.produceItems.category,
+              farmName: storage.farms.name,
+              quantity: storage.orderItems.quantity,
+              pricePerUnit: storage.orderItems.pricePerUnit,
+              totalPrice: storage.orderItems.totalPrice,
+            })
+            .from(storage.orderItems)
+            .leftJoin(storage.produceItems, eq(storage.orderItems.produceItemId, storage.produceItems.id))
+            .leftJoin(storage.farms, eq(storage.produceItems.farmId, storage.farms.id))
+            .where(eq(storage.orderItems.orderId, order.id));
+
+          return {
+            ...order,
+            items,
+          };
+        })
+      );
+
+      res.json(ordersWithItems);
+    } catch (error) {
+      console.error("Admin orders error:", error);
+      res.status(500).json({ message: "Failed to get admin orders" });
+    }
+  });
+
+  app.get("/api/admin/activity", requireRole('admin'), async (req: any, res) => {
+    try {
+      // Get recent activity from various tables
+      const recentOrders = await storage.db
+        .select({
+          description: sql`CONCAT('New order #', ${storage.orders.id}, ' from ', ${storage.users.firstName}, ' ', ${storage.users.lastName})`,
+          timestamp: storage.orders.createdAt,
+          type: sql`'order'`,
+        })
+        .from(storage.orders)
+        .leftJoin(storage.users, eq(storage.orders.buyerId, storage.users.id))
+        .orderBy(desc(storage.orders.createdAt))
+        .limit(10);
+
+      const recentUsers = await storage.db
+        .select({
+          description: sql`CONCAT('New ', ${storage.users.role}, ' registered: ', ${storage.users.firstName}, ' ', ${storage.users.lastName})`,
+          timestamp: storage.users.createdAt,
+          type: sql`'user'`,
+        })
+        .from(storage.users)
+        .orderBy(desc(storage.users.createdAt))
+        .limit(5);
+
+      const activity = [...recentOrders, ...recentUsers]
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .slice(0, 15);
+
+      res.json(activity);
+    } catch (error) {
+      console.error("Admin activity error:", error);
+      res.status(500).json({ message: "Failed to get admin activity" });
     }
   });
 
