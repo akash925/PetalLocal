@@ -573,3 +573,6 @@ export class DatabaseStorage implements IStorage {
 }
 
 export const storage = new DatabaseStorage();
+
+// Export db for admin routes
+export { db } from "./database/connection";

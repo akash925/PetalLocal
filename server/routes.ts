@@ -1120,44 +1120,40 @@ FarmDirect - Fresh. Local. Direct.
   // Admin Dashboard Routes
   app.get("/api/admin/stats", requireRole('admin'), async (req: any, res) => {
     try {
-      // Import db directly from database/connection file
-      const { db } = require("./database/connection");
+      // Import db from storage
+      const { db } = await import("./storage");
       
-      // Get total revenue
-      const revenueResult = await db.execute(sql`
+      const revenue = await db.execute(sql`
         SELECT COALESCE(SUM(total_amount), 0) as total_revenue
         FROM orders
       `);
       
-      // Get total orders
-      const ordersResult = await db.execute(sql`
+      const orders = await db.execute(sql`
         SELECT COUNT(*) as total_orders,
                COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_orders
         FROM orders
       `);
       
-      // Get total users
-      const usersResult = await db.execute(sql`
+      const users = await db.execute(sql`
         SELECT COUNT(*) as total_users FROM users
       `);
       
-      // Get total flowers
-      const flowersResult = await db.execute(sql`
+      const flowers = await db.execute(sql`
         SELECT COUNT(*) as total_flowers 
         FROM produce_items 
         WHERE is_active = true
       `);
 
-      const revenue = parseFloat(revenueResult.rows[0]?.total_revenue || '0');
-      const platformFees = revenue * 0.1; // 10% platform fee
+      const totalRevenue = parseFloat(revenue.rows[0]?.total_revenue || '0');
+      const platformFees = totalRevenue * 0.1;
 
       res.json({
-        totalRevenue: revenue,
-        totalOrders: parseInt(ordersResult.rows[0]?.total_orders || '0'),
-        totalUsers: parseInt(usersResult.rows[0]?.total_users || '0'),
-        totalFlowers: parseInt(flowersResult.rows[0]?.total_flowers || '0'),
-        platformFees: platformFees,
-        pendingOrders: parseInt(ordersResult.rows[0]?.pending_orders || '0'),
+        totalRevenue,
+        totalOrders: parseInt(orders.rows[0]?.total_orders || '0'),
+        totalUsers: parseInt(users.rows[0]?.total_users || '0'),
+        totalFlowers: parseInt(flowers.rows[0]?.total_flowers || '0'),
+        platformFees,
+        pendingOrders: parseInt(orders.rows[0]?.pending_orders || '0'),
       });
     } catch (error) {
       console.error("Admin stats error:", error);
@@ -1167,8 +1163,7 @@ FarmDirect - Fresh. Local. Direct.
 
   app.get("/api/admin/orders", requireRole('admin'), async (req: any, res) => {
     try {
-      // Get orders with buyer details
-      const { db } = require("./database/connection");
+      const { db } = await import("./storage");
       
       const ordersResult = await db.execute(sql`
         SELECT 
@@ -1187,7 +1182,6 @@ FarmDirect - Fresh. Local. Direct.
         LIMIT 50
       `);
 
-      // Get order items for each order
       const ordersWithItems = await Promise.all(
         ordersResult.rows.map(async (order) => {
           const itemsResult = await db.execute(sql`
@@ -1237,10 +1231,8 @@ FarmDirect - Fresh. Local. Direct.
 
   app.get("/api/admin/activity", requireRole('admin'), async (req: any, res) => {
     try {
-      // Get recent activity
-      const { db } = require("./database/connection");
+      const { db } = await import("./storage");
       
-      // Get recent orders
       const ordersResult = await db.execute(sql`
         SELECT 
           CONCAT('New order #', o.id, ' from ', u.first_name, ' ', u.last_name) as description,
@@ -1252,7 +1244,6 @@ FarmDirect - Fresh. Local. Direct.
         LIMIT 10
       `);
 
-      // Get recent users
       const usersResult = await db.execute(sql`
         SELECT 
           CONCAT('New ', role, ' registered: ', first_name, ' ', last_name) as description,
