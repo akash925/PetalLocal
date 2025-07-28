@@ -10,6 +10,7 @@ import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import FlowersTab from "@/components/admin/FlowersTab";
 import GrowersTab from "@/components/admin/GrowersTab";
+import FinancialTab from "@/components/admin/FinancialTab";
 
 interface Order {
   id: number;
@@ -298,6 +299,10 @@ export default function AdminDashboard() {
 
         <TabsContent value="growers" className="space-y-4">
           <GrowersTab />
+        </TabsContent>
+
+        <TabsContent value="financial" className="space-y-4">
+          <FinancialTab />
         </TabsContent>
 
         <TabsContent value="financial" className="space-y-4">
