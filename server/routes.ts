@@ -163,6 +163,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
           role: user.role,
         });
 
+        // Send welcome email
+        try {
+          const { emailService } = await import("./services/email/sendgrid");
+          
+          await emailService.sendWelcomeEmail(
+            {
+              userName: user.firstName,
+              userRole: user.role as 'buyer' | 'farmer'
+            },
+            user.email
+          );
+          console.log("📧 Welcome email sent successfully");
+        } catch (emailError) {
+          console.error("📧 Failed to send welcome email:", emailError);
+          // Don't fail registration if email fails
+        }
+
         res.json({ user: { ...user, password: undefined } });
       } catch (error) {
         logger.error('auth', 'Registration error', {
@@ -1117,6 +1134,80 @@ FarmDirect - Fresh. Local. Direct.
     }
   });
 
+  // Admin API Routes for comprehensive data access
+  app.get("/api/admin/growers", requireRole('admin'), async (req: any, res) => {
+    try {
+      const { db } = await import("./storage");
+      
+      const growersResult = await db.execute(sql`
+        SELECT 
+          u.id,
+          u.first_name,
+          u.last_name,
+          u.email,
+          u.phone,
+          u.is_active,
+          u.created_at,
+          f.id as farm_id,
+          f.name as farm_name,
+          f.city as farm_city,
+          f.state as farm_state,
+          f.is_organic as farm_is_organic,
+          f.rating as farm_rating,
+          f.review_count as farm_review_count,
+          COALESCE(listing_counts.listings_count, 0) as listings_count,
+          COALESCE(revenue_data.total_revenue, 0) as total_revenue
+        FROM users u
+        LEFT JOIN farms f ON u.id = f.owner_id
+        LEFT JOIN (
+          SELECT farm_id, COUNT(*) as listings_count
+          FROM produce_items 
+          WHERE is_active = true
+          GROUP BY farm_id
+        ) listing_counts ON f.id = listing_counts.farm_id
+        LEFT JOIN (
+          SELECT 
+            f.id as farm_id,
+            SUM(oi.total_price) as total_revenue
+          FROM farms f
+          LEFT JOIN produce_items pi ON f.id = pi.farm_id
+          LEFT JOIN order_items oi ON pi.id = oi.produce_item_id
+          LEFT JOIN orders o ON oi.order_id = o.id
+          WHERE o.status != 'cancelled'
+          GROUP BY f.id
+        ) revenue_data ON f.id = revenue_data.farm_id
+        WHERE u.role = 'farmer'
+        ORDER BY u.created_at DESC
+      `);
+
+      const growers = growersResult.rows.map(row => ({
+        id: row.id,
+        firstName: row.first_name,
+        lastName: row.last_name,
+        email: row.email,
+        phone: row.phone,
+        isActive: row.is_active,
+        createdAt: row.created_at,
+        farm: row.farm_id ? {
+          id: row.farm_id,
+          name: row.farm_name,
+          city: row.farm_city,
+          state: row.farm_state,
+          isOrganic: row.farm_is_organic,
+          rating: row.farm_rating || "0",
+          reviewCount: row.farm_review_count || 0,
+          listingsCount: row.listings_count,
+          totalRevenue: parseFloat(row.total_revenue || "0")
+        } : null
+      }));
+
+      res.json(growers);
+    } catch (error) {
+      console.error("Admin growers error:", error);
+      res.status(500).json({ message: "Failed to get growers data" });
+    }
+  });
+
   // Admin Dashboard Routes
   app.get("/api/admin/stats", requireRole('admin'), async (req: any, res) => {
     try {
@@ -1276,6 +1367,7 @@ FarmDirect - Fresh. Local. Direct.
     }
   });
 
+  // Email integration with order processing
   app.post("/api/orders", requireAuth, async (req: any, res) => {
     try {
       const userId = req.session?.userId;
@@ -1330,6 +1422,33 @@ FarmDirect - Fresh. Local. Direct.
       const user = await storage.getUser(userId);
       if (user?.email) {
         await emailService.sendOrderConfirmation(user.email, order);
+      }
+
+      // Send order confirmation email
+      try {
+        const { emailService } = await import("./services/email/sendgrid");
+        
+        const orderData = {
+          orderNumber: order.id.toString(),
+          customerName: `${req.user.firstName} ${req.user.lastName}`,
+          customerEmail: req.user.email,
+          items: order.items?.map((item: any) => ({
+            name: item.name,
+            quantity: item.quantity,
+            price: item.totalPrice,
+            farmName: item.farmName || "Local Farm"
+          })) || [],
+          total: order.totalAmount,
+          deliveryMethod: order.deliveryMethod,
+          deliveryAddress: order.deliveryAddress,
+          orderDate: order.createdAt.toISOString()
+        };
+
+        await emailService.sendOrderConfirmation(orderData);
+        console.log("📧 Order confirmation email sent successfully");
+      } catch (emailError) {
+        console.error("📧 Failed to send order confirmation email:", emailError);
+        // Don't fail the order if email fails
       }
 
       res.json(order);

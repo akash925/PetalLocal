@@ -8,6 +8,8 @@ import { DollarSign, Package, ShoppingCart, Users, TrendingUp, MapPin, Clock, Cr
 import { format } from "date-fns";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
+import FlowersTab from "@/components/admin/FlowersTab";
+import GrowersTab from "@/components/admin/GrowersTab";
 
 interface Order {
   id: number;
@@ -213,8 +215,10 @@ export default function AdminDashboard() {
       </div>
 
       <Tabs defaultValue="orders" className="space-y-4">
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="orders">Orders</TabsTrigger>
+          <TabsTrigger value="flowers">Flowers</TabsTrigger>
+          <TabsTrigger value="growers">Growers</TabsTrigger>
           <TabsTrigger value="financial">Financial</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
@@ -286,6 +290,14 @@ export default function AdminDashboard() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="flowers" className="space-y-4">
+          <FlowersTab />
+        </TabsContent>
+
+        <TabsContent value="growers" className="space-y-4">
+          <GrowersTab />
         </TabsContent>
 
         <TabsContent value="financial" className="space-y-4">
