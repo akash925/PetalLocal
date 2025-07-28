@@ -19,6 +19,7 @@ import Login from "@/pages/auth/login";
 import Register from "@/pages/auth/register";
 import GrowerDashboard from "@/pages/dashboard/grower";
 import AdminDashboard from "@/pages/admin/dashboard";
+import OrderHistory from "@/pages/orders";
 import Messages from "@/pages/messages";
 import Checkout from "@/pages/checkout";
 import OrderConfirmation from "@/pages/order-confirmation";
@@ -55,6 +56,7 @@ function Router() {
           <Route path="/order-confirmation" component={OrderConfirmation} />
           <Route path="/orders/:id" component={OrderTracking} />
           <Route path="/order-tracking" component={OrderTracking} />
+          <Route path="/orders" component={OrderHistory} />
           <Route path="/login" component={Login} />
           <Route path="/signup" component={Register} />
           <Route path="/auth/login" component={Login} />

@@ -21,6 +21,7 @@ import { Plus, Edit, Trash2, Package, Upload, Download, Image } from "lucide-rea
 import { SmartPhotoUploader } from "@/components/smart-photo-uploader";
 import { ProduceEditModal } from "@/components/produce-edit-modal";
 import { InstagramConnect } from "@/components/instagram-connect";
+import OrderManagement from "@/components/OrderManagement";
 import {
   Dialog,
   DialogContent,

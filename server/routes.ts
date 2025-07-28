@@ -1687,6 +1687,187 @@ FarmDirect - Fresh. Local. Direct.
     }
   });
 
+  // Update order status (for farmers)
+  app.patch("/api/orders/:id/status", requireAuth, async (req: any, res) => {
+    try {
+      const orderId = parseInt(req.params.id);
+      const { status } = req.body;
+      const userId = req.session?.userId;
+
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { db } = await import("./storage");
+
+      // Verify farmer owns items in this order
+      const orderCheck = await db.execute(sql`
+        SELECT COUNT(*) as count
+        FROM order_items oi
+        LEFT JOIN produce_items pi ON oi.produce_item_id = pi.id
+        LEFT JOIN farms f ON pi.farm_id = f.id
+        WHERE oi.order_id = ${orderId} AND f.owner_id = ${userId}
+      `);
+
+      if (parseInt(orderCheck.rows[0]?.count || '0') === 0) {
+        return res.status(403).json({ message: "Not authorized to update this order" });
+      }
+
+      // Update order status
+      await db.execute(sql`
+        UPDATE orders 
+        SET status = ${status}, updated_at = NOW()
+        WHERE id = ${orderId}
+      `);
+
+      res.json({ success: true, message: "Order status updated successfully" });
+    } catch (error) {
+      console.error("Update order status error:", error);
+      res.status(500).json({ message: "Failed to update order status" });
+    }
+  });
+
+  // Get orders for farmer
+  app.get("/api/orders/farmer", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { db } = await import("./storage");
+
+      // Get orders containing items from farmer's farms
+      const orders = await db.execute(sql`
+        SELECT DISTINCT
+          o.id,
+          o.status,
+          o.payment_status,
+          o.total_amount,
+          o.delivery_method,
+          o.created_at,
+          CONCAT(u.first_name, ' ', u.last_name) as customer_name,
+          u.email as customer_email
+        FROM orders o
+        LEFT JOIN users u ON o.buyer_id = u.id
+        LEFT JOIN order_items oi ON o.id = oi.order_id
+        LEFT JOIN produce_items pi ON oi.produce_item_id = pi.id
+        LEFT JOIN farms f ON pi.farm_id = f.id
+        WHERE f.owner_id = ${userId}
+        ORDER BY o.created_at DESC
+      `);
+
+      // Get items for each order
+      const ordersWithItems = await Promise.all(
+        orders.rows.map(async (order) => {
+          const items = await db.execute(sql`
+            SELECT 
+              oi.id,
+              oi.quantity,
+              oi.price_per_unit,
+              oi.total_price,
+              pi.name as flower_name
+            FROM order_items oi
+            LEFT JOIN produce_items pi ON oi.produce_item_id = pi.id
+            LEFT JOIN farms f ON pi.farm_id = f.id
+            WHERE oi.order_id = ${order.id} AND f.owner_id = ${userId}
+          `);
+
+          return {
+            id: order.id,
+            status: order.status,
+            paymentStatus: order.payment_status,
+            totalAmount: parseFloat(order.total_amount),
+            deliveryMethod: order.delivery_method,
+            createdAt: order.created_at,
+            customerName: order.customer_name,
+            customerEmail: order.customer_email,
+            items: items.rows.map(item => ({
+              id: item.id,
+              flowerName: item.flower_name,
+              quantity: item.quantity,
+              pricePerUnit: parseFloat(item.price_per_unit),
+              totalPrice: parseFloat(item.total_price)
+            }))
+          };
+        })
+      );
+
+      res.json(ordersWithItems);
+    } catch (error) {
+      console.error("Get farmer orders error:", error);
+      res.status(500).json({ message: "Failed to get orders" });
+    }
+  });
+
+  // Get orders for customer
+  app.get("/api/orders/customer", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { db } = await import("./storage");
+
+      const orders = await db.execute(sql`
+        SELECT 
+          o.id,
+          o.status,
+          o.payment_status,
+          o.total_amount,
+          o.delivery_method,
+          o.delivery_address,
+          o.created_at
+        FROM orders o
+        WHERE o.buyer_id = ${userId}
+        ORDER BY o.created_at DESC
+      `);
+
+      // Get items for each order
+      const ordersWithItems = await Promise.all(
+        orders.rows.map(async (order) => {
+          const items = await db.execute(sql`
+            SELECT 
+              oi.id,
+              oi.quantity,
+              oi.price_per_unit,
+              oi.total_price,
+              pi.name as flower_name,
+              f.name as farm_name
+            FROM order_items oi
+            LEFT JOIN produce_items pi ON oi.produce_item_id = pi.id
+            LEFT JOIN farms f ON pi.farm_id = f.id
+            WHERE oi.order_id = ${order.id}
+          `);
+
+          return {
+            id: order.id,
+            status: order.status,
+            paymentStatus: order.payment_status,
+            totalAmount: parseFloat(order.total_amount),
+            deliveryMethod: order.delivery_method,
+            deliveryAddress: order.delivery_address,
+            createdAt: order.created_at,
+            items: items.rows.map(item => ({
+              id: item.id,
+              flowerName: item.flower_name,
+              farmName: item.farm_name,
+              quantity: item.quantity,
+              pricePerUnit: parseFloat(item.price_per_unit),
+              totalPrice: parseFloat(item.total_price)
+            }))
+          };
+        })
+      );
+
+      res.json(ordersWithItems);
+    } catch (error) {
+      console.error("Get customer orders error:", error);
+      res.status(500).json({ message: "Failed to get orders" });
+    }
+  });
+
   // Email integration with order processing
   app.post("/api/orders", requireAuth, async (req: any, res) => {
     try {
