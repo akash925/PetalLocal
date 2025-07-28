@@ -467,5 +467,178 @@ This link will expire in 24 hours. If you didn't request this reset, please igno
   }
 }
 
+// Refund request notification to admin
+export async function sendAdminRefundNotification(params: {
+  refundId: number;
+  orderId: number;
+  requesterName: string;
+  requesterType: 'buyer' | 'seller';
+  amount: number;
+  reason: string;
+}) {
+  const { refundId, orderId, requesterName, requesterType, amount, reason } = params;
+  
+  const subject = `🌸 Refund Request #${refundId} - Order #${orderId}`;
+  const html = `
+    <div style="font-family: 'Playfair Display', serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
+      <div style="background: linear-gradient(135deg, #0ABAB5 0%, #00a19c 100%); padding: 40px 20px; text-align: center;">
+        <h1 style="color: white; margin: 0; font-size: 28px; letter-spacing: 1px;">PetalLocal</h1>
+        <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">Luxury Flower Marketplace</p>
+      </div>
+      
+      <div style="padding: 40px 20px;">
+        <h2 style="color: #2c3e50; margin-bottom: 20px; font-size: 24px;">New Refund Request</h2>
+        
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+          <p><strong>Refund ID:</strong> #${refundId}</p>
+          <p><strong>Order ID:</strong> #${orderId}</p>
+          <p><strong>Requested by:</strong> ${requesterName} (${requesterType})</p>
+          <p><strong>Amount:</strong> $${amount.toFixed(2)}</p>
+          <p><strong>Reason:</strong></p>
+          <div style="background: white; padding: 15px; border-radius: 4px; margin-top: 10px;">
+            ${reason}
+          </div>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${process.env.APP_URL || 'http://localhost:5000'}/admin" 
+             style="background: #0ABAB5; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">
+            Review in Admin Panel
+          </a>
+        </div>
+        
+        <div style="background: #e8f4fd; padding: 20px; border-radius: 8px; margin-top: 20px;">
+          <h3 style="color: #2c3e50; margin-top: 0;">Email Reply Instructions:</h3>
+          <p style="margin-bottom: 10px;">You can process this refund by replying to this email with:</p>
+          <ul style="margin: 10px 0;">
+            <li><strong>"approve"</strong> - to approve the refund</li>
+            <li><strong>"decline"</strong> - to decline the refund</li>
+          </ul>
+          <p style="color: #666; font-size: 14px; margin: 0;">
+            Or visit the admin panel for more detailed review options.
+          </p>
+        </div>
+      </div>
+      
+      <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e9ecef;">
+        <p style="color: #666; margin: 0; font-size: 14px;">
+          PetalLocal - Connecting Local Flower Growers
+        </p>
+      </div>
+    </div>
+  `;
+
+  try {
+    await mailService.send({
+      to: process.env.ADMIN_EMAIL || 'akash.agarwal@conmitto.io',
+      from: process.env.SENDGRID_FROM_EMAIL || 'noreply@petallocaltest.com',
+      subject,
+      html,
+      replyTo: process.env.ADMIN_EMAIL || 'akash.agarwal@conmitto.io',
+    });
+    return true;
+  } catch (error) {
+    console.error('SendGrid admin refund notification error:', error);
+    return false;
+  }
+}
+
+// Refund processed notification
+export async function sendRefundProcessedNotification(params: {
+  orderId: number;
+  refundAmount: number;
+  status: 'approved' | 'declined';
+  requesterEmail: string;
+  requesterName: string;
+  buyerEmail: string;
+  buyerName: string;
+  adminNotes?: string;
+}) {
+  const { orderId, refundAmount, status, requesterEmail, requesterName, buyerEmail, buyerName, adminNotes } = params;
+  
+  const isApproved = status === 'approved';
+  const subject = `🌸 Refund ${isApproved ? 'Approved' : 'Update'} - Order #${orderId}`;
+  
+  const html = `
+    <div style="font-family: 'Playfair Display', serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
+      <div style="background: linear-gradient(135deg, #0ABAB5 0%, #00a19c 100%); padding: 40px 20px; text-align: center;">
+        <h1 style="color: white; margin: 0; font-size: 28px; letter-spacing: 1px;">PetalLocal</h1>
+        <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">Luxury Flower Marketplace</p>
+      </div>
+      
+      <div style="padding: 40px 20px;">
+        <h2 style="color: #2c3e50; margin-bottom: 20px; font-size: 24px;">
+          Refund ${isApproved ? 'Approved' : 'Update'}
+        </h2>
+        
+        <div style="background: ${isApproved ? '#d4edda' : '#f8d7da'}; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid ${isApproved ? '#28a745' : '#dc3545'};">
+          <p style="margin: 0; font-size: 16px; color: ${isApproved ? '#155724' : '#721c24'};">
+            <strong>Your refund request has been ${status}.</strong>
+          </p>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+          <p><strong>Order ID:</strong> #${orderId}</p>
+          <p><strong>Refund Amount:</strong> $${refundAmount.toFixed(2)}</p>
+          <p><strong>Status:</strong> ${status.charAt(0).toUpperCase() + status.slice(1)}</p>
+          ${adminNotes ? `
+          <p><strong>Admin Notes:</strong></p>
+          <div style="background: white; padding: 15px; border-radius: 4px; margin-top: 10px;">
+            ${adminNotes}
+          </div>
+          ` : ''}
+        </div>
+        
+        ${isApproved ? `
+        <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+          <h3 style="color: #28a745; margin-top: 0;">Next Steps:</h3>
+          <p>Your refund of $${refundAmount.toFixed(2)} will be processed back to your original payment method within 3-5 business days.</p>
+          <p>You will receive a separate confirmation once the refund has been completed.</p>
+        </div>
+        ` : `
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+          <h3 style="color: #6c757d; margin-top: 0;">Need Help?</h3>
+          <p>If you have questions about this decision, please contact our customer support team.</p>
+        </div>
+        `}
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${process.env.APP_URL || 'http://localhost:5000'}" 
+             style="background: #0ABAB5; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; display: inline-block;">
+            Continue Shopping
+          </a>
+        </div>
+      </div>
+      
+      <div style="background: #f8f9fa; padding: 20px; text-align: center; border-top: 1px solid #e9ecef;">
+        <p style="color: #666; margin: 0; font-size: 14px;">
+          PetalLocal - Connecting Local Flower Growers
+        </p>
+      </div>
+    </div>
+  `;
+
+  // Send to both requester and buyer (if different)
+  const recipients = [requesterEmail];
+  if (buyerEmail && buyerEmail !== requesterEmail) {
+    recipients.push(buyerEmail);
+  }
+
+  try {
+    await Promise.all(recipients.map(email => 
+      mailService.send({
+        to: email,
+        from: process.env.SENDGRID_FROM_EMAIL || 'noreply@petallocaltest.com',
+        subject,
+        html,
+      })
+    ));
+    return true;
+  } catch (error) {
+    console.error('SendGrid refund processed notification error:', error);
+    return false;
+  }
+}
+
 export const emailService = new PetalLocalEmailService();
 export { OrderConfirmationData, WelcomeEmailData, PasswordResetData };

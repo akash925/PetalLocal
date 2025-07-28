@@ -263,6 +263,31 @@ export type ProduceItem = typeof produceItems.$inferSelect;
 export type InsertProduceItem = z.infer<typeof insertProduceItemSchema>;
 export type Inventory = typeof inventories.$inferSelect;
 export type InsertInventory = z.infer<typeof insertInventorySchema>;
+
+// Refund Requests Table
+export const refundRequests = pgTable("refund_requests", {
+  id: serial("id").primaryKey(),
+  orderId: integer("order_id").references(() => orders.id).notNull(),
+  requesterId: integer("requester_id").references(() => users.id).notNull(),
+  requesterType: text("requester_type", { enum: ["buyer", "seller"] }).notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  reason: text("reason").notNull(),
+  status: text("status", { enum: ["pending", "approved", "declined"] }).default("pending").notNull(),
+  adminNotes: text("admin_notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  processedAt: timestamp("processed_at"),
+  processedById: integer("processed_by_id").references(() => users.id),
+});
+
+export const insertRefundRequestSchema = createInsertSchema(refundRequests).omit({
+  id: true,
+  createdAt: true,
+  processedAt: true,
+  processedById: true,
+});
+
+export type RefundRequest = typeof refundRequests.$inferSelect;
+export type InsertRefundRequest = z.infer<typeof insertRefundRequestSchema>;
 export type Order = typeof orders.$inferSelect;
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
 export type OrderItem = typeof orderItems.$inferSelect;

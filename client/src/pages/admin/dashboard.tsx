@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/use-auth";
 import FlowersTab from "@/components/admin/FlowersTab";
 import GrowersTab from "@/components/admin/GrowersTab";
 import FinancialTab from "@/components/admin/FinancialTab";
+import RefundRequestsTab from "@/components/admin/RefundRequestsTab";
 
 interface Order {
   id: number;
@@ -216,11 +217,12 @@ export default function AdminDashboard() {
       </div>
 
       <Tabs defaultValue="orders" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="orders">Orders</TabsTrigger>
           <TabsTrigger value="flowers">Flowers</TabsTrigger>
           <TabsTrigger value="growers">Growers</TabsTrigger>
           <TabsTrigger value="financial">Financial</TabsTrigger>
+          <TabsTrigger value="refunds">Refunds</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
         </TabsList>
@@ -303,6 +305,10 @@ export default function AdminDashboard() {
 
         <TabsContent value="financial" className="space-y-4">
           <FinancialTab />
+        </TabsContent>
+
+        <TabsContent value="refunds" className="space-y-4">
+          <RefundRequestsTab />
         </TabsContent>
 
         <TabsContent value="financial" className="space-y-4">

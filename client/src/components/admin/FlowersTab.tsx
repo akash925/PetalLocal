@@ -52,8 +52,8 @@ export default function FlowersTab() {
   });
 
   const categories = [...new Set(flowers?.map(f => f.category) || [])];
-  const totalValue = flowers?.reduce((sum, flower) => sum + (flower.pricePerUnit * flower.quantityAvailable), 0) || 0;
-  const avgPrice = flowers?.length ? flowers.reduce((sum, f) => sum + f.pricePerUnit, 0) / flowers.length : 0;
+  const totalValue = flowers?.reduce((sum, flower) => sum + (Number(flower.pricePerUnit || 0) * Number(flower.quantityAvailable || 0)), 0) || 0;
+  const avgPrice = flowers?.length ? flowers.reduce((sum, f) => sum + Number(f.pricePerUnit || 0), 0) / flowers.length : 0;
 
   return (
     <div className="space-y-6">
@@ -209,7 +209,7 @@ export default function FlowersTab() {
                       </Badge>
                     </TableCell>
                     <TableCell className="font-medium">
-                      ${flower.pricePerUnit.toFixed(2)}/{flower.unit}
+                      ${Number(flower.pricePerUnit || 0).toFixed(2)}/{flower.unit}
                     </TableCell>
                     <TableCell>
                       <div className={`font-medium ${

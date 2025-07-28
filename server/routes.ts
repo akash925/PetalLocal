@@ -1453,6 +1453,240 @@ FarmDirect - Fresh. Local. Direct.
     }
   });
 
+  // Refund Request Routes
+  app.post("/api/refund-requests", requireAuth, async (req: any, res) => {
+    try {
+      const userId = req.session?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { db } = await import("./storage");
+      const { orderId, amount, reason } = req.body;
+
+      // Get order details to determine requester type
+      const orderResult = await db.execute(sql`
+        SELECT o.*, u.first_name, u.last_name, u.email, u.role
+        FROM orders o
+        LEFT JOIN users u ON o.buyer_id = u.id
+        WHERE o.id = ${orderId}
+      `);
+
+      if (orderResult.rows.length === 0) {
+        return res.status(404).json({ message: "Order not found" });
+      }
+
+      const order = orderResult.rows[0];
+      const userResult = await db.execute(sql`
+        SELECT role FROM users WHERE id = ${userId}
+      `);
+      
+      const userRole = userResult.rows[0]?.role;
+      let requesterType: 'buyer' | 'seller';
+
+      if (userId === order.buyer_id) {
+        requesterType = 'buyer';
+      } else if (userRole === 'farmer') {
+        // Check if this farmer sold items in this order
+        const farmerOrderCheck = await db.execute(sql`
+          SELECT COUNT(*) as count
+          FROM order_items oi
+          LEFT JOIN produce_items pi ON oi.produce_item_id = pi.id
+          LEFT JOIN farms f ON pi.farm_id = f.id
+          WHERE oi.order_id = ${orderId} AND f.owner_id = ${userId}
+        `);
+        
+        if (parseInt(farmerOrderCheck.rows[0]?.count || '0') > 0) {
+          requesterType = 'seller';
+        } else {
+          return res.status(403).json({ message: "Not authorized to request refund for this order" });
+        }
+      } else {
+        return res.status(403).json({ message: "Not authorized to request refund" });
+      }
+
+      // Create refund request
+      const refundResult = await db.execute(sql`
+        INSERT INTO refund_requests (order_id, requester_id, requester_type, amount, reason)
+        VALUES (${orderId}, ${userId}, ${requesterType}, ${amount}, ${reason})
+        RETURNING id
+      `);
+
+      const refundId = refundResult.rows[0]?.id;
+
+      // Send email notification to admin
+      try {
+        const { sendAdminRefundNotification } = await import("./services/email/sendgrid");
+        await sendAdminRefundNotification({
+          refundId,
+          orderId,
+          requesterName: `${order.first_name} ${order.last_name}`,
+          requesterType,
+          amount: parseFloat(amount),
+          reason
+        });
+      } catch (emailError) {
+        console.error("Failed to send admin notification:", emailError);
+      }
+
+      res.json({ 
+        success: true, 
+        refundId,
+        message: "Refund request submitted successfully. You will be notified via email once it's processed."
+      });
+    } catch (error) {
+      console.error("Refund request error:", error);
+      res.status(500).json({ message: "Failed to submit refund request" });
+    }
+  });
+
+  // Admin: Get refund requests
+  app.get("/api/admin/refund-requests", requireRole('admin'), async (req: any, res) => {
+    try {
+      const { db } = await import("./storage");
+      
+      const requests = await db.execute(sql`
+        SELECT 
+          rr.*,
+          CONCAT(u.first_name, ' ', u.last_name) as requester_name,
+          o.total_amount as order_total,
+          CONCAT(buyer.first_name, ' ', buyer.last_name) as buyer_name,
+          buyer.email as buyer_email
+        FROM refund_requests rr
+        LEFT JOIN users u ON rr.requester_id = u.id
+        LEFT JOIN orders o ON rr.order_id = o.id
+        LEFT JOIN users buyer ON o.buyer_id = buyer.id
+        ORDER BY rr.created_at DESC
+      `);
+
+      const refundRequests = await Promise.all(
+        requests.rows.map(async (request) => {
+          // Get order items
+          const itemsResult = await db.execute(sql`
+            SELECT 
+              oi.quantity,
+              oi.price_per_unit,
+              oi.total_price,
+              pi.name as flower_name
+            FROM order_items oi
+            LEFT JOIN produce_items pi ON oi.produce_item_id = pi.id
+            WHERE oi.order_id = ${request.order_id}
+          `);
+
+          return {
+            id: request.id,
+            orderId: request.order_id,
+            requesterId: request.requester_id,
+            requesterType: request.requester_type,
+            requesterName: request.requester_name,
+            amount: parseFloat(request.amount),
+            reason: request.reason,
+            status: request.status,
+            createdAt: request.created_at,
+            processedAt: request.processed_at,
+            adminNotes: request.admin_notes,
+            orderDetails: {
+              buyerName: request.buyer_name,
+              buyerEmail: request.buyer_email,
+              items: itemsResult.rows.map(item => ({
+                flowerName: item.flower_name,
+                quantity: item.quantity,
+                price: parseFloat(item.total_price)
+              }))
+            }
+          };
+        })
+      );
+
+      res.json(refundRequests);
+    } catch (error) {
+      console.error("Get refund requests error:", error);
+      res.status(500).json({ message: "Failed to get refund requests" });
+    }
+  });
+
+  // Admin: Process refund request
+  app.post("/api/admin/refund-requests/:id/process", requireRole('admin'), async (req: any, res) => {
+    try {
+      const refundId = parseInt(req.params.id);
+      const { action, adminNotes } = req.body;
+      const adminId = req.session?.userId;
+
+      if (!['approve', 'decline'].includes(action)) {
+        return res.status(400).json({ message: "Invalid action" });
+      }
+
+      const { db } = await import("./storage");
+
+      // Get refund request details
+      const refundResult = await db.execute(sql`
+        SELECT 
+          rr.*,
+          CONCAT(u.first_name, ' ', u.last_name) as requester_name,
+          u.email as requester_email,
+          o.total_amount as order_total,
+          CONCAT(buyer.first_name, ' ', buyer.last_name) as buyer_name,
+          buyer.email as buyer_email
+        FROM refund_requests rr
+        LEFT JOIN users u ON rr.requester_id = u.id
+        LEFT JOIN orders o ON rr.order_id = o.id
+        LEFT JOIN users buyer ON o.buyer_id = buyer.id
+        WHERE rr.id = ${refundId} AND rr.status = 'pending'
+      `);
+
+      if (refundResult.rows.length === 0) {
+        return res.status(404).json({ message: "Refund request not found or already processed" });
+      }
+
+      const refund = refundResult.rows[0];
+
+      // Update refund request
+      await db.execute(sql`
+        UPDATE refund_requests 
+        SET status = ${action === 'approve' ? 'approved' : 'declined'},
+            processed_at = NOW(),
+            processed_by_id = ${adminId},
+            admin_notes = ${adminNotes || null}
+        WHERE id = ${refundId}
+      `);
+
+      // If approved, update order status to refunded
+      if (action === 'approve') {
+        await db.execute(sql`
+          UPDATE orders 
+          SET payment_status = 'refunded',
+              status = 'refunded'
+          WHERE id = ${refund.order_id}
+        `);
+      }
+
+      // Send email notifications
+      try {
+        const { sendRefundProcessedNotification } = await import("./services/email/sendgrid");
+        await sendRefundProcessedNotification({
+          orderId: refund.order_id,
+          refundAmount: parseFloat(refund.amount),
+          status: action === 'approve' ? 'approved' : 'declined',
+          requesterEmail: refund.requester_email,
+          requesterName: refund.requester_name,
+          buyerEmail: refund.buyer_email,
+          buyerName: refund.buyer_name,
+          adminNotes
+        });
+      } catch (emailError) {
+        console.error("Failed to send refund notification:", emailError);
+      }
+
+      res.json({ 
+        success: true, 
+        message: `Refund request ${action === 'approve' ? 'approved' : 'declined'} successfully` 
+      });
+    } catch (error) {
+      console.error("Process refund error:", error);
+      res.status(500).json({ message: "Failed to process refund request" });
+    }
+  });
+
   // Email integration with order processing
   app.post("/api/orders", requireAuth, async (req: any, res) => {
     try {
