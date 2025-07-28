@@ -101,26 +101,36 @@ export function ProduceCard({
   };
 
   return (
-    <Card className="luxury-card-hover overflow-hidden bg-white">
+    <Card className="luxury-card-hover overflow-hidden bg-white border-0 shadow-lg hover:shadow-xl transition-all duration-500">
       <div className="relative group">
         <Link href={`/flowers/${id}`}>
-          <div className="aspect-w-4 aspect-h-3 bg-gray-50 cursor-pointer relative">
+          <div className="aspect-w-4 aspect-h-3 bg-gray-50 cursor-pointer relative overflow-hidden">
             {imageUrl ? (
               <img
                 src={imageUrl}
                 alt={name}
-                className="w-full h-56 object-cover group-hover:scale-105 transition-transform duration-300"
+                className="w-full h-64 object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
               />
             ) : (
-            <div className="w-full h-56 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
+            <div className="w-full h-64 bg-gradient-to-br from-tiffany/10 via-white to-gray-50 flex items-center justify-center">
               <div className="text-center">
-                <div className="w-16 h-16 mx-auto mb-3 bg-tiffany rounded-sm flex items-center justify-center">
-                  <span className="text-white text-2xl">🌸</span>
+                <div className="w-20 h-20 mx-auto mb-4 bg-gradient-to-r from-tiffany to-tiffany/80 rounded-full flex items-center justify-center shadow-lg">
+                  <span className="text-white text-3xl">🌸</span>
                 </div>
-                <span className="text-luxury-black text-sm font-medium luxury-heading">{name}</span>
+                <span className="text-luxury-black text-base font-medium luxury-heading">{name}</span>
               </div>
             </div>
           )}
+          
+          {/* Luxury overlay on hover */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          
+          {/* Quick view badge */}
+          <div className="absolute top-4 left-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform -translate-y-2 group-hover:translate-y-0">
+            <div className="bg-white/95 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-luxury-black shadow-lg">
+              Quick View
+            </div>
+          </div>
           </div>
         </Link>
         

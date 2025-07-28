@@ -57,14 +57,18 @@ export default function Cart() {
 
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <ShoppingBag className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Your cart is empty</h1>
-          <p className="text-gray-600 mb-6">Discover fresh produce from local farms</p>
-          <Link href="/produce">
-            <Button className="bg-green-500 hover:bg-green-600">
-              Browse Produce
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto px-6">
+          <div className="w-24 h-24 bg-gradient-to-r from-tiffany to-tiffany/80 rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg">
+            <ShoppingBag className="w-12 h-12 text-white" />
+          </div>
+          <h1 className="text-3xl luxury-heading text-luxury-black mb-4">Your Shopping Bag Awaits</h1>
+          <p className="text-lg luxury-subheading mb-8 leading-relaxed">
+            Discover exquisite flowers from distinguished artisan growers for life's most treasured moments
+          </p>
+          <Link href="/flowers/browse">
+            <Button className="luxury-button px-10 py-4 text-lg shadow-xl hover:shadow-2xl transition-all duration-300">
+              Explore Luxury Collection
             </Button>
           </Link>
         </div>

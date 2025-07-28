@@ -35,10 +35,10 @@ export default function Home() {
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center px-6 sm:px-8 lg:px-8 max-w-5xl w-full">
             <h1 className="text-4xl sm:text-5xl md:text-7xl luxury-heading text-luxury-black mb-8 md:mb-6 leading-tight">
-              Beautiful Flowers,<br />Beautiful Moments
+              Exquisite Flowers,<br />Unforgettable Moments
             </h1>
             <p className="text-lg sm:text-xl md:text-2xl luxury-subheading mb-12 md:mb-12 max-w-3xl mx-auto leading-relaxed">
-              Discover exceptional flowers from local growers curated for life's most precious occasions
+              Curated luxury flower collections from distinguished local artisan growers for life's most treasured celebrations
             </p>
             
             {/* Search Bar */}

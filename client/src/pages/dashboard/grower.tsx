@@ -31,10 +31,10 @@ import {
 } from "@/components/ui/dialog";
 
 export default function GrowerDashboard() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [location] = useLocation();
+  const [, setLocation] = useLocation();
   const [isAddingProduce, setIsAddingProduce] = useState(false);
   const [isCreatingFarm, setIsCreatingFarm] = useState(false);
   const [isEditingFarm, setIsEditingFarm] = useState(false);
@@ -54,16 +54,11 @@ export default function GrowerDashboard() {
       setActiveTab("produce");
       setIsAddingProduce(true);
     }
-  }, [location]);
+  }, []);
 
   // Get farmer's farms
   const { data: farms = [] } = useQuery({
     queryKey: ["/api/farms", "owned", user?.id],
-    queryFn: async () => {
-      const response = await fetch(`/api/farms/owned/${user?.id}`);
-      if (!response.ok) throw new Error("Failed to fetch farms");
-      return response.json();
-    },
     enabled: !!user,
   });
 
