@@ -39,7 +39,7 @@ export default function GrowerDashboard() {
   const [isAddingProduce, setIsAddingProduce] = useState(false);
   const [isCreatingFarm, setIsCreatingFarm] = useState(false);
   const [isEditingFarm, setIsEditingFarm] = useState(false);
-  const [activeTab, setActiveTab] = useState("produce");
+  const [activeTab, setActiveTab] = useState("flowers");
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [editingInventory, setEditingInventory] = useState<number | null>(null);
   const [editingItem, setEditingItem] = useState<number | null>(null);
@@ -51,8 +51,8 @@ export default function GrowerDashboard() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const tab = urlParams.get('tab');
-    if (tab === 'add-produce') {
-      setActiveTab("produce");
+    if (tab === 'add-flowers') {
+      setActiveTab("flowers");
       setIsAddingProduce(true);
     }
   }, []);
@@ -334,14 +334,14 @@ export default function GrowerDashboard() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList>
-            <TabsTrigger value="produce">My Produce</TabsTrigger>
+            <TabsTrigger value="produce">My Flowers</TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
             <TabsTrigger value="farm">Farm Profile</TabsTrigger>
           </TabsList>
 
           <TabsContent value="produce" className="space-y-6">
             <div className="flex justify-between items-center">
-              <h2 className="text-xl font-semibold text-gray-900">Produce Items</h2>
+              <h2 className="text-xl font-semibold text-gray-900">Flower Items</h2>
               <div className="flex gap-2">
                 <Dialog open={showBulkUpload} onOpenChange={setShowBulkUpload}>
                   <DialogTrigger asChild>
@@ -352,9 +352,9 @@ export default function GrowerDashboard() {
                   </DialogTrigger>
                   <DialogContent className="max-w-2xl">
                     <DialogHeader>
-                      <DialogTitle>Bulk Upload Produce Items</DialogTitle>
+                      <DialogTitle>Bulk Upload Flower Items</DialogTitle>
                       <DialogDescription>
-                        Upload multiple produce items at once using our CSV template
+                        Upload multiple flower items at once using our CSV template
                       </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
@@ -368,14 +368,14 @@ export default function GrowerDashboard() {
                           className="w-full" 
                           onClick={() => {
                             const csvContent = `name,description,category,variety,unit,pricePerUnit,quantityAvailable,isOrganic,isSeasonal,isHeirloom
-Fresh Tomatoes,Vine-ripened organic tomatoes,vegetables,Roma,lb,4.50,25,true,true,false
-Sweet Corn,Fresh picked sweet corn,vegetables,Silver Queen,each,1.25,50,false,true,false
-Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
+Red Roses,Beautiful fresh red roses,roses,Hybrid Tea,stem,4.50,25,true,true,false
+White Tulips,Fresh Dutch white tulips,tulips,Darwin,stem,3.25,50,false,true,false
+Sunflowers,Bright yellow sunflowers,sunflowers,Giant,stem,5.00,10,true,false,false`;
                             const blob = new Blob([csvContent], { type: 'text/csv' });
                             const url = window.URL.createObjectURL(blob);
                             const a = document.createElement('a');
                             a.href = url;
-                            a.download = 'produce-template.csv';
+                            a.download = 'flowers-template.csv';
                             a.click();
                             window.URL.revokeObjectURL(url);
                           }}
@@ -388,7 +388,7 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                       <div className="p-4 bg-green-50 rounded-lg">
                         <h4 className="font-medium text-green-900 mb-2">Step 2: Upload Your CSV</h4>
                         <p className="text-sm text-green-700 mb-3">
-                          Upload your completed CSV file to create multiple produce items
+                          Upload your completed CSV file to create multiple flower items
                         </p>
                         <input
                           type="file"
@@ -453,7 +453,7 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                   className="bg-green-500 hover:bg-green-600"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Add Produce
+                  Add Flowers
                 </Button>
               </div>
             </div>
@@ -461,9 +461,9 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
             {isAddingProduce && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Add New Produce Item</CardTitle>
+                  <CardTitle>Add New Flower Item</CardTitle>
                   <CardDescription>
-                    Create a new listing for your farm produce
+                    Create a new listing for your beautiful flowers
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -480,9 +480,9 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                           name="name"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Product Name</FormLabel>
+                              <FormLabel>Flower Name</FormLabel>
                               <FormControl>
-                                <Input placeholder="e.g., Fresh Tomatoes" {...field} />
+                                <Input placeholder="e.g., Red Roses" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -526,7 +526,7 @@ Basil,Fresh organic basil,herbs,,bunch,3.00,10,true,false,false`;
                             <FormLabel>Description</FormLabel>
                             <FormControl>
                               <Textarea
-                                placeholder="Describe your produce..."
+                                placeholder="Describe your beautiful flowers..."
                                 className="min-h-[100px]"
                                 {...field}
                               />

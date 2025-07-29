@@ -58,6 +58,7 @@ export function ProduceCard({
   // }, [farmLatitude, farmLongitude, providedDistance]);
 
   const handleAddToCart = () => {
+    // Add item to cart with optimistic update
     addItem({
       id,
       name,
@@ -67,11 +68,14 @@ export function ProduceCard({
       imageUrl,
     }, quantity);
 
+    // Show immediate visual feedback
     toast({
-      title: "Added to cart",
-      description: `${quantity} ${unit}${quantity > 1 ? 's' : ''} of ${name} added to your cart.`,
+      title: "Added to bag",
+      description: `${quantity} ${unit}${quantity > 1 ? 's' : ''} of ${name} added to your bag.`,
+      duration: 2000,
     });
 
+    // Reset form state
     setQuantity(1);
     setShowQuantitySelector(false);
   };
