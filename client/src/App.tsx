@@ -25,6 +25,7 @@ import Checkout from "@/pages/checkout";
 import OrderConfirmation from "@/pages/order-confirmation";
 import OrderTracking from "@/pages/order-tracking";
 import DeliveryPage from "@/pages/checkout/delivery";
+import GrowerPortalPage from "@/pages/grower-portal";
 import Sell from "@/pages/sell";
 import SellProduce from "@/pages/sell-produce";
 import NotFound from "@/pages/not-found";
@@ -72,6 +73,7 @@ function Router() {
           <Route path="/messages" component={Messages} />
           <Route path="/sell" component={Sell} />
           <Route path="/sell-produce" component={SellProduce} />
+          <Route path="/grower-portal" component={GrowerPortalPage} />
           <Route component={NotFound} />
         </Switch>
       </main>

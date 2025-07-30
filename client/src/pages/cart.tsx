@@ -46,13 +46,13 @@ export default function Cart() {
 
   const handleCheckout = () => {
     if (!isAuthenticated) {
-      // Redirect to signup with return URL to checkout
-      window.location.href = '/auth/register?redirect=/checkout';
+      // Redirect to signup with return URL to delivery
+      window.location.href = '/auth/register?redirect=/delivery';
       return;
     }
     
-    // Redirect to checkout page
-    window.location.href = '/checkout';
+    // Redirect to delivery page
+    window.location.href = '/delivery';
   };
 
   if (items.length === 0) {
@@ -198,11 +198,11 @@ export default function Cart() {
                 )}
 
                 <Button
-                  className="w-full bg-green-500 hover:bg-green-600"
+                  className="w-full luxury-button"
                   size="lg"
                   onClick={handleCheckout}
                 >
-                  {!isAuthenticated ? "Sign In & Checkout" : "Proceed to Checkout"}
+                  {!isAuthenticated ? "Sign In & Checkout" : "Choose Delivery Options"}
                 </Button>
 
                 <Button
