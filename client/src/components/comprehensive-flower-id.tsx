@@ -165,8 +165,10 @@ export function ComprehensiveFlowerId({
       }) as FlowerAnalysisResult;
       
       console.log("Analysis result:", result);
+      console.log("Result success:", result?.success);
+      console.log("Result plantType:", result?.plantType);
       
-      if (result && result.success) {
+      if (result && result.success && result.plantType) {
         setAnalysis(result);
         onAnalysisComplete?.(result);
         toast({
