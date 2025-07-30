@@ -19,7 +19,7 @@ import { insertProduceItemSchema, insertFarmSchema, insertInventorySchema } from
 import { z } from "zod";
 import { Plus, Edit, Trash2, Package, Upload, Download, Image } from "lucide-react";
 import { SmartPhotoUploader } from "@/components/smart-photo-uploader";
-import { FlowerIdentificationWidget } from "@/components/flower-identification-widget";
+import { ComprehensiveFlowerId } from "@/components/comprehensive-flower-id";
 import { ProduceEditModal } from "@/components/produce-edit-modal";
 import { InstagramConnect } from "@/components/instagram-connect";
 import OrderManagement from "@/components/OrderManagement";
@@ -462,7 +462,7 @@ Sunflowers,Bright yellow sunflowers,sunflowers,Giant,stem,5.00,10,true,false,fal
             {isAddingProduce && (
               <div className="space-y-6">
                 {/* AI Flower Identification - Prominent Feature */}
-                <FlowerIdentificationWidget
+                <ComprehensiveFlowerId
                   onAnalysisComplete={(analysis) => {
                     if (analysis.success) {
                       // Auto-fill form with AI analysis results
@@ -961,7 +961,7 @@ Sunflowers,Bright yellow sunflowers,sunflowers,Giant,stem,5.00,10,true,false,fal
                             <p className="text-xs text-gray-500 mb-2">
                               Upload a photo to estimate inventory automatically with AI
                             </p>
-                            <FlowerIdentificationWidget
+                            <ComprehensiveFlowerId
                               onAnalysisComplete={(analysis) => {
                                 const input = document.getElementById(`inventory-${item.id}`) as HTMLInputElement;
                                 if (input && analysis.estimatedYield?.quantity) {

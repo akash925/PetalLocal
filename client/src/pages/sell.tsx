@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useState, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { FlowerIdentificationWidget } from "@/components/flower-identification-widget";
+import { ComprehensiveFlowerId } from "@/components/comprehensive-flower-id";
 import { 
   Flower, 
   DollarSign, 
@@ -173,7 +173,7 @@ export default function Sell() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* AI Demo Interface */}
             <div className="lg:sticky lg:top-20">
-              <FlowerIdentificationWidget
+              <ComprehensiveFlowerId
                 onAnalysisComplete={(analysis) => {
                   setAnalysisResult(analysis);
                   if (analysis.success) {
@@ -384,7 +384,7 @@ export default function Sell() {
                                       {analysisResult.plantType}
                                     </h5>
                                     <p className="text-gray-600 text-sm mb-2">
-                                      Fresh {analysisResult.plantType.toLowerCase()} in {analysisResult.bloomStage.toLowerCase()} stage. 
+                                      Fresh {analysisResult.plantType?.toLowerCase() || 'flower'} in {analysisResult.bloomStage?.toLowerCase() || 'bloom'} stage. 
                                       Perfect for bouquets, arrangements, or garden decoration.
                                     </p>
                                     <div className="flex items-center gap-4 text-sm">
