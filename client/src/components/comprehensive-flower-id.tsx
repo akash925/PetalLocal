@@ -159,10 +159,12 @@ export function ComprehensiveFlowerId({
     setIsAnalyzing(true);
 
     try {
-      const result = await apiRequest("POST", "/api/analyze-plant", {
+      const response = await apiRequest("POST", "/api/analyze-plant", {
         image: selectedImage,
         analysisType: "comprehensive"
       });
+      
+      const result = await response.json();
       
       console.log("Analysis result:", result);
       console.log("Result success:", result?.success);
