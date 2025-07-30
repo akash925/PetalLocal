@@ -196,6 +196,7 @@ export function ComprehensiveFlowerId({
           },
           maturitySeason: {
             season: "Spring/Summer",
+            months: ["April", "May", "June", "July", "August"],
             timeToMaturity: "Blooming now"
           }
         };
@@ -232,6 +233,7 @@ export function ComprehensiveFlowerId({
         },
         maturitySeason: {
           season: "Spring/Summer",
+          months: ["April", "May", "June", "July", "August"],
           timeToMaturity: "Blooming now"
         }
       };
@@ -466,7 +468,7 @@ export function ComprehensiveFlowerId({
                     </div>
                     <div className="text-sm text-purple-700">
                       <div><strong>Season:</strong> {analysis.maturitySeason.season}</div>
-                      <div><strong>Months:</strong> {analysis.maturitySeason.months.join(', ')}</div>
+                      <div><strong>Months:</strong> {analysis.maturitySeason.months?.join(', ') || 'Year-round'}</div>
                       <div><strong>Time to Maturity:</strong> {analysis.maturitySeason.timeToMaturity}</div>
                     </div>
                   </div>
