@@ -173,7 +173,7 @@ REMEMBER: Only process flower/flowering plant images. Reject all other content i
               {
                 type: "image_url",
                 image_url: {
-                  url: `data:image/jpeg;base64,${base64Image}`
+                  url: base64Image.startsWith('data:') ? base64Image : `data:image/jpeg;base64,${base64Image}`
                 }
               }
             ],
@@ -279,7 +279,7 @@ Be conservative but realistic in estimates.`
               {
                 type: "image_url",
                 image_url: {
-                  url: `data:image/jpeg;base64,${base64Image}`
+                  url: base64Image.startsWith('data:') ? base64Image : `data:image/jpeg;base64,${base64Image}`
                 }
               }
             ],
