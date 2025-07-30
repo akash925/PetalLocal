@@ -19,6 +19,7 @@ import { insertProduceItemSchema, insertFarmSchema, insertInventorySchema } from
 import { z } from "zod";
 import { Plus, Edit, Trash2, Package, Upload, Download, Image } from "lucide-react";
 import { SmartPhotoUploader } from "@/components/smart-photo-uploader";
+import { FlowerIdentificationWidget } from "@/components/flower-identification-widget";
 import { ProduceEditModal } from "@/components/produce-edit-modal";
 import { InstagramConnect } from "@/components/instagram-connect";
 import OrderManagement from "@/components/OrderManagement";
@@ -334,12 +335,12 @@ export default function GrowerDashboard() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList>
-            <TabsTrigger value="produce">My Flowers</TabsTrigger>
+            <TabsTrigger value="flowers">My Flowers</TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
             <TabsTrigger value="farm">Farm Profile</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="produce" className="space-y-6">
+          <TabsContent value="flowers" className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-xl font-semibold text-gray-900">Flower Items</h2>
               <div className="flex gap-2">
@@ -459,21 +460,56 @@ Sunflowers,Bright yellow sunflowers,sunflowers,Giant,stem,5.00,10,true,false,fal
             </div>
 
             {isAddingProduce && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Add New Flower Item</CardTitle>
-                  <CardDescription>
-                    Create a new listing for your beautiful flowers
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Form {...form}>
-                    <form onSubmit={(e) => {
-                      console.log("Form onSubmit triggered");
-                      console.log("Form validation state:", form.formState);
-                      console.log("Form errors:", form.formState.errors);
-                      form.handleSubmit(onSubmit)(e);
-                    }} className="space-y-4">
+              <div className="space-y-6">
+                {/* AI Flower Identification - Prominent Feature */}
+                <FlowerIdentificationWidget
+                  onAnalysisComplete={(analysis) => {
+                    if (analysis.success) {
+                      // Auto-fill form with AI analysis results
+                      if (analysis.plantType) {
+                        form.setValue("name", analysis.suggestions?.name || analysis.plantType);
+                      }
+                      if (analysis.category) {
+                        form.setValue("category", analysis.category);
+                      }
+                      if (analysis.suggestions?.description) {
+                        form.setValue("description", analysis.suggestions.description);
+                      }
+                      if (analysis.estimatedYield?.quantity) {
+                        form.setValue("quantityAvailable", analysis.estimatedYield.quantity.toString());
+                      }
+                      if (analysis.suggestions?.priceRange) {
+                        // Extract price from range like "$5.00-$8.00 per stem"
+                        const priceMatch = analysis.suggestions.priceRange.match(/\$(\d+\.?\d*)/);
+                        if (priceMatch) {
+                          form.setValue("pricePerUnit", priceMatch[1]);
+                        }
+                      }
+                      
+                      toast({
+                        title: "Form Auto-Filled",
+                        description: "AI analysis has populated your flower listing details",
+                      });
+                    }
+                  }}
+                  className="mb-6"
+                />
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Flower Listing Details</CardTitle>
+                    <CardDescription>
+                      Complete your flower listing (fields auto-filled from AI analysis above)
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <Form {...form}>
+                      <form onSubmit={(e) => {
+                        console.log("Form onSubmit triggered");
+                        console.log("Form validation state:", form.formState);
+                        console.log("Form errors:", form.formState.errors);
+                        form.handleSubmit(onSubmit)(e);
+                      }} className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
@@ -765,6 +801,7 @@ Sunflowers,Bright yellow sunflowers,sunflowers,Giant,stem,5.00,10,true,false,fal
                   </Form>
                 </CardContent>
               </Card>
+              </div>
             )}
 
             {/* Produce Items List */}
@@ -921,20 +958,22 @@ Sunflowers,Bright yellow sunflowers,sunflowers,Giant,stem,5.00,10,true,false,fal
                           
                           {/* AI-Powered Inventory Estimation */}
                           <div className="border-t pt-3">
-                            <SmartImageUploader
-                              onImageSelect={() => {}}
+                            <p className="text-xs text-gray-500 mb-2">
+                              Upload a photo to estimate inventory automatically with AI
+                            </p>
+                            <FlowerIdentificationWidget
                               onAnalysisComplete={(analysis) => {
                                 const input = document.getElementById(`inventory-${item.id}`) as HTMLInputElement;
-                                if (input && analysis.estimatedQuantity) {
-                                  input.value = analysis.estimatedQuantity.toString();
+                                if (input && analysis.estimatedYield?.quantity) {
+                                  input.value = analysis.estimatedYield.quantity.toString();
                                 }
                                 toast({
                                   title: "Inventory estimated!",
-                                  description: `AI estimated ${analysis.estimatedQuantity} ${analysis.unit}`,
+                                  description: `AI estimated ${analysis.estimatedYield?.quantity} ${analysis.estimatedYield?.unit}`,
                                 });
                               }}
-                              showAnalyzeButton={true}
-                              className="max-w-md"
+                              showFormFilling={false}
+                              className="max-w-sm border-0 shadow-none"
                             />
                           </div>
                         </div>
@@ -1078,10 +1117,8 @@ Sunflowers,Bright yellow sunflowers,sunflowers,Giant,stem,5.00,10,true,false,fal
                             render={({ field }) => (
                               <FormItem>
                                 <FormControl>
-                                  <SmartImageUploader
+                                  <SmartPhotoUploader
                                     onImageSelect={field.onChange}
-                                    existingImage={field.value}
-                                    showAnalyzeButton={false}
                                   />
                                 </FormControl>
                                 <FormMessage />

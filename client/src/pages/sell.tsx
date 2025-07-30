@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useState, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { FlowerIdentificationWidget } from "@/components/flower-identification-widget";
 import { 
   Flower, 
   DollarSign, 
@@ -172,6 +173,24 @@ export default function Sell() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* AI Demo Interface */}
             <div className="lg:sticky lg:top-20">
+              <FlowerIdentificationWidget
+                onAnalysisComplete={(analysis) => {
+                  setAnalysisResult(analysis);
+                  if (analysis.success) {
+                    toast({
+                      title: "Analysis Complete!",
+                      description: `Identified: ${analysis.plantType || 'Unknown flower'}`,
+                    });
+                  }
+                }}
+                onImageSelect={(imageUrl) => setDemoImage(imageUrl)}
+                showFormFilling={false}
+                className="max-w-lg mx-auto"
+              />
+            </div>
+            
+            {/* Benefits & Features */}
+            <div className="space-y-8">
               <Card className="shadow-xl border-none">
                 <CardContent className="p-8">
                   <div className="space-y-6">
