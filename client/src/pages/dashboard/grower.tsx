@@ -572,49 +572,7 @@ Sunflowers,Bright yellow sunflowers,sunflowers,Giant,stem,5.00,10,true,false,fal
                         )}
                       />
 
-                      <FormField
-                        control={form.control}
-                        name="imageUrl"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormControl>
-                              <SmartPhotoUploader
-                                onImageSelect={field.onChange}
-                                onAnalysisComplete={(analysis) => {
-                                  if (analysis.success) {
-                                    // Auto-fill form with AI analysis results
-                                    if (analysis.plantType) {
-                                      form.setValue("name", analysis.suggestions?.name || analysis.plantType);
-                                    }
-                                    if (analysis.category) {
-                                      form.setValue("category", analysis.category);
-                                    }
-                                    if (analysis.suggestions?.description) {
-                                      form.setValue("description", analysis.suggestions.description);
-                                    }
-                                    if (analysis.estimatedYield?.quantity) {
-                                      form.setValue("quantityAvailable", analysis.estimatedYield.quantity.toString());
-                                    }
-                                    if (analysis.estimatedYield?.unit) {
-                                      form.setValue("unit", analysis.estimatedYield.unit);
-                                    }
-                                    if (analysis.variety) {
-                                      form.setValue("variety", analysis.variety);
-                                    }
-                                    
-                                    toast({
-                                      title: "Smart Analysis Complete!",
-                                      description: `Identified ${analysis.plantType} with ${analysis.estimatedYield?.quantity || 'estimated'} ${analysis.estimatedYield?.unit || 'units'} predicted yield`,
-                                    });
-                                  }
-                                }}
-                                className="col-span-full"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+
 
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <FormField
