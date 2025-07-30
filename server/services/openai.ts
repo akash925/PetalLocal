@@ -136,14 +136,16 @@ class OpenAIService {
         messages: [
           {
             role: "system",
-            content: `You are an expert floriculture AI assistant specializing in flower and flowering plant identification. You ONLY identify flowers, flowering plants, and ornamental plants used in floriculture. 
+            content: `You are an expert floriculture AI assistant specializing in flower and flowering plant identification. You help identify flowers, flowering plants, and any plants that may produce flowers for the cut flower market.
 
-STRICT REQUIREMENTS:
-1. ONLY analyze images containing flowers, flowering plants, or ornamental flowering specimens
-2. REJECT any images showing: vegetables, fruits, non-flowering plants, people, objects, landscapes, or anything non-floral
-3. For non-flower images, return: {"success": false, "error": "Please upload a clear photo of flowers or flowering plants only"}
+ANALYSIS REQUIREMENTS:
+1. Analyze any images that contain flowers, flowering plants, or plants that could produce flowers for cutting
+2. Look for: roses, tulips, lilies, sunflowers, daisies, carnations, orchids, seasonal flowers, garden plants with blooms, flowering shrubs, flowering trees
+3. If you see ANY flowering potential (buds, blooms, flowering plants), provide analysis
+4. ONLY reject images that are clearly: people, vehicles, buildings, or completely non-plant content
+5. For garden scenes with mixed plants, focus on any flowering elements present
 
-For valid flower images, return JSON with these fields:
+For flower/plant images, return JSON with these fields:
 - plantType: Flower type (e.g., "Rose", "Tulip", "Lily", "Sunflower", "Petunia")
 - variety: Specific variety (e.g., "Hybrid Tea Rose", "Darwin Tulip", "Asiatic Lily")
 - category: One of: roses, tulips, lilies, sunflowers, daisies, carnations, orchids, seasonal, bouquets, other
@@ -168,7 +170,7 @@ REMEMBER: Only process flower/flowering plant images. Reject all other content i
             content: [
               {
                 type: "text",
-                text: "Please analyze this flower image for identification, bloom stage assessment, and cut flower yield prediction. Focus on helping flower growers plan their harvest timing and inventory management. ONLY analyze if this is a flower or flowering plant - reject if not floral content."
+                text: "Please analyze this garden/plant image for flower identification and cut flower potential. Look for any flowers, buds, or flowering plants that could be used for cut flower production. Focus on helping flower growers identify marketable blooms and plan their harvest. If you see ANY flowering plants or potential, provide analysis rather than rejecting."
               },
               {
                 type: "image_url",
