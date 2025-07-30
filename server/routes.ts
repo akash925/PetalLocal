@@ -2396,6 +2396,73 @@ FarmDirect - Fresh. Local. Direct.
     }
   });
 
+  // Delivery and Pickup API Routes
+  app.post('/api/delivery/options', async (req: Request, res: Response) => {
+    try {
+      const { zipCode, farmLocation } = req.body;
+      
+      if (!zipCode || !farmLocation) {
+        return res.status(400).json({ error: 'Missing zipCode or farmLocation' });
+      }
+
+      const { deliveryService } = await import('./services/delivery-service');
+      const options = await deliveryService.getDeliveryOptions(zipCode, farmLocation);
+      
+      res.json(options);
+    } catch (error) {
+      console.error('Error fetching delivery options:', error);
+      res.status(500).json({ error: 'Failed to fetch delivery options' });
+    }
+  });
+
+  app.post('/api/delivery/pickup-qr', async (req: Request, res: Response) => {
+    try {
+      const { orderId, orderTotal } = req.body;
+      
+      if (!orderId || typeof orderTotal !== 'number') {
+        return res.status(400).json({ error: 'Missing orderId or orderTotal' });
+      }
+
+      const { deliveryService } = await import('./services/delivery-service');
+      const qrCodeDataURL = await deliveryService.generatePickupQR(orderId, orderTotal);
+      
+      res.json({ qrCodeDataURL });
+    } catch (error) {
+      console.error('Error generating pickup QR:', error);
+      res.status(500).json({ error: 'Failed to generate pickup QR code' });
+    }
+  });
+
+  app.post('/api/delivery/verify-pickup', async (req: Request, res: Response) => {
+    try {
+      const { qrData, orderId } = req.body;
+      
+      if (!qrData || !orderId) {
+        return res.status(400).json({ error: 'Missing qrData or orderId' });
+      }
+
+      const { deliveryService } = await import('./services/delivery-service');
+      const isValid = await deliveryService.verifyPickupQR(qrData, orderId);
+      
+      if (isValid) {
+        // Update order status to picked up
+        await db.update(orders)
+          .set({ 
+            status: 'delivered',
+            updatedAt: new Date()
+          })
+          .where(eq(orders.id, orderId));
+        
+        res.json({ success: true, message: 'Pickup verified successfully' });
+      } else {
+        res.status(400).json({ success: false, error: 'Invalid QR code' });
+      }
+    } catch (error) {
+      console.error('Error verifying pickup:', error);
+      res.status(500).json({ error: 'Failed to verify pickup' });
+    }
+  });
+
   // Add error handling middleware (must be last)
   app.use(errorHandler);
 

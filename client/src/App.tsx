@@ -24,6 +24,7 @@ import Messages from "@/pages/messages";
 import Checkout from "@/pages/checkout";
 import OrderConfirmation from "@/pages/order-confirmation";
 import OrderTracking from "@/pages/order-tracking";
+import DeliveryPage from "@/pages/checkout/delivery";
 import Sell from "@/pages/sell";
 import SellProduce from "@/pages/sell-produce";
 import NotFound from "@/pages/not-found";
@@ -53,6 +54,7 @@ function Router() {
           <Route path="/farms/:id" component={FarmDetail} />
           <Route path="/cart" component={Cart} />
           <Route path="/checkout" component={Checkout} />
+          <Route path="/delivery" component={DeliveryPage} />
           <Route path="/order-confirmation" component={OrderConfirmation} />
           <Route path="/orders/:id" component={OrderTracking} />
           <Route path="/order-tracking" component={OrderTracking} />
