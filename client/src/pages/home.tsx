@@ -31,7 +31,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative bg-white min-h-[600px] md:h-[700px] py-16 md:py-0 overflow-hidden">
+      <section className="relative bg-white min-h-[700px] md:h-[800px] py-16 md:py-0 overflow-hidden">
         {/* Minimal luxury background */}
         <div className="absolute inset-0 bg-gradient-to-b from-gray-50/30 to-white"></div>
         
@@ -58,32 +58,39 @@ export default function Home() {
               for life's most treasured celebrations
             </p>
             
-            {/* Luxury Hero Image - Single Premium Rose */}
+            {/* Luxury Hero Image - California Rose Estate */}
             <div className="mb-8 md:mb-12 fade-in-up" style={{animationDelay: '0.5s'}}>
-              <div className="relative max-w-md mx-auto group">
+              <div className="relative max-w-4xl mx-auto group">
                 <div className="relative overflow-hidden rounded-none shadow-2xl">
                   <img 
-                    src="/attached_assets/20250726_1526_Rose Bouquet Close-Up_simple_compose_01k14df58qf7krcmstbq2qedpm_1753568825049.png"
-                    alt="Exquisite Rose Collection"
-                    className="w-full h-48 sm:h-56 md:h-64 object-cover transition-all duration-700 group-hover:scale-110"
+                    src="/attached_assets/20250726_1522_Rose Bush Field_simple_compose_01k14d8fe0fgqstj0mrvegsb7m_1753568825048.png"
+                    alt="California Rose Estate - Premium Rose Gardens"
+                    className="w-full h-56 sm:h-64 md:h-80 lg:h-96 object-cover transition-all duration-700 group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent"></div>
                   <div className="absolute inset-0 bg-tiffany/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 </div>
                 
-                {/* Luxury Badge */}
-                <div className="absolute top-4 left-4">
-                  <div className="bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-sm shadow-lg">
-                    <p className="text-xs font-semibold tracking-wider text-luxury-black">EXCLUSIVE COLLECTION</p>
+                {/* Top Left Badge */}
+                <div className="absolute top-6 left-6">
+                  <div className="bg-white/95 backdrop-blur-sm px-4 py-2 shadow-lg">
+                    <p className="text-xs font-semibold tracking-wider text-luxury-black">CALIFORNIA ESTATE ROSES</p>
                   </div>
                 </div>
                 
                 {/* Bottom Overlay */}
-                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                  <div className="space-y-1">
-                    <p className="text-sm font-light tracking-widest opacity-90">PETALLOCAL</p>
-                    <h3 className="text-lg font-serif">Artisan Rose Collection</h3>
-                    <p className="text-xs opacity-80">Handcrafted • Luxury • Timeless</p>
+                <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
+                  <div className="max-w-2xl space-y-2">
+                    <p className="text-sm font-light tracking-widest opacity-90">PETALLOCAL PREMIUM</p>
+                    <h3 className="text-2xl md:text-3xl font-serif leading-tight">Mediterranean Rose Gardens</h3>
+                    <p className="text-sm opacity-80 leading-relaxed">Handpicked from exclusive California estates • Luxury cultivation • Artisan heritage</p>
+                  </div>
+                </div>
+                
+                {/* Top Right Price Badge */}
+                <div className="absolute top-6 right-6">
+                  <div className="bg-tiffany/90 backdrop-blur-sm px-4 py-2 shadow-lg">
+                    <p className="text-xs font-semibold tracking-wider text-white">FROM $85</p>
                   </div>
                 </div>
               </div>
