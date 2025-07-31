@@ -46,6 +46,7 @@ export default function GrowerDashboard() {
   const [editingItem, setEditingItem] = useState<number | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedProduceItem, setSelectedProduceItem] = useState<any>(null);
+  const [aiAnalysisImage, setAiAnalysisImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Check URL parameters for tab routing
@@ -261,14 +262,18 @@ export default function GrowerDashboard() {
       return;
     }
     
+    // Use AI analysis image if no additional image was provided
+    const imageUrl = data.imageUrl || aiAnalysisImage;
+    
     const submitData = {
       ...data,
+      imageUrl,
       pricePerUnit: data.pricePerUnit, // Keep as string since database expects string
       farmId: farmId,
       quantityAvailable: data.quantityAvailable || "0",
     };
     
-    console.log("Submitting data:", submitData);
+    console.log("Submitting data with AI image:", submitData);
     createProduceMutation.mutate(submitData);
   };
 
@@ -491,6 +496,10 @@ Sunflowers,Bright yellow sunflowers,sunflowers,Giant,stem,5.00,10,true,false,fal
                         description: "AI analysis has populated your flower listing details",
                       });
                     }
+                  }}
+                  onImageSelect={(imageUrl) => {
+                    console.log("AI analysis image selected:", imageUrl);
+                    setAiAnalysisImage(imageUrl);
                   }}
                   className="mb-6"
                 />
