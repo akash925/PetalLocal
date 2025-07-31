@@ -63,7 +63,7 @@ export default function Home() {
               <div className="relative max-w-4xl mx-auto group">
                 <div className="relative overflow-hidden rounded-none shadow-2xl">
                   <img 
-                    src="/attached_assets/20250730_2324_Californian Floral Elegance_simple_compose_01k1fjc7ptfegrq4ad6zeacdpb_1753943252093.png"
+                    src="/attached_assets/20250730_2324_Californian Floral Elegance_simple_compose_01k1fjc7pse4tt0k9rgcd69cgg_1753943300715.png"
                     alt="Californian Floral Elegance - Mediterranean Villa Rose Gardens"
                     className="w-full h-56 sm:h-64 md:h-80 lg:h-96 object-cover transition-all duration-700 group-hover:scale-105"
                   />
