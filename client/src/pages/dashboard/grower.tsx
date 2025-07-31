@@ -17,7 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import { insertProduceItemSchema, insertFarmSchema, insertInventorySchema } from "@shared/schema";
 import { z } from "zod";
-import { Plus, Edit, Trash2, Package, Upload, Download, Image } from "lucide-react";
+import { Plus, Edit, Trash2, Package, Upload, Download, Image, Camera } from "lucide-react";
 import { SmartPhotoUploader } from "@/components/smart-photo-uploader";
 import { ComprehensiveFlowerId } from "@/components/comprehensive-flower-id";
 import { ProduceEditModal } from "@/components/produce-edit-modal";
@@ -608,11 +608,11 @@ Sunflowers,Bright yellow sunflowers,sunflowers,Giant,stem,5.00,10,true,false,fal
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="lb">Pound (lb)</SelectItem>
-                                  <SelectItem value="pint">Pint</SelectItem>
+                                  <SelectItem value="stems">Stems</SelectItem>
                                   <SelectItem value="bunch">Bunch</SelectItem>
+                                  <SelectItem value="bouquet">Bouquet</SelectItem>
                                   <SelectItem value="each">Each</SelectItem>
-                                  <SelectItem value="bag">Bag</SelectItem>
+                                  <SelectItem value="arrangement">Arrangement</SelectItem>
                                 </SelectContent>
                               </Select>
                               <FormMessage />
@@ -627,7 +627,7 @@ Sunflowers,Bright yellow sunflowers,sunflowers,Giant,stem,5.00,10,true,false,fal
                             <FormItem>
                               <FormLabel>Variety (Optional)</FormLabel>
                               <FormControl>
-                                <Input placeholder="e.g., Cherry, Roma" {...field} />
+                                <Input placeholder="e.g., Red Rose, Pink Carnation" {...field} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -659,13 +659,47 @@ Sunflowers,Bright yellow sunflowers,sunflowers,Giant,stem,5.00,10,true,false,fal
                           name="imageUrl"
                           render={({ field }) => (
                             <FormItem>
+                              <FormLabel>Additional Photos for Listing</FormLabel>
                               <FormControl>
-                                <SmartPhotoUploader
-                                  onImageSelect={(imageData) => {
-                                    console.log("Grower Dashboard: Image selected:", imageData);
-                                    field.onChange(imageData);
-                                  }}
-                                />
+                                <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-pink-400 hover:bg-pink-50 transition-colors">
+                                  <div className="space-y-4">
+                                    <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                                      <Camera className="w-8 h-8 text-green-500" />
+                                    </div>
+                                    <div>
+                                      <p className="text-lg font-medium text-gray-700 mb-2">
+                                        Add More Photos to Your Listing
+                                      </p>
+                                      <p className="text-sm text-gray-500 mb-4">
+                                        Upload additional angles, arrangements, or detail shots
+                                      </p>
+                                      <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="border-green-300 text-green-600 hover:bg-green-50"
+                                        onClick={() => {
+                                          const input = document.createElement('input');
+                                          input.type = 'file';
+                                          input.accept = 'image/*';
+                                          input.onchange = (e) => {
+                                            const file = (e.target as HTMLInputElement).files?.[0];
+                                            if (file) {
+                                              const reader = new FileReader();
+                                              reader.onload = (e) => {
+                                                field.onChange(e.target?.result as string);
+                                              };
+                                              reader.readAsDataURL(file);
+                                            }
+                                          };
+                                          input.click();
+                                        }}
+                                      >
+                                        <Upload className="w-4 h-4 mr-2" />
+                                        Select Photos
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -742,7 +776,7 @@ Sunflowers,Bright yellow sunflowers,sunflowers,Giant,stem,5.00,10,true,false,fal
                             console.log("Farms available:", farms);
                           }}
                         >
-                          {createProduceMutation.isPending ? "Creating..." : "Create Produce Item"}
+                          {createProduceMutation.isPending ? "Creating..." : "Create Listing"}
                         </Button>
                         <Button
                           type="button"
