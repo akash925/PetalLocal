@@ -82,9 +82,9 @@ export default function Home() {
           </div>
           
           {/* Bottom Overlay - Villa Information */}
-          <div className="absolute bottom-0 left-0 right-0 p-12 text-white">
+          <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8 md:p-12 text-white">
             <div className="max-w-4xl">
-              <p className="text-lg opacity-80 leading-relaxed">Villa estate gardens overlooking San Francisco Bay and LA • Luxury flower bouquets • California Heritage</p>
+              <p className="text-base sm:text-lg opacity-80 leading-relaxed">Villa estate gardens overlooking San Francisco Bay and LA • Luxury flower bouquets • California Heritage</p>
             </div>
           </div>
         </div>
