@@ -31,123 +31,87 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-b from-white via-pink-50/30 to-white min-h-[500px] md:h-[600px] py-12 md:py-0 overflow-hidden">
-        {/* Subtle petal pattern background */}
-        <div className="absolute inset-0 opacity-5">
-          <svg className="w-full h-full" viewBox="0 0 400 400" fill="none">
-            <pattern id="petals" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
-              <path d="M50 20 Q60 10 70 20 Q60 30 50 20" fill="currentColor" className="text-tiffany"/>
-              <path d="M30 60 Q40 50 50 60 Q40 70 30 60" fill="currentColor" className="text-pink-300"/>
-              <path d="M70 80 Q80 70 90 80 Q80 90 70 80" fill="currentColor" className="text-tiffany"/>
-            </pattern>
-            <rect width="100%" height="100%" fill="url(#petals)"/>
-          </svg>
-        </div>
+      <section className="relative bg-white min-h-[600px] md:h-[700px] py-16 md:py-0 overflow-hidden">
+        {/* Minimal luxury background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-gray-50/30 to-white"></div>
         
-        {/* Floating flower decorations */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-20 left-[10%] text-2xl opacity-20 flower-float" style={{animationDelay: '0s'}}>🌹</div>
-          <div className="absolute top-32 right-[15%] text-xl opacity-15 flower-float" style={{animationDelay: '2s'}}>🌷</div>
-          <div className="absolute bottom-40 left-[20%] text-lg opacity-10 flower-float" style={{animationDelay: '4s'}}>🌺</div>
-          <div className="absolute bottom-60 right-[25%] text-2xl opacity-20 flower-float" style={{animationDelay: '1s'}}>🌻</div>
+        {/* Subtle geometric pattern */}
+        <div className="absolute inset-0 opacity-3">
+          <svg className="w-full h-full" viewBox="0 0 200 200" fill="none">
+            <defs>
+              <pattern id="luxury-grid" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M0 40L40 0M-10 10L10 -10M30 50L50 30" stroke="currentColor" className="text-tiffany" strokeWidth="0.5"/>
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#luxury-grid)"/>
+          </svg>
         </div>
         
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center px-6 sm:px-8 lg:px-8 max-w-5xl w-full">
-            <h1 className="text-4xl sm:text-5xl md:text-7xl luxury-heading mb-8 md:mb-6 leading-tight fade-in-up shimmer-text">
-              Exquisite Flowers,<br />Unforgettable Moments
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-light tracking-tight text-luxury-black mb-6 md:mb-4 leading-tight fade-in-up">
+              Exquisite Flowers,<br />
+              <span className="font-serif italic text-tiffany">Unforgettable Moments</span>
             </h1>
-            <p className="text-lg sm:text-xl md:text-2xl luxury-subheading mb-8 md:mb-8 max-w-3xl mx-auto leading-relaxed fade-in-up" style={{animationDelay: '0.3s'}}>
-              Curated luxury flower collections from distinguished local artisan growers for life's most treasured celebrations
+            <p className="text-base sm:text-lg md:text-xl text-luxury-gray mb-6 md:mb-6 max-w-2xl mx-auto leading-relaxed fade-in-up font-light" style={{animationDelay: '0.3s'}}>
+              Curated luxury collections from distinguished artisan growers<br className="hidden sm:block" />
+              for life's most treasured celebrations
             </p>
             
-            {/* Hero Rose Gallery - 4 Beautiful Roses */}
+            {/* Luxury Hero Image - Single Premium Rose */}
             <div className="mb-8 md:mb-12 fade-in-up" style={{animationDelay: '0.5s'}}>
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 max-w-xs sm:max-w-sm mx-auto">
-                <div className="relative group">
-                  <img 
-                    src="/attached_assets/20250726_1521_Beautiful Roses_simple_compose_01k14d7hk2f1rv3pycv1fy6pvy_1753568667953.png"
-                    alt="Beautiful Red Rose"
-                    className="w-full h-28 sm:h-32 object-cover rounded-xl shadow-lg transition-all duration-500 group-hover:scale-105 group-hover:shadow-xl flower-bloom pulse-glow"
-                    style={{animationDelay: '0.5s'}}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-tiffany/10 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute bottom-2 left-2 right-2">
-                    <div className="bg-white/90 backdrop-blur-sm rounded-lg px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <p className="text-xs text-gray-800 font-medium">Premium Roses</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="relative group">
-                  <img 
-                    src="/attached_assets/20250726_1521_Beautiful Roses_simple_compose_01k14d7hk3ekj9qcrqn2sdkxga_1753568667956.png"
-                    alt="Elegant Pink Rose"
-                    className="w-full h-28 sm:h-32 object-cover rounded-xl shadow-lg transition-all duration-500 group-hover:scale-105 group-hover:shadow-xl flower-bloom pulse-glow"
-                    style={{animationDelay: '0.7s'}}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-pink-300/10 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute bottom-2 left-2 right-2">
-                    <div className="bg-white/90 backdrop-blur-sm rounded-lg px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <p className="text-xs text-gray-800 font-medium">Garden Roses</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="relative group">
+              <div className="relative max-w-md mx-auto group">
+                <div className="relative overflow-hidden rounded-none shadow-2xl">
                   <img 
                     src="/attached_assets/20250726_1526_Rose Bouquet Close-Up_simple_compose_01k14df58qf7krcmstbq2qedpm_1753568825049.png"
-                    alt="Rose Bouquet"
-                    className="w-full h-28 sm:h-32 object-cover rounded-xl shadow-lg transition-all duration-500 group-hover:scale-105 group-hover:shadow-xl flower-bloom pulse-glow"
-                    style={{animationDelay: '0.9s'}}
+                    alt="Exquisite Rose Collection"
+                    className="w-full h-48 sm:h-56 md:h-64 object-cover transition-all duration-700 group-hover:scale-110"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-tiffany/10 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute bottom-2 left-2 right-2">
-                    <div className="bg-white/90 backdrop-blur-sm rounded-lg px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <p className="text-xs text-gray-800 font-medium">Luxury Bouquets</p>
-                    </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+                  <div className="absolute inset-0 bg-tiffany/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                </div>
+                
+                {/* Luxury Badge */}
+                <div className="absolute top-4 left-4">
+                  <div className="bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-sm shadow-lg">
+                    <p className="text-xs font-semibold tracking-wider text-luxury-black">EXCLUSIVE COLLECTION</p>
                   </div>
                 </div>
-                <div className="relative group">
-                  <img 
-                    src="/attached_assets/20250726_1526_Rose Bouquet Close-Up_simple_compose_01k14df58rfbwbe8mtwd3twqyv_1753568825050.png"
-                    alt="Premium Rose Arrangement"
-                    className="w-full h-28 sm:h-32 object-cover rounded-xl shadow-lg transition-all duration-500 group-hover:scale-105 group-hover:shadow-xl flower-bloom pulse-glow"
-                    style={{animationDelay: '1.1s'}}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-pink-300/10 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute bottom-2 left-2 right-2">
-                    <div className="bg-white/90 backdrop-blur-sm rounded-lg px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <p className="text-xs text-gray-800 font-medium">Arrangements</p>
-                    </div>
+                
+                {/* Bottom Overlay */}
+                <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+                  <div className="space-y-1">
+                    <p className="text-sm font-light tracking-widest opacity-90">PETALLOCAL</p>
+                    <h3 className="text-lg font-serif">Artisan Rose Collection</h3>
+                    <p className="text-xs opacity-80">Handcrafted • Luxury • Timeless</p>
                   </div>
                 </div>
               </div>
             </div>
             
-            {/* Search Bar */}
-            <div className="max-w-2xl mx-auto fade-in-up" style={{animationDelay: '0.8s'}}>
-              <div className="flex flex-col sm:flex-row gap-4 sm:gap-0">
-                <div className="relative flex-1">
-                  <Input
-                    type="text"
-                    placeholder="Search for exceptional flowers..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && searchQuery.trim()) {
-                        window.location.href = `/flowers/browse?search=${encodeURIComponent(searchQuery)}`;
-                      }
-                    }}
-                    className="w-full pl-12 sm:pl-16 pr-4 sm:pr-32 py-4 sm:py-6 text-base sm:text-lg border-2 border-gray-200 focus:border-tiffany focus:ring-tiffany rounded-sm sm:rounded-r-none transition-all duration-300 hover:shadow-lg"
-                  />
-                  <div className="absolute inset-y-0 left-0 pl-4 sm:pl-6 flex items-center">
-                    <Search className="w-5 h-5 sm:w-6 sm:h-6 text-luxury-gray gentle-sway" />
-                  </div>
+            {/* Luxury Call to Action */}
+            <div className="max-w-lg mx-auto fade-in-up space-y-4" style={{animationDelay: '0.8s'}}>
+              <Link href="/flowers/browse">
+                <Button className="w-full bg-luxury-black hover:bg-tiffany text-white py-4 px-8 text-sm tracking-widest font-light transition-all duration-300 hover:shadow-xl rounded-none">
+                  DISCOVER COLLECTION
+                </Button>
+              </Link>
+              <div className="relative">
+                <Input
+                  type="text"
+                  placeholder="Search luxury flowers..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && searchQuery.trim()) {
+                      window.location.href = `/flowers/browse?search=${encodeURIComponent(searchQuery)}`;
+                    }
+                  }}
+                  className="w-full pl-4 pr-12 py-3 text-sm border border-gray-300 focus:border-luxury-black focus:ring-luxury-black rounded-none bg-white/80 backdrop-blur-sm"
+                />
+                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                  <Search className="w-4 h-4 text-luxury-gray" />
                 </div>
-                <Link href={`/flowers/browse?search=${encodeURIComponent(searchQuery)}`}>
-                  <Button className="w-full sm:w-auto sm:absolute sm:right-2 sm:top-1/2 sm:transform sm:-translate-y-1/2 luxury-button px-6 sm:px-8 py-4 h-auto rounded-sm sm:rounded-sm transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                    Shop Now
-                  </Button>
-                </Link>
               </div>
             </div>
           </div>

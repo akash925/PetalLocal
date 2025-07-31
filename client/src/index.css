@@ -136,6 +136,19 @@
   animation: pulse-glow 2s ease-in-out infinite;
 }
 
+/* Luxury typography and spacing */
+.luxury-heading {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+}
+
+.luxury-subheading {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-weight: 300;
+  letter-spacing: 0.01em;
+}
+
 /* Mobile-specific optimizations */
 @media (max-width: 640px) {
   .flower-float {
@@ -153,6 +166,26 @@
   .shimmer-text {
     animation-duration: 2s;
   }
+  
+  .luxury-heading {
+    font-weight: 200;
+    letter-spacing: -0.015em;
+  }
+}
+
+/* Premium button styles */
+.luxury-button {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.luxury-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
 }
 
 @layer base {
