@@ -31,7 +31,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section */}
-      <section className="relative bg-white min-h-[700px] md:h-[800px] py-16 md:py-0 overflow-hidden">
+      <section className="relative bg-white min-h-screen py-0 overflow-hidden">
         {/* Minimal luxury background */}
         <div className="absolute inset-0 bg-gradient-to-b from-gray-50/30 to-white"></div>
         
@@ -47,79 +47,58 @@ export default function Home() {
           </svg>
         </div>
         
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center px-6 sm:px-8 lg:px-8 max-w-5xl w-full">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-light tracking-tight text-luxury-black mb-6 md:mb-4 leading-tight fade-in-up">
-              Exquisite Flowers,<br />
-              <span className="font-serif italic text-tiffany">Unforgettable Moments</span>
-            </h1>
-            <p className="text-base sm:text-lg md:text-xl text-luxury-gray mb-6 md:mb-6 max-w-2xl mx-auto leading-relaxed fade-in-up font-light" style={{animationDelay: '0.3s'}}>
-              Curated luxury collections from distinguished artisan growers<br className="hidden sm:block" />
-              for life's most treasured celebrations
-            </p>
-            
-            {/* Luxury Hero Image - California Rose Estate */}
-            <div className="mb-8 md:mb-12 fade-in-up" style={{animationDelay: '0.5s'}}>
-              <div className="relative max-w-4xl mx-auto group">
-                <div className="relative overflow-hidden rounded-none shadow-2xl">
-                  <img 
-                    src="/attached_assets/20250730_2324_Californian Floral Elegance_simple_compose_01k1fjc7pse4tt0k9rgcd69cgg_1753943300715.png"
-                    alt="Californian Floral Elegance - Mediterranean Villa Rose Gardens"
-                    className="w-full h-56 sm:h-64 md:h-80 lg:h-96 object-cover transition-all duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent"></div>
-                  <div className="absolute inset-0 bg-tiffany/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                </div>
-                
-                {/* Top Left Badge */}
-                <div className="absolute top-6 left-6">
-                  <div className="bg-white/95 backdrop-blur-sm px-4 py-2 shadow-lg">
-                    <p className="text-xs font-semibold tracking-wider text-luxury-black">CALIFORNIA ESTATE ROSES</p>
-                  </div>
-                </div>
-                
-                {/* Bottom Overlay */}
-                <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
-                  <div className="max-w-2xl space-y-2">
-                    <p className="text-sm font-light tracking-widest opacity-90">PETALLOCAL PREMIUM</p>
-                    <h3 className="text-2xl md:text-3xl font-serif leading-tight">Californian Floral Elegance</h3>
-                    <p className="text-sm opacity-80 leading-relaxed">Villa estate gardens overlooking San Francisco Bay • Luxury bouquets • Mediterranean heritage</p>
-                  </div>
-                </div>
-                
-                {/* Top Right Price Badge */}
-                <div className="absolute top-6 right-6">
-                  <div className="bg-tiffany/90 backdrop-blur-sm px-4 py-2 shadow-lg">
-                    <p className="text-xs font-semibold tracking-wider text-white">FROM $85</p>
-                  </div>
-                </div>
+        {/* Full-Screen Hero Image - Louis Vuitton Style */}
+        <div className="relative w-full h-screen">
+          <img 
+            src="/attached_assets/20250730_2324_Californian Floral Elegance_simple_compose_01k1fjc7pse4tt0k9rgcd69cgg_1753943300715.png"
+            alt="Californian Floral Elegance - Mediterranean Villa Rose Gardens"
+            className="w-full h-full object-cover transition-all duration-700 hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+          <div className="absolute inset-0 bg-tiffany/5 opacity-0 hover:opacity-100 transition-opacity duration-500"></div>
+          
+          {/* Top Left Badge */}
+          <div className="absolute top-8 left-8">
+            <div className="bg-white/95 backdrop-blur-sm px-6 py-3 shadow-lg">
+              <p className="text-sm font-semibold tracking-wider text-luxury-black">CALIFORNIA ESTATE ROSES</p>
+            </div>
+          </div>
+          
+          {/* Top Right Price Badge */}
+          <div className="absolute top-8 right-8">
+            <div className="bg-tiffany/90 backdrop-blur-sm px-6 py-3 shadow-lg">
+              <p className="text-sm font-semibold tracking-wider text-white">FROM $85</p>
+            </div>
+          </div>
+          
+          {/* Center Content - Louis Vuitton Style */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center text-white max-w-4xl px-8">
+              <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-light tracking-tight mb-6 leading-tight fade-in-up">
+                Exquisite Flowers,<br />
+                <span className="font-serif italic">Unforgettable Moments</span>
+              </h1>
+              <p className="text-lg sm:text-xl md:text-2xl mb-12 leading-relaxed fade-in-up font-light opacity-90" style={{animationDelay: '0.3s'}}>
+                Curated luxury collections from distinguished artisan growers
+              </p>
+              
+              {/* Luxury Call to Action */}
+              <div className="max-w-md mx-auto fade-in-up space-y-6" style={{animationDelay: '0.5s'}}>
+                <Link href="/flowers/browse">
+                  <Button className="w-full bg-white hover:bg-tiffany text-luxury-black hover:text-white py-4 px-12 text-base tracking-widest font-light transition-all duration-300 hover:shadow-xl rounded-none">
+                    DISCOVER COLLECTION
+                  </Button>
+                </Link>
               </div>
             </div>
-            
-            {/* Luxury Call to Action */}
-            <div className="max-w-lg mx-auto fade-in-up space-y-4" style={{animationDelay: '0.8s'}}>
-              <Link href="/flowers/browse">
-                <Button className="w-full bg-luxury-black hover:bg-tiffany text-white py-4 px-8 text-sm tracking-widest font-light transition-all duration-300 hover:shadow-xl rounded-none">
-                  DISCOVER COLLECTION
-                </Button>
-              </Link>
-              <div className="relative">
-                <Input
-                  type="text"
-                  placeholder="Search luxury flowers..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && searchQuery.trim()) {
-                      window.location.href = `/flowers/browse?search=${encodeURIComponent(searchQuery)}`;
-                    }
-                  }}
-                  className="w-full pl-4 pr-12 py-3 text-sm border border-gray-300 focus:border-luxury-black focus:ring-luxury-black rounded-none bg-white/80 backdrop-blur-sm"
-                />
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                  <Search className="w-4 h-4 text-luxury-gray" />
-                </div>
-              </div>
+          </div>
+          
+          {/* Bottom Overlay - Villa Information */}
+          <div className="absolute bottom-0 left-0 right-0 p-12 text-white">
+            <div className="max-w-3xl space-y-3">
+              <p className="text-base font-light tracking-widest opacity-90">PETALLOCAL PREMIUM</p>
+              <h3 className="text-3xl md:text-4xl font-serif leading-tight">Californian Floral Elegance</h3>
+              <p className="text-lg opacity-80 leading-relaxed">Villa estate gardens overlooking San Francisco Bay • Luxury bouquets • Mediterranean heritage</p>
             </div>
           </div>
         </div>
