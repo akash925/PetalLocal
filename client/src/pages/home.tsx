@@ -63,8 +63,8 @@ export default function Home() {
               <div className="relative max-w-4xl mx-auto group">
                 <div className="relative overflow-hidden rounded-none shadow-2xl">
                   <img 
-                    src="/attached_assets/20250726_1522_Rose Bush Field_simple_compose_01k14d8fe0fgqstj0mrvegsb7m_1753568825048.png"
-                    alt="California Rose Estate - Premium Rose Gardens"
+                    src="/attached_assets/20250730_2324_Californian Floral Elegance_simple_compose_01k1fjc7ptfegrq4ad6zeacdpb_1753943252093.png"
+                    alt="Californian Floral Elegance - Mediterranean Villa Rose Gardens"
                     className="w-full h-56 sm:h-64 md:h-80 lg:h-96 object-cover transition-all duration-700 group-hover:scale-105"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent"></div>
@@ -82,8 +82,8 @@ export default function Home() {
                 <div className="absolute bottom-0 left-0 right-0 p-8 text-white">
                   <div className="max-w-2xl space-y-2">
                     <p className="text-sm font-light tracking-widest opacity-90">PETALLOCAL PREMIUM</p>
-                    <h3 className="text-2xl md:text-3xl font-serif leading-tight">Mediterranean Rose Gardens</h3>
-                    <p className="text-sm opacity-80 leading-relaxed">Handpicked from exclusive California estates • Luxury cultivation • Artisan heritage</p>
+                    <h3 className="text-2xl md:text-3xl font-serif leading-tight">Californian Floral Elegance</h3>
+                    <p className="text-sm opacity-80 leading-relaxed">Villa estate gardens overlooking San Francisco Bay • Luxury bouquets • Mediterranean heritage</p>
                   </div>
                 </div>
                 
